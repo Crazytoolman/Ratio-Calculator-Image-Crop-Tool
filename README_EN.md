@@ -69,7 +69,7 @@ Deeply customized for mobile user habits:
 
 ## 👤 Author
 
-**CrazyToolMan**
+**ToolBuddy**
 - 📺 Bilibili: [Follow](https://space.bilibili.com/33410454)
 - ▶️ YouTube: [Follow](https://www.youtube.com/@crazytoolman)
 - 💬 WeChat: `crazytoolman`
