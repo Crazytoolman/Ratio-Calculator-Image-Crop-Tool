@@ -74,6 +74,10 @@ Deeply customized for mobile user habits:
 - ▶️ YouTube: [Follow](https://www.youtube.com/@crazytoolman)
 - 💬 WeChat: `crazytoolman`
 
+<img src="./sponsor.jpg" alt="WeChat Reward Code" width="200" />
+<br>
+<small>WeChat Reward Code (Buy the author a tea)</small>
+
 ## 📄 License
 
 This project is open-sourced under the **GPL-3.0 License**.

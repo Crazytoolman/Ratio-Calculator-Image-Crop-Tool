@@ -74,6 +74,10 @@
 - ▶️ YouTube: [点击关注](https://www.youtube.com/@crazytoolman)
 - 💬 WeChat: `crazytoolman`
 
+<img src="./sponsor.jpg" alt="微信赞赏码" width="200" />
+<br>
+<small>微信赞赏码（给作者买奶茶）</small>
+
 ## 📄 许可证 (License)
 
 本项目基于 **GPL-3.0 License** 开源。
