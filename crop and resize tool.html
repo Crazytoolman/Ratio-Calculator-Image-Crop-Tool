@@ -1,0 +1,2531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="专业的比例计算器和图像裁切工具，支持常用照片比例、屏幕比例等，自定义比例计算更方便，在线裁切图片">
+    <title>比例计算器与图像裁切工具 - 智能尺寸计算与图片裁切</title>
+    <!-- SVG Favicon -->
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg viewBox='0 0 48 48' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='icon-grad-2' x1='48' y1='0' x2='0' y2='48' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%23FF2D55' /%3E%3Cstop offset='100%25' stop-color='%23FF9500' /%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M12 38V12C12 9.79086 13.7909 8 16 8H40' stroke='url(%23icon-grad-2)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M36 10V36C36 38.2091 34.2091 40 32 40H8' stroke='url(%23icon-grad-2)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12 14V6' stroke='url(%23icon-grad-2)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M42 8H34' stroke='url(%23icon-grad-2)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M6 40H14' stroke='url(%23icon-grad-2)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M36 34V42' stroke='url(%23icon-grad-2)' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* 浅色主题 - Apple风格 */
+            --bg-gradient-1: #f5f5f7;
+            --bg-gradient-2: #e8e8ed;
+            --bg-gradient-3: #fafafa;
+            --bg-gradient-4: #ffffff;
+
+            --card-bg: rgba(255, 255, 255, 0.72);
+            --card-bg-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(251, 251, 253, 0.72) 100%);
+            --card-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+            --card-hover-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+
+            --primary-gradient: linear-gradient(135deg, #1d1d1f 0%, #424245 100%);
+            --secondary-gradient: linear-gradient(135deg, #6e6e73 0%, #86868b 100%);
+            --accent-gradient: linear-gradient(135deg, #0071e3 0%, #0077ed 100%);
+            --success-gradient: linear-gradient(135deg, #30d158 0%, #32d159 100%);
+            --danger-gradient: linear-gradient(135deg, #ff3b30 0%, #ff453a 100%);
+
+            --text-primary: #1d1d1f;
+            --text-secondary: #6e6e73;
+            --text-light: #86868b;
+
+            --border-color: rgba(0, 0, 0, 0.1);
+            --border-glow: rgba(0, 0, 0, 0.2);
+
+            --input-bg: rgba(255, 255, 255, 0.8);
+            --input-focus-bg: rgba(255, 255, 255, 1);
+
+            --success-bg: rgba(48, 209, 88, 0.1);
+            --success-text: #30d158;
+
+            --preview-bg: linear-gradient(135deg, rgba(242, 242, 247, 0.6) 0%, rgba(250, 250, 250, 0.6) 100%);
+        }
+
+        /* 深色主题 - Apple风格 */
+        body.dark-theme {
+            --bg-gradient-1: #000000;
+            --bg-gradient-2: #1c1c1e;
+            --bg-gradient-3: #2c2c2e;
+            --bg-gradient-4: #1d1d1f;
+
+            --card-bg: rgba(28, 28, 30, 0.72);
+            --card-bg-gradient: linear-gradient(135deg, rgba(28, 28, 30, 0.72) 0%, rgba(44, 44, 46, 0.72) 100%);
+            --card-shadow: 0 2px 16px rgba(0, 0, 0, 0.6);
+            --card-hover-shadow: 0 4px 24px rgba(0, 0, 0, 0.8);
+
+            --text-primary: #f5f5f7;
+            --text-secondary: #a1a1a6;
+            --text-light: #86868b;
+
+            --border-color: rgba(255, 255, 255, 0.15);
+            --border-glow: rgba(255, 255, 255, 0.25);
+
+            --input-bg: rgba(58, 58, 60, 0.5);
+            --input-focus-bg: rgba(58, 58, 60, 0.8);
+
+            --success-bg: rgba(48, 209, 88, 0.15);
+            --success-text: #30d158;
+
+            --preview-bg: linear-gradient(135deg, rgba(44, 44, 46, 0.4) 0%, rgba(58, 58, 60, 0.4) 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(to bottom, var(--bg-gradient-1) 0%, var(--bg-gradient-2) 50%, var(--bg-gradient-3) 75%, var(--bg-gradient-4) 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: var(--text-primary);
+            line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+            transition: all 0.5s ease;
+        }
+
+        /* 背景动画粒子 - Apple风格更加微妙 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(0, 113, 227, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 0, 0, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .dark-theme::before {
+            background-image:
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 控制栏 - 主题和语言切换 */
+        .controls-bar {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            z-index: 1000;
+            display: flex;
+            gap: 12px;
+        }
+
+        /* 主题切换器 */
+        .theme-toggle,
+        .lang-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--card-bg-gradient);
+            padding: 4px;
+            border-radius: 50px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+        }
+
+        .theme-btn,
+        .lang-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: transparent;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .theme-btn.active,
+        .lang-btn.active {
+            background: var(--input-bg);
+            color: var(--text-primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-btn:hover:not(.active),
+        .lang-btn:hover:not(.active) {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--text-primary);
+        }
+
+        .dark-theme .theme-btn:hover:not(.active),
+        .dark-theme .lang-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 头部样式 */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        .header-icon {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 24px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .header-svg {
+            width: 60px;
+            height: 60px;
+            filter: drop-shadow(0 8px 16px rgba(102, 126, 234, 0.25));
+            transition: transform 0.3s ease;
+        }
+
+        .header-svg:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .dark-theme .header-svg {
+            filter: drop-shadow(0 8px 16px rgba(255, 255, 255, 0.15));
+        }
+
+        .header h1 {
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+        }
+
+        .header p {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* 卡片样式 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .card {
+            background: var(--card-bg-gradient);
+            border-radius: 32px;
+            padding: 36px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.8s ease;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            box-shadow: var(--card-hover-shadow);
+            transform: translateY(-4px);
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 28px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dark-theme .card-title {
+            background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 50%, #e5e5e7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+        }
+
+        /* 比例选择区域 */
+        .ratio-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .ratio-btn {
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ratio-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.2), transparent);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .ratio-btn:hover::before {
+            width: 200%;
+            height: 200%;
+        }
+
+        .ratio-btn:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .ratio-btn.active {
+            background: var(--primary-gradient);
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .ratio-value {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ratio-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ratio-btn.active .ratio-label {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 自定义比例 */
+        .custom-ratio {
+            padding: 24px;
+            background: var(--preview-bg);
+            border-radius: 20px;
+            border: 2px dashed var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .custom-ratio:hover {
+            border-color: var(--border-glow);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+        }
+
+        .custom-ratio-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+
+        .custom-input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .custom-input-group input {
+            flex: 1;
+            min-width: 0;
+            max-width: 100%;
+            padding: 12px 14px;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        .custom-input-group input:focus {
+            outline: none;
+            border-color: var(--border-glow);
+            background: var(--input-focus-bg);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+
+        .custom-input-group .separator {
+            font-size: 28px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 预览区域 */
+        .preview-card {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+        }
+
+        .preview-container {
+            flex: 1;
+            background: var(--preview-bg);
+            border-radius: 24px;
+            padding: 60px 24px;
+            margin-bottom: 28px;
+            min-height: 360px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .preview-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        .preview-box {
+            border: 3px dashed var(--text-primary);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: pulse 3s ease-in-out infinite;
+            position: relative;
+            z-index: 1;
+        }
+
+        .dark-theme .preview-box {
+            background: rgba(58, 58, 60, 0.6);
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-ratio-text {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .preview-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* 结果显示 */
+        .result-display {
+            background: var(--success-gradient);
+            border-radius: 20px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(67, 233, 123, 0.3);
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-size: 30px;
+            font-weight: 800;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 计算区域 */
+        .calculator-section {
+            grid-column: span 2;
+        }
+
+        .current-ratio {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 28px;
+            padding: 20px;
+            background: var(--preview-bg);
+            border-radius: 16px;
+            border-left: 5px solid;
+            border-image: var(--primary-gradient) 1;
+            font-weight: 600;
+        }
+
+        .dark-theme .current-ratio {
+            color: var(--text-primary);
+            border-image: linear-gradient(135deg, #f5f5f7 0%, #e5e5e7 100%) 1;
+        }
+
+        .current-ratio-value {
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dark-theme .current-ratio-value {
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .input-groups {
+            display: grid;
+            gap: 28px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 20px;
+            align-items: end;
+        }
+
+        .input-field {
+            position: relative;
+        }
+
+        .input-field label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .input-field input {
+            width: 100%;
+            padding: 18px 24px;
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            font-size: 20px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .input-field input::placeholder {
+            color: var(--text-light);
+        }
+
+        .input-field input:focus {
+            outline: none;
+            border-color: var(--border-glow);
+            background: var(--input-focus-bg);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .input-field input.calculated {
+            background: var(--success-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 16px rgba(67, 233, 123, 0.3);
+        }
+
+        .input-field input.calculated::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .arrow-icon {
+            font-size: 28px;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: pulse 2s ease-in-out infinite;
+            margin-bottom: 8px;
+        }
+
+        /* 清空按钮 */
+        .clear-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--danger-gradient);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 28px;
+            box-shadow: 0 4px 16px rgba(250, 112, 154, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .clear-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .clear-btn:hover::before {
+            width: 300%;
+            height: 300%;
+        }
+
+        .clear-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(250, 112, 154, 0.5);
+        }
+
+        .clear-btn:active {
+            transform: translateY(-2px);
+        }
+
+        /* 使用说明 */
+        .instructions {
+            background: var(--card-bg-gradient);
+            border-radius: 32px;
+            padding: 36px;
+            box-shadow: var(--card-shadow);
+            animation: fadeInUp 1s ease;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .instructions h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: var(--secondary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dark-theme .instructions h3 {
+            background: linear-gradient(135deg, #f5f5f7 0%, #ffffff 50%, #e5e5e7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2));
+        }
+
+        .instructions p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        /* 动画 */
+        @keyframes gradientFlow {
+
+            0%,
+            100% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.03);
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 图像裁切样式 */
+        .image-crop-section {
+            position: relative;
+        }
+
+        .upload-area {
+            position: relative;
+            min-height: 400px;
+        }
+
+        .upload-placeholder {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--preview-bg);
+            border: 3px dashed var(--border-color);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-placeholder:hover {
+            border-color: var(--border-glow);
+            background: var(--input-focus-bg);
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .upload-text {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .upload-btn {
+            padding: 16px 40px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+        }
+
+        .crop-container {
+            animation: fadeIn 0.5s ease;
+        }
+
+        .crop-canvas-wrapper {
+            position: relative;
+            max-width: 100%;
+            width: fit-content;
+            margin: 0 auto 24px auto;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #000;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        #cropCanvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .crop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: move;
+        }
+
+        .crop-box {
+            position: absolute;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+            cursor: move;
+        }
+
+        .crop-handle {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border: 2px solid #667eea;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .crop-handle-nw {
+            top: -8px;
+            left: -8px;
+            cursor: nw-resize;
+        }
+
+        .crop-handle-ne {
+            top: -8px;
+            right: -8px;
+            cursor: ne-resize;
+        }
+
+        .crop-handle-sw {
+            bottom: -8px;
+            left: -8px;
+            cursor: sw-resize;
+        }
+
+        .crop-handle-se {
+            bottom: -8px;
+            right: -8px;
+            cursor: se-resize;
+        }
+
+        .crop-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .crop-grid-line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .crop-grid-v {
+            width: 1px;
+            height: 100%;
+            top: 0;
+        }
+
+        .crop-grid-v:nth-child(1) {
+            left: 33.333%;
+        }
+
+        .crop-grid-v:nth-child(2) {
+            left: 66.666%;
+        }
+
+        .crop-grid-h {
+            width: 100%;
+            height: 1px;
+            left: 0;
+        }
+
+        .crop-grid-h:nth-child(3) {
+            top: 33.333%;
+        }
+
+        .crop-grid-h:nth-child(4) {
+            top: 66.666%;
+        }
+
+        .crop-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .crop-action-btn {
+            flex: 1;
+            min-width: 150px;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .crop-btn-primary {
+            background: var(--primary-gradient);
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .crop-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+        }
+
+        .crop-btn-secondary {
+            background: var(--accent-gradient);
+            color: white;
+            box-shadow: 0 4px 16px rgba(79, 172, 254, 0.3);
+        }
+
+        .crop-btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(79, 172, 254, 0.5);
+        }
+
+        .crop-btn-danger {
+            background: var(--danger-gradient);
+            color: white;
+            box-shadow: 0 4px 16px rgba(250, 112, 154, 0.3);
+        }
+
+        .crop-btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(250, 112, 154, 0.5);
+        }
+
+        .crop-btn-success {
+            background: var(--success-gradient);
+            color: white;
+            box-shadow: 0 4px 16px rgba(67, 233, 123, 0.3);
+        }
+
+        .crop-btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(67, 233, 123, 0.5);
+        }
+
+        .crop-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            padding: 20px;
+            background: var(--preview-bg);
+            border-radius: 16px;
+        }
+
+        .crop-info-item {
+            text-align: center;
+        }
+
+        .crop-info-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .dark-theme .crop-info-label {
+            color: var(--text-primary);
+            opacity: 0.9;
+        }
+
+        .crop-info-value {
+            display: block;
+            font-size: 18px;
+            font-weight: 800;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dark-theme .crop-info-value {
+            background: linear-gradient(135deg, #ffffff 0%, #f5f5f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
+        }
+
+        .crop-result {
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 2px dashed var(--border-color);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .crop-result-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            background: var(--success-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+        }
+
+        .crop-result-preview {
+            background: var(--preview-bg);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
+
+        #resultCanvas {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+        }
+
+        .crop-result-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* 开发者社交信息卡片 */
+        .developer-card {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 1000;
+            background: var(--card-bg-gradient);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: var(--card-shadow);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 280px;
+        }
+
+        .developer-card:hover {
+            box-shadow: var(--card-hover-shadow);
+            transform: translateY(-2px);
+        }
+
+        .dev-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .dev-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            object-fit: cover;
+            transition: all 0.3s ease;
+        }
+
+        .dev-avatar:hover {
+            transform: scale(1.1);
+            border-color: var(--border-glow);
+        }
+
+        .dev-info {
+            flex: 1;
+        }
+
+        .dev-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .dev-title {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .social-links {
+            display: grid;
+            gap: 8px;
+        }
+
+        .social-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            background: var(--input-bg);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+        }
+
+        .social-link:hover {
+            background: var(--accent-gradient);
+            color: white;
+            transform: translateX(4px);
+            border-color: rgba(0, 113, 227, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
+        }
+
+        .social-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .social-text {
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 微信二维码弹窗 */
+        .qr-trigger {
+            cursor: pointer;
+            position: relative;
+        }
+
+        .qr-popup {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 0;
+            margin-left: 12px;
+            background: var(--card-bg-gradient);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--card-hover-shadow);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            z-index: 1001;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .qr-trigger:hover .qr-popup {
+            display: block;
+        }
+
+        .qr-image {
+            width: 180px;
+            height: 180px;
+            border-radius: 12px;
+            display: block;
+        }
+
+        .qr-label {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        /* 收起/展开按钮 */
+        .dev-toggle {
+            text-align: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        .developer-card.collapsed {
+            max-width: 90px;
+            padding: 16px;
+        }
+
+        .developer-card.collapsed .dev-header {
+            flex-direction: column;
+            margin-bottom: 0;
+        }
+
+        .developer-card.collapsed .dev-info,
+        .developer-card.collapsed .social-links,
+        .developer-card.collapsed .dev-toggle {
+            display: none;
+        }
+
+        .developer-card.collapsed .dev-avatar {
+            width: 56px;
+            height: 56px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 968px) {
+            .controls-bar {
+                top: 20px;
+                right: 20px;
+            }
+
+            .developer-card {
+                top: 20px;
+                left: 20px;
+            }
+
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .calculator-section {
+                grid-column: span 1;
+            }
+
+            .ratio-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 36px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .theme-toggle {
+                top: 15px;
+                right: 15px;
+            }
+
+            .theme-btn {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+            .card {
+                padding: 24px;
+                border-radius: 24px;
+            }
+
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+
+            .arrow-icon {
+                transform: rotate(90deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 开发者社交信息卡片 -->
+    <div class="developer-card" id="devCard">
+        <div class="dev-header">
+            <img src="avatar.png" alt="ToolBuddy" class="dev-avatar" id="devAvatar">
+            <div class="dev-info">
+                <div class="dev-name" data-i18n="developer.name">工具狂</div>
+                <div class="dev-title" data-i18n="developer.title">Developer</div>
+            </div>
+        </div>
+
+        <div class="social-links">
+            <a href="https://www.youtube.com/@crazytoolman" target="_blank" class="social-link">
+                <span class="social-icon">▶️</span>
+                <span class="social-text">YouTube</span>
+            </a>
+
+            <a href="https://space.bilibili.com/33410454" target="_blank" class="social-link">
+                <span class="social-icon">📺</span>
+                <span class="social-text">Bilibili</span>
+            </a>
+
+            <a href="https://v.douyin.com/ik9R5bMW" target="_blank" class="social-link">
+                <span class="social-icon">🎵</span>
+                <span class="social-text" data-i18n="developer.douyin">抖音</span>
+            </a>
+
+            <div class="social-link qr-trigger">
+                <span class="social-icon">💬</span>
+                <span class="social-text" data-i18n="developer.wechat">微信公众号</span>
+                <div class="qr-popup">
+                    <img src="wechat_qr.png" alt="WeChat QR" class="qr-image" id="wechatQR">
+                    <div class="qr-label" data-i18n="developer.scanQR">扫码关注</div>
+                </div>
+            </div>
+
+            <div class="social-link" style="cursor: default; background: var(--preview-bg);">
+                <span class="social-icon">👤</span>
+                <span class="social-text" style="font-size: 12px;">crazytoolman</span>
+            </div>
+        </div>
+
+        <div class="dev-toggle">
+            <button class="toggle-btn" id="toggleDevCard" data-i18n="developer.collapse">收起</button>
+        </div>
+    </div>
+
+    <!-- 控制栏 - 主题和语言 -->
+    <div class="controls-bar">
+        <!-- 主题切换器 -->
+        <div class="theme-toggle">
+            <button class="theme-btn active" data-theme="light">
+                ☀️ <span data-i18n="theme.light">浅色</span>
+            </button>
+            <button class="theme-btn" data-theme="dark">
+                🌙 <span data-i18n="theme.dark">深色</span>
+            </button>
+        </div>
+        <!-- 语言切换器 -->
+        <div class="lang-toggle">
+            <button class="lang-btn active" data-lang="zh">
+                中文
+            </button>
+            <button class="lang-btn" data-lang="en">
+                English
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 头部 -->
+        <div class="header">
+            <div class="header-icon">
+                <!-- 比例图标 -->
+                <svg class="header-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="icon-grad-1" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#0066FF" />
+                            <stop offset="100%" stop-color="#5AC8FA" />
+                        </linearGradient>
+                    </defs>
+                    <rect x="8" y="8" width="32" height="32" rx="6" stroke="url(#icon-grad-1)" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M16 32L32 16" stroke="url(#icon-grad-1)" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M32 16H24" stroke="url(#icon-grad-1)" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M32 16V24" stroke="url(#icon-grad-1)" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M16 32H24" stroke="url(#icon-grad-1)" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M16 32V24" stroke="url(#icon-grad-1)" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+
+                <!-- 裁切图标 -->
+                <svg class="header-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="icon-grad-2" x1="48" y1="0" x2="0" y2="48" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#FF2D55" />
+                            <stop offset="100%" stop-color="#FF9500" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M12 38V12C12 9.79086 13.7909 8 16 8H40" stroke="url(#icon-grad-2)" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M36 10V36C36 38.2091 34.2091 40 32 40H8" stroke="url(#icon-grad-2)" stroke-width="3"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M12 14V6" stroke="url(#icon-grad-2)" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M42 8H34" stroke="url(#icon-grad-2)" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M6 40H14" stroke="url(#icon-grad-2)" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                    <path d="M36 34V42" stroke="url(#icon-grad-2)" stroke-width="3" stroke-linecap="round"
+                        stroke-linejoin="round" />
+                </svg>
+            </div>
+            <h1 data-i18n="header.title">比例计算器 & 图像裁切工具</h1>
+            <p data-i18n="header.subtitle">智能计算尺寸比例,精确裁切您的图片</p>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 图像裁切 -->
+            <div class="card image-crop-section" style="grid-column: span 2;">
+                <h2 class="card-title" data-i18n="imageCrop.title">✂️ 图像裁切工具</h2>
+
+                <!-- 上传区域 -->
+                <div class="upload-area" id="uploadArea">
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+                    <div class="upload-placeholder" id="uploadPlaceholder">
+                        <div class="upload-icon">📤</div>
+                        <div class="upload-text" data-i18n="imageCrop.uploadText">点击上传、拖拽或粘贴图片到这里</div>
+                        <div class="upload-hint" data-i18n="imageCrop.uploadHint">支持 JPG、PNG、GIF 等格式</div>
+                        <button class="upload-btn" id="uploadBtn" data-i18n="imageCrop.uploadBtn">选择图片</button>
+                    </div>
+
+                    <!-- 裁切区域 -->
+                    <div class="crop-container" id="cropContainer" style="display: none;">
+                        <div class="crop-canvas-wrapper">
+                            <canvas id="cropCanvas"></canvas>
+                            <div class="crop-overlay" id="cropOverlay">
+                                <div class="crop-box" id="cropBox">
+                                    <div class="crop-handle crop-handle-nw"></div>
+                                    <div class="crop-handle crop-handle-ne"></div>
+                                    <div class="crop-handle crop-handle-sw"></div>
+                                    <div class="crop-handle crop-handle-se"></div>
+                                    <div class="crop-grid">
+                                        <div class="crop-grid-line crop-grid-v"></div>
+                                        <div class="crop-grid-line crop-grid-v"></div>
+                                        <div class="crop-grid-line crop-grid-h"></div>
+                                        <div class="crop-grid-line crop-grid-h"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 裁切控制按钮 -->
+                        <div class="crop-controls">
+                            <button class="crop-action-btn crop-btn-primary" id="cropBtn">
+                                <span data-i18n="imageCrop.cropBtn">✂️ 裁切图片</span>
+                            </button>
+                            <button class="crop-action-btn crop-btn-secondary" id="resetCropBtn">
+                                <span data-i18n="imageCrop.resetBtn">🔄 重置裁切区域</span>
+                            </button>
+                            <button class="crop-action-btn crop-btn-danger" id="cancelCropBtn">
+                                <span data-i18n="imageCrop.cancelBtn">❌ 取消并重新上传</span>
+                            </button>
+                        </div>
+
+                        <!-- 裁切信息 -->
+                        <div class="crop-info">
+                            <div class="crop-info-item">
+                                <span class="crop-info-label" data-i18n="imageCrop.originalSize">原始尺寸:</span>
+                                <span class="crop-info-value" id="originalSize">—</span>
+                            </div>
+                            <div class="crop-info-item">
+                                <span class="crop-info-label" data-i18n="imageCrop.cropArea">裁切区域:</span>
+                                <span class="crop-info-value" id="cropSize">—</span>
+                            </div>
+                            <div class="crop-info-item">
+                                <span class="crop-info-label" data-i18n="imageCrop.currentRatio">当前比例:</span>
+                                <span class="crop-info-value" id="cropRatio">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 裁切结果 -->
+                <div class="crop-result" id="cropResult" style="display: none;">
+                    <h3 class="crop-result-title" data-i18n="imageCrop.resultTitle">裁切结果预览</h3>
+                    <div class="crop-result-preview">
+                        <canvas id="resultCanvas"></canvas>
+                    </div>
+                    <div class="crop-result-actions">
+                        <button class="crop-action-btn crop-btn-success" id="downloadBtn">
+                            <span data-i18n="imageCrop.downloadBtn">💾 下载图片 (PNG)</span>
+                        </button>
+                        <button class="crop-action-btn crop-btn-primary" id="copyBtn">
+                            <span data-i18n="imageCrop.copyBtn">📋 复制图片</span>
+                        </button>
+                        <button class="crop-action-btn crop-btn-secondary" id="newCropBtn">
+                            <span data-i18n="imageCrop.newCropBtn">🔄 裁切新图片</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 选择比例 -->
+            <div class="card">
+                <h2 class="card-title" data-i18n="ratioSelect.title">选择比例</h2>
+
+                <div class="ratio-grid">
+                    <button class="ratio-btn" data-ratio="2:3">
+                        <div class="ratio-value">2:3</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.vertical">竖版照片</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="3:2">
+                        <div class="ratio-value">3:2</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.horizontal">横版照片</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="1:1">
+                        <div class="ratio-value">1:1</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.square">正方形</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="16:9">
+                        <div class="ratio-value">16:9</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.widescreen">宽屏</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="9:16">
+                        <div class="ratio-value">9:16</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.portrait">竖屏</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="4:3">
+                        <div class="ratio-value">4:3</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.traditional">传统屏幕</div>
+                    </button>
+                    <button class="ratio-btn active" data-ratio="3:4">
+                        <div class="ratio-value">3:4</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.verticalTraditional">竖版传统</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="21:9">
+                        <div class="ratio-value">21:9</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.ultrawide">超宽屏</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="1:2">
+                        <div class="ratio-value">1:2</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.tallImage">竖长图</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="4:5">
+                        <div class="ratio-value">4:5</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.ratio45">4:5</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="5:4">
+                        <div class="ratio-value">5:4</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.miniProgram">小程序封面</div>
+                    </button>
+                    <button class="ratio-btn" data-ratio="2.35:1">
+                        <div class="ratio-value">2.35:1</div>
+                        <div class="ratio-label" data-i18n="ratioSelect.wechatCover">微信封面</div>
+                    </button>
+                </div>
+
+                <div class="custom-ratio">
+                    <div class="custom-ratio-title" data-i18n="ratioSelect.custom">自定义比例</div>
+                    <div class="custom-input-group">
+                        <input type="number" id="customWidth" data-i18n-placeholder="ratioSelect.customWidth"
+                            placeholder="宽" min="1">
+                        <span class="separator">:</span>
+                        <input type="number" id="customHeight" data-i18n-placeholder="ratioSelect.customHeight"
+                            placeholder="高" min="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 比例预览 -->
+            <div class="card preview-card">
+                <h2 class="card-title" data-i18n="preview.title">比例预览</h2>
+                <p class="preview-subtitle" data-i18n="preview.subtitle">可视化显示当前选择的比例</p>
+
+                <div class="preview-container">
+                    <div class="preview-box" id="previewBox">
+                        <div class="preview-ratio-text" id="previewRatio">3:4</div>
+                        <div class="preview-description" id="previewDesc">3 × 4</div>
+                    </div>
+                </div>
+
+                <div class="result-display" id="resultDisplay" style="display: none;">
+                    <div class="result-label" data-i18n="preview.resultLabel">计算结果</div>
+                    <div class="result-value" id="resultValue">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 尺寸计算 -->
+        <div class="card calculator-section">
+            <h2 class="card-title" data-i18n="calculator.title">尺寸计算</h2>
+
+            <div class="current-ratio">
+                <span data-i18n="calculator.currentRatio">当前比例：</span><span class="current-ratio-value"
+                    id="currentRatioText">3:4</span>
+            </div>
+
+            <div class="input-groups">
+                <div class="input-row">
+                    <div class="input-field">
+                        <label for="inputWidth" data-i18n="calculator.inputWidth">输入宽度</label>
+                        <input type="number" id="inputWidth" data-i18n-placeholder="calculator.widthPlaceholder"
+                            placeholder="输入宽度数值" step="0.01">
+                    </div>
+                    <div class="arrow-icon">➜</div>
+                    <div class="input-field">
+                        <label for="calcHeight" data-i18n="calculator.calcHeight">计算高度</label>
+                        <input type="number" id="calcHeight" placeholder="—" class="calculated" readonly>
+                    </div>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-field">
+                        <label for="inputHeight" data-i18n="calculator.inputHeight">输入高度</label>
+                        <input type="number" id="inputHeight" data-i18n-placeholder="calculator.heightPlaceholder"
+                            placeholder="输入高度数值" step="0.01">
+                    </div>
+                    <div class="arrow-icon">➜</div>
+                    <div class="input-field">
+                        <label for="calcWidth" data-i18n="calculator.calcWidth">计算宽度</label>
+                        <input type="number" id="calcWidth" placeholder="—" class="calculated" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <button class="clear-btn" id="clearBtn" data-i18n="calculator.clearBtn">清空所有输入</button>
+        </div>
+
+        <!-- 使用说明 -->
+        <div class="instructions">
+            <h3 data-i18n="instructions.title">使用说明：</h3>
+            <p><strong data-i18n="instructions.ratioCalc">📐 比例计算：</strong><span
+                    data-i18n="instructions.ratioCalcDesc">选择预设比例或输入自定义比例,然后在任意一个输入框中输入数值,系统将自动计算另一边的尺寸。</span></p>
+            <p><strong data-i18n="instructions.imageCrop">✂️ 图像裁切：</strong><span
+                    data-i18n="instructions.imageCropDesc">点击上传或拖拽图片到上传区域,选择合适的比例后,拖动裁切框或调整角落手柄来定位裁切区域,点击"裁切图片"按钮完成裁切,最后可以下载裁切结果。</span>
+            </p>
+            <p data-i18n="instructions.supported">支持的比例包括常用的照片比例、屏幕比例等,也可以自定义任意比例进行计算和裁切。</p>
+        </div>
+    </div>
+
+    <script>
+        // ========== 国际化系统 ==========
+        const translations = {
+            zh: {
+                theme: {
+                    light: '浅色',
+                    dark: '深色'
+                },
+                header: {
+                    title: '比例计算器 & 图像裁切工具',
+                    subtitle: '智能计算尺寸比例,精确裁切您的图片'
+                },
+                imageCrop: {
+                    title: '✂️ 图像裁切工具',
+                    uploadText: '点击上传、拖拽或粘贴图片到这里',
+                    uploadHint: '支持 JPG、PNG、GIF 等格式',
+                    uploadBtn: '选择图片',
+                    cropBtn: '✂️ 裁切图片',
+                    resetBtn: '🔄 重置裁切区域',
+                    cancelBtn: '❌ 取消并重新上传',
+                    originalSize: '原始尺寸:',
+                    cropArea: '裁切区域:',
+                    currentRatio: '当前比例:',
+                    resultTitle: '裁切结果预览',
+                    downloadBtn: '💾 下载图片 (PNG)',
+                    copyBtn: '📋 复制图片',
+                    copiedBtn: '✅ 已复制!',
+                    newCropBtn: '🔄 裁切新图片'
+                },
+                ratioSelect: {
+                    title: '选择比例',
+                    vertical: '竖版照片',
+                    horizontal: '横版照片',
+                    square: '正方形',
+                    widescreen: '宽屏',
+                    portrait: '竖屏',
+                    traditional: '传统屏幕',
+                    verticalTraditional: '竖版传统',
+                    ultrawide: '超宽屏',
+                    tallImage: '竖长图',
+                    ratio45: '4:5',
+                    miniProgram: '小程序封面',
+                    wechatCover: '微信封面',
+                    custom: '自定义比例',
+                    customWidth: '宽',
+                    customHeight: '高'
+                },
+                preview: {
+                    title: '比例预览',
+                    subtitle: '可视化显示当前选择的比例',
+                    resultLabel: '计算结果'
+                },
+                calculator: {
+                    title: '尺寸计算',
+                    currentRatio: '当前比例：',
+                    inputWidth: '输入宽度',
+                    inputHeight: '输入高度',
+                    calcWidth: '计算宽度',
+                    calcHeight: '计算高度',
+                    widthPlaceholder: '输入宽度数值',
+                    heightPlaceholder: '输入高度数值',
+                    clearBtn: '清空所有输入'
+                },
+                instructions: {
+                    title: '使用说明：',
+                    ratioCalc: '📐 比例计算：',
+                    ratioCalcDesc: '选择预设比例或输入自定义比例,然后在任意一个输入框中输入数值,系统将自动计算另一边的尺寸。',
+                    imageCrop: '✂️ 图像裁切：',
+                    imageCropDesc: '点击上传或拖拽图片到上传区域,选择合适的比例后,拖动裁切框或调整角落手柄来定位裁切区域,点击"裁切图片"按钮完成裁切,最后可以下载裁切结果。',
+                    supported: '支持的比例包括常用的照片比例、屏幕比例等,也可以自定义任意比例进行计算和裁切。'
+                },
+                developer: {
+                    name: '工具狂',
+                    title: 'Developer',
+                    douyin: '抖音',
+                    wechat: '微信公众号',
+                    scanQR: '扫码关注',
+                    collapse: '收起',
+                    expand: '展开'
+                }
+            },
+            en: {
+                theme: {
+                    light: 'Light',
+                    dark: 'Dark'
+                },
+                header: {
+                    title: 'Ratio Calculator & Image Crop Tool',
+                    subtitle: 'Smart dimension calculation and precise image cropping'
+                },
+                imageCrop: {
+                    title: '✂️ Image Crop Tool',
+                    uploadText: 'Click to upload, drag and drop, or paste an image here',
+                    uploadHint: 'Supports JPG, PNG, GIF and more',
+                    uploadBtn: 'Select Image',
+                    cropBtn: '✂️ Crop Image',
+                    resetBtn: '🔄 Reset Crop Area',
+                    cancelBtn: '❌ Cancel & Reupload',
+                    originalSize: 'Original Size:',
+                    cropArea: 'Crop Area:',
+                    currentRatio: 'Current Ratio:',
+                    resultTitle: 'Cropped Result Preview',
+                    downloadBtn: '💾 Download (PNG)',
+                    copyBtn: '📋 Copy Image',
+                    copiedBtn: '✅ Copied!',
+                    newCropBtn: '🔄 Crop New Image'
+                },
+                ratioSelect: {
+                    title: 'Select Ratio',
+                    vertical: 'Portrait Photo',
+                    horizontal: 'Landscape Photo',
+                    square: 'Square',
+                    widescreen: 'Widescreen',
+                    portrait: 'Portrait Screen',
+                    traditional: 'Traditional',
+                    verticalTraditional: 'Vertical Traditional',
+                    ultrawide: 'Ultrawide',
+                    tallImage: 'Tall Image',
+                    ratio45: '4:5',
+                    miniProgram: 'Mini Program',
+                    wechatCover: 'WeChat Cover',
+                    custom: 'Custom Ratio',
+                    customWidth: 'Width',
+                    customHeight: 'Height'
+                },
+                preview: {
+                    title: 'Ratio Preview',
+                    subtitle: 'Visual display of selected ratio',
+                    resultLabel: 'Result'
+                },
+                calculator: {
+                    title: 'Dimension Calculator',
+                    currentRatio: 'Current Ratio: ',
+                    inputWidth: 'Input Width',
+                    inputHeight: 'Input Height',
+                    calcWidth: 'Calculated Width',
+                    calcHeight: 'Calculated Height',
+                    widthPlaceholder: 'Enter width value',
+                    heightPlaceholder: 'Enter height value',
+                    clearBtn: 'Clear All Input'
+                },
+                instructions: {
+                    title: 'Instructions:',
+                    ratioCalc: '📐 Ratio Calculation:',
+                    ratioCalcDesc: 'Select a preset ratio or input a custom ratio, then enter a value in any input field. The system will automatically calculate the other dimension.',
+                    imageCrop: '✂️ Image Cropping:',
+                    imageCropDesc: 'Click to upload or drag an image to the upload area. After selecting an appropriate ratio, drag the crop box or adjust the corner handles to position the crop area. Click "Crop Image" to complete, then download the result.',
+                    supported: 'Supported ratios include common photo and screen ratios. Custom ratios are also supported for calculation and cropping.'
+                },
+                developer: {
+                    name: 'ToolBuddy',
+                    title: 'Developer',
+                    douyin: 'Douyin',
+                    wechat: 'WeChat Official',
+                    scanQR: 'Scan to Follow',
+                    collapse: 'Collapse',
+                    expand: 'Expand'
+                }
+            }
+        };
+
+        // 当前语言
+        let currentLang = localStorage.getItem('language') || 'zh';
+
+        // 更新页面文本
+        function updateLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('language', lang);
+
+            // 更新所有带有 data-i18n 属性的元素
+            document.querySelectorAll('[data-i18n]').forEach(elem => {
+                const keys = elem.getAttribute('data-i18n').split('.');
+                let text = translations[lang];
+                for (const key of keys) {
+                    text = text[key];
+                }
+                elem.textContent = text;
+            });
+
+            // 更新所有带有 data-i18n-placeholder 属性的元素
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(elem => {
+                const keys = elem.getAttribute('data-i18n-placeholder').split('.');
+                let text = translations[lang];
+                for (const key of keys) {
+                    text = text[key];
+                }
+                elem.placeholder = text;
+            });
+
+            // 更新标题
+            document.title = lang === 'zh' ?
+                '🧮✂️ 比例计算器与图像裁切工具 - 智能尺寸计算与图片裁切' :
+                '🧮✂️ Ratio Calculator & Image Crop Tool - Smart Calculation & Cropping';
+
+            // 更新 meta description
+            const metaDesc = document.querySelector('meta[name="description"]');
+            if (metaDesc) {
+                metaDesc.content = lang === 'zh' ?
+                    '专业的比例计算器和图像裁切工具,支持常用照片比例、屏幕比例等,自定义比例计算更方便,在线裁切图片' :
+                    'Professional ratio calculator and image crop tool. Supports common photo and screen ratios, custom ratio calculation, and online image cropping.';
+            }
+        }
+
+        // 语言切换按钮
+        const langButtons = document.querySelectorAll('.lang-btn');
+        langButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.dataset.lang;
+
+                // 更新按钮状态
+                langButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // 更新语言
+                updateLanguage(lang);
+            });
+        });
+
+        // 页面加载时应用保存的语言
+        if (currentLang === 'en') {
+            langButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === 'en');
+            });
+            updateLanguage('en');
+        }
+
+        // ========== 原有代码 ==========
+        // 全局变量
+        let currentRatio = { width: 3, height: 4 };
+
+        // DOM 元素
+        const ratioButtons = document.querySelectorAll('.ratio-btn');
+        const customWidthInput = document.getElementById('customWidth');
+        const customHeightInput = document.getElementById('customHeight');
+        const inputWidth = document.getElementById('inputWidth');
+        const inputHeight = document.getElementById('inputHeight');
+        const calcHeight = document.getElementById('calcHeight');
+        const calcWidth = document.getElementById('calcWidth');
+        const clearBtn = document.getElementById('clearBtn');
+        const previewBox = document.getElementById('previewBox');
+        const previewRatio = document.getElementById('previewRatio');
+        const previewDesc = document.getElementById('previewDesc');
+        const currentRatioText = document.getElementById('currentRatioText');
+        const resultDisplay = document.getElementById('resultDisplay');
+        const resultValue = document.getElementById('resultValue');
+        const themeButtons = document.querySelectorAll('.theme-btn');
+
+        // 主题切换
+        themeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const theme = btn.dataset.theme;
+
+                // 更新按钮状态
+                themeButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // 应用主题
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        });
+
+        // 加载保存的主题
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.theme === 'dark');
+            });
+        }
+
+        // 更新比例
+        function updateRatio(width, height) {
+            currentRatio = { width, height };
+            currentRatioText.textContent = `${width}:${height}`;
+            previewRatio.textContent = `${width}:${height}`;
+            previewDesc.textContent = `${width} × ${height}`;
+
+            updatePreviewBox();
+            recalculate();
+        }
+
+        // 更新预览框尺寸
+        function updatePreviewBox() {
+            const maxWidth = 280;
+            const maxHeight = 240;
+            const ratio = currentRatio.width / currentRatio.height;
+
+            let width, height;
+
+            if (ratio > maxWidth / maxHeight) {
+                width = maxWidth;
+                height = maxWidth / ratio;
+            } else {
+                height = maxHeight;
+                width = maxHeight * ratio;
+            }
+
+            previewBox.style.width = `${width}px`;
+            previewBox.style.height = `${height}px`;
+        }
+
+        // 预设比例按钮
+        ratioButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                ratioButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                customWidthInput.value = '';
+                customHeightInput.value = '';
+
+                const ratioStr = btn.dataset.ratio;
+                const [width, height] = ratioStr.split(':').map(Number);
+                updateRatio(width, height);
+            });
+        });
+
+        // 自定义比例
+        function handleCustomRatio() {
+            const width = parseFloat(customWidthInput.value);
+            const height = parseFloat(customHeightInput.value);
+
+            if (width > 0 && height > 0) {
+                ratioButtons.forEach(b => b.classList.remove('active'));
+                updateRatio(width, height);
+            }
+        }
+
+        customWidthInput.addEventListener('input', handleCustomRatio);
+        customHeightInput.addEventListener('input', handleCustomRatio);
+
+        // 输入宽度，计算高度
+        inputWidth.addEventListener('input', () => {
+            const width = parseFloat(inputWidth.value);
+            if (width > 0) {
+                const height = (width / currentRatio.width) * currentRatio.height;
+                calcHeight.value = height.toFixed(2);
+                inputHeight.value = '';
+                calcWidth.value = '';
+                showResult(`${width} × ${height.toFixed(2)}`);
+            } else {
+                calcHeight.value = '';
+                hideResult();
+            }
+        });
+
+        // 输入高度，计算宽度
+        inputHeight.addEventListener('input', () => {
+            const height = parseFloat(inputHeight.value);
+            if (height > 0) {
+                const width = (height / currentRatio.height) * currentRatio.width;
+                calcWidth.value = width.toFixed(2);
+                inputWidth.value = '';
+                calcHeight.value = '';
+                showResult(`${width.toFixed(2)} × ${height}`);
+            } else {
+                calcWidth.value = '';
+                hideResult();
+            }
+        });
+
+        // 重新计算
+        function recalculate() {
+            if (inputWidth.value) {
+                const width = parseFloat(inputWidth.value);
+                const height = (width / currentRatio.width) * currentRatio.height;
+                calcHeight.value = height.toFixed(2);
+                showResult(`${width} × ${height.toFixed(2)}`);
+            } else if (inputHeight.value) {
+                const height = parseFloat(inputHeight.value);
+                const width = (height / currentRatio.height) * currentRatio.width;
+                calcWidth.value = width.toFixed(2);
+                showResult(`${width.toFixed(2)} × ${height}`);
+            }
+        }
+
+        // 显示结果
+        function showResult(value) {
+            resultValue.textContent = value;
+            resultDisplay.style.display = 'block';
+        }
+
+        // 隐藏结果
+        function hideResult() {
+            resultDisplay.style.display = 'none';
+        }
+
+        // 清空按钮
+        clearBtn.addEventListener('click', () => {
+            inputWidth.value = '';
+            inputHeight.value = '';
+            calcHeight.value = '';
+            calcWidth.value = '';
+            hideResult();
+        });
+
+        // 初始化
+        updatePreviewBox();
+
+        // ========== 图像裁切功能 ==========
+        let uploadedImage = null;
+        let cropData = {
+            x: 50,
+            y: 50,
+            width: 300,
+            height: 400
+        };
+        let isDragging = false;
+        let isResizing = false;
+        let dragStart = { x: 0, y: 0 };
+        let currentHandle = null;
+        let canvasScale = 1;
+
+        // DOM 元素
+        const imageInput = document.getElementById('imageInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+        const uploadArea = document.getElementById('uploadArea');
+        const cropContainer = document.getElementById('cropContainer');
+        const cropCanvas = document.getElementById('cropCanvas');
+        const cropCtx = cropCanvas.getContext('2d');
+        const cropBox = document.getElementById('cropBox');
+        const cropOverlay = document.getElementById('cropOverlay');
+        const cropBtn = document.getElementById('cropBtn');
+        const resetCropBtn = document.getElementById('resetCropBtn');
+        const cancelCropBtn = document.getElementById('cancelCropBtn');
+        const originalSizeElem = document.getElementById('originalSize');
+        const cropSizeElem = document.getElementById('cropSize');
+        const cropRatioElem = document.getElementById('cropRatio');
+        const cropResult = document.getElementById('cropResult');
+        const resultCanvas = document.getElementById('resultCanvas');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const newCropBtn = document.getElementById('newCropBtn');
+        const cropHandles = document.querySelectorAll('.crop-handle');
+
+        // 上传按钮点击
+        uploadBtn.addEventListener('click', () => {
+            imageInput.click();
+        });
+
+        // 上传区域点击
+        uploadPlaceholder.addEventListener('click', (e) => {
+            if (e.target.tagName !== 'BUTTON') {
+                imageInput.click();
+            }
+        });
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadPlaceholder.style.borderColor = 'var(--border-glow)';
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadPlaceholder.style.borderColor = 'var(--border-color)';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadPlaceholder.style.borderColor = 'var(--border-color)';
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                loadImage(file);
+            }
+        });
+
+        // 文件选择
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                loadImage(file);
+            }
+        });
+
+        // 剪切板粘贴图片
+        document.addEventListener('paste', (e) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                // 检查是否是图片类型
+                if (item.type.indexOf('image') !== -1) {
+                    const file = item.getAsFile();
+                    if (file) {
+                        loadImage(file);
+                        e.preventDefault(); // 阻止默认粘贴行为
+                    }
+                    break;
+                }
+            }
+        });
+
+        // 加载图片
+        function loadImage(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    uploadedImage = img;
+                    initCropArea();
+                    uploadPlaceholder.style.display = 'none';
+                    cropContainer.style.display = 'block';
+                    cropResult.style.display = 'none';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 初始化裁切区域
+        function initCropArea() {
+            const maxWidth = cropContainer.clientWidth || 800;
+            const maxHeight = 600;
+
+            let displayWidth = uploadedImage.width;
+            let displayHeight = uploadedImage.height;
+
+            // 计算缩放比例
+            if (displayWidth > maxWidth || displayHeight > maxHeight) {
+                const ratio = Math.min(maxWidth / displayWidth, maxHeight / displayHeight);
+                displayWidth *= ratio;
+                displayHeight *= ratio;
+            }
+
+            canvasScale = displayWidth / uploadedImage.width;
+
+            cropCanvas.width = displayWidth;
+            cropCanvas.height = displayHeight;
+
+            cropCtx.drawImage(uploadedImage, 0, 0, displayWidth, displayHeight);
+
+            // 设置初始裁切区域
+            resetCropArea();
+
+            // 更新信息
+            originalSizeElem.textContent = `${uploadedImage.width} × ${uploadedImage.height}`;
+            updateCropInfo();
+        }
+
+        // 重置裁切区域
+        function resetCropArea() {
+            const ratio = currentRatio.width / currentRatio.height;
+            const canvasWidth = cropCanvas.width;
+            const canvasHeight = cropCanvas.height;
+
+            // 根据当前比例计算合适的初始裁切框大小
+            let width, height;
+            const targetSize = Math.min(canvasWidth, canvasHeight) * 0.7;
+
+            if (ratio >= 1) {
+                width = targetSize;
+                height = targetSize / ratio;
+            } else {
+                height = targetSize;
+                width = targetSize * ratio;
+            }
+
+            cropData = {
+                x: (canvasWidth - width) / 2,
+                y: (canvasHeight - height) / 2,
+                width: width,
+                height: height
+            };
+
+            updateCropBox();
+        }
+
+        // 更新裁切框位置和大小
+        function updateCropBox() {
+            cropBox.style.left = cropData.x + 'px';
+            cropBox.style.top = cropData.y + 'px';
+            cropBox.style.width = cropData.width + 'px';
+            cropBox.style.height = cropData.height + 'px';
+            updateCropInfo();
+        }
+
+        // 更新裁切信息
+        function updateCropInfo() {
+            const actualWidth = Math.round(cropData.width / canvasScale);
+            const actualHeight = Math.round(cropData.height / canvasScale);
+            cropSizeElem.textContent = `${actualWidth} × ${actualHeight}`;
+
+            const gcd = getGCD(actualWidth, actualHeight);
+            const ratioW = actualWidth / gcd;
+            const ratioH = actualHeight / gcd;
+            cropRatioElem.textContent = `${ratioW}:${ratioH}`;
+        }
+
+        // 计算最大公约数
+        function getGCD(a, b) {
+            return b === 0 ? a : getGCD(b, a % b);
+        }
+
+        // 裁切框拖拽
+        cropBox.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('crop-handle')) return;
+            isDragging = true;
+            dragStart = {
+                x: e.clientX - cropData.x,
+                y: e.clientY - cropData.y
+            };
+            e.preventDefault();
+        });
+
+        // 拖拽手柄
+        cropHandles.forEach(handle => {
+            handle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                currentHandle = handle.classList[1]; // crop-handle-nw 等
+                dragStart = {
+                    x: e.clientX,
+                    y: e.clientY,
+                    cropX: cropData.x,
+                    cropY: cropData.y,
+                    cropW: cropData.width,
+                    cropH: cropData.height
+                };
+                e.preventDefault();
+                e.stopPropagation();
+            });
+        });
+
+        // 鼠标移动
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const newX = e.clientX - dragStart.x;
+                const newY = e.clientY - dragStart.y;
+
+                cropData.x = Math.max(0, Math.min(newX, cropCanvas.width - cropData.width));
+                cropData.y = Math.max(0, Math.min(newY, cropCanvas.height - cropData.height));
+
+                updateCropBox();
+            } else if (isResizing && currentHandle) {
+                const dx = e.clientX - dragStart.x;
+                const dy = e.clientY - dragStart.y;
+                const ratio = currentRatio.width / currentRatio.height;
+
+                let newX = dragStart.cropX;
+                let newY = dragStart.cropY;
+                let newW = dragStart.cropW;
+                let newH = dragStart.cropH;
+
+                if (currentHandle === 'crop-handle-se') {
+                    newW = dragStart.cropW + dx;
+                    newH = newW / ratio;
+                } else if (currentHandle === 'crop-handle-sw') {
+                    newX = dragStart.cropX + dx;
+                    newW = dragStart.cropW - dx;
+                    newH = newW / ratio;
+                } else if (currentHandle === 'crop-handle-ne') {
+                    newY = dragStart.cropY + dy;
+                    newH = dragStart.cropH - dy;
+                    newW = newH * ratio;
+                } else if (currentHandle === 'crop-handle-nw') {
+                    newX = dragStart.cropX + dx;
+                    newW = dragStart.cropW - dx;
+                    newH = newW / ratio;
+                    newY = dragStart.cropY + (dragStart.cropH - newH);
+                }
+
+                // 限制最小尺寸
+                if (newW >= 50 && newH >= 50) {
+                    // 限制边界
+                    if (newX >= 0 && newY >= 0 &&
+                        newX + newW <= cropCanvas.width &&
+                        newY + newH <= cropCanvas.height) {
+                        cropData.x = newX;
+                        cropData.y = newY;
+                        cropData.width = newW;
+                        cropData.height = newH;
+                        updateCropBox();
+                    }
+                }
+            }
+        });
+
+        // 鼠标释放
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            isResizing = false;
+            currentHandle = null;
+        });
+
+        // 重置裁切区域按钮
+        resetCropBtn.addEventListener('click', () => {
+            resetCropArea();
+        });
+
+        // 取消并重新上传
+        cancelCropBtn.addEventListener('click', () => {
+            uploadedImage = null;
+            cropContainer.style.display = 'none';
+            uploadPlaceholder.style.display = 'block';
+            cropResult.style.display = 'none';
+            imageInput.value = '';
+        });
+
+        // 执行裁切
+        cropBtn.addEventListener('click', () => {
+            if (!uploadedImage) return;
+
+            // 计算实际裁切区域
+            const actualX = cropData.x / canvasScale;
+            const actualY = cropData.y / canvasScale;
+            const actualW = cropData.width / canvasScale;
+            const actualH = cropData.height / canvasScale;
+
+            // 创建结果画布
+            resultCanvas.width = actualW;
+            resultCanvas.height = actualH;
+            const resultCtx = resultCanvas.getContext('2d');
+
+            // 裁切图像
+            resultCtx.drawImage(
+                uploadedImage,
+                actualX, actualY, actualW, actualH,
+                0, 0, actualW, actualH
+            );
+
+            // 显示结果
+            cropResult.style.display = 'block';
+
+            // 滚动到结果
+            setTimeout(() => {
+                cropResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        });
+
+        // 下载图片
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = `cropped-${Date.now()}.png`;
+            link.href = resultCanvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // 复制图片到剪贴板
+        copyBtn.addEventListener('click', async () => {
+            try {
+                // 将canvas转换为blob
+                resultCanvas.toBlob(async (blob) => {
+                    try {
+                        // 创建ClipboardItem并写入剪贴板
+                        const item = new ClipboardItem({ 'image/png': blob });
+                        await navigator.clipboard.write([item]);
+
+                        // 显示成功反馈
+                        const originalText = copyBtn.querySelector('span').getAttribute('data-i18n');
+                        copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copiedBtn;
+                        copyBtn.style.background = 'var(--success-gradient)';
+
+                        // 2秒后恢复原样
+                        setTimeout(() => {
+                            copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copyBtn;
+                            copyBtn.style.background = 'var(--primary-gradient)';
+                        }, 2000);
+                    } catch (err) {
+                        console.error('复制失败:', err);
+                        const errorMsg = currentLang === 'zh' ? '复制失败：' : 'Copy failed: ';
+                        alert(errorMsg + err.message);
+                    }
+                }, 'image/png');
+            } catch (err) {
+                console.error('复制失败:', err);
+                const errorMsg = currentLang === 'zh' ?
+                    '复制失败，您的浏览器可能不支持此功能' :
+                    'Copy failed. Your browser may not support this feature';
+                alert(errorMsg);
+            }
+        });
+
+        // 裁切新图片
+        newCropBtn.addEventListener('click', () => {
+            cancelCropBtn.click();
+        });
+
+        // 当比例改变时，更新裁切区域
+        const originalUpdateRatio = updateRatio;
+        updateRatio = function (width, height) {
+            originalUpdateRatio(width, height);
+            if (uploadedImage && cropContainer.style.display !== 'none') {
+                resetCropArea();
+            }
+        };
+
+        // ========== 开发者卡片功能 ==========
+        const devCard = document.getElementById('devCard');
+        const toggleDevCardBtn = document.getElementById('toggleDevCard');
+        const devAvatar = document.getElementById('devAvatar');
+        const wechatQR = document.getElementById('wechatQR');
+
+        // 嵌入头像图片
+        // 这里放置用户的头像图片路径，如果无法外部加载，请将图片转为base64
+        // devAvatar.src = 'path/to/avatar.png';
+
+        // 嵌入微信二维码
+        // wechatQR.src = 'path/to/wechat_qr.png';
+
+        // 收起/展开功能
+        let isCollapsed = false;
+        toggleDevCardBtn.addEventListener('click', () => {
+            isCollapsed = !isCollapsed;
+            devCard.classList.toggle('collapsed', isCollapsed);
+            toggleDevCardBtn.textContent = isCollapsed ?
+                translations[currentLang].developer.expand :
+                translations[currentLang].developer.collapse;
+        });
+
+        // 点击头像展开
+        devAvatar.addEventListener('click', () => {
+            if (isCollapsed) {
+                isCollapsed = false;
+                devCard.classList.remove('collapsed');
+            }
+        });
+    </script>
+</body>
+
+</html>
