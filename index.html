@@ -671,6 +671,7 @@
             animation: fadeInUp 1s ease;
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            grid-column: 1 / -1;
         }
 
         .instructions h3 {
@@ -861,6 +862,8 @@
             width: 100%;
             height: 100%;
             cursor: move;
+            touch-action: none;
+            /* 关键：防止手机端触摸时触发页面滚动 */
         }
 
         .crop-box {
@@ -1297,8 +1300,8 @@
             height: 56px;
         }
 
-        /* 响应式 */
-        @media (max-width: 968px) {
+        /* 响应式适配 */
+        @media (max-width: 1024px) {
             .controls-bar {
                 top: 20px;
                 right: 20px;
@@ -1310,7 +1313,18 @@
             }
 
             .main-content {
-                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
+                gap: 24px;
+            }
+
+            .image-crop-section {
+                width: 100%;
+                grid-column: auto !important;
+            }
+
+            .card {
+                width: 100%;
             }
 
             .calculator-section {
@@ -1318,11 +1332,82 @@
             }
 
             .ratio-grid {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
 
             .header h1 {
                 font-size: 36px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .ratio-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            /* 优化移动端头部布局，避免遮挡 */
+            .developer-card,
+            .controls-bar {
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 0 16px 0 !important;
+                transform: none !important;
+            }
+
+            .developer-card {
+                order: -1;
+                /* 确保在最前 */
+                margin-top: 10px !important;
+            }
+
+            .controls-bar {
+                justify-content: center;
+                order: -2;
+                /* 放在开发者卡片之前或之后，这里设为-2会比-1更前? 不，body是flex column吗？不是。 */
+                /* 它们是body的直接子元素。body默认是block。static positioning会按源码顺序渲染。
+                   HTML顺序: developer-card, controls-bar. 
+                   所以developer-card在先。
+                */
+            }
+
+            .dev-toggle {
+                display: none;
+            }
+
+            .developer-card.collapsed {
+                max-width: 100%;
+            }
+
+            .crop-handle {
+                width: 24px;
+                /* 增大触控区域 */
+                height: 24px;
+                border-width: 3px;
+            }
+
+            /* 修正手柄位置补偿 */
+            .crop-handle-nw {
+                top: -12px;
+                left: -12px;
+            }
+
+            .crop-handle-ne {
+                top: -12px;
+                right: -12px;
+            }
+
+            .crop-handle-sw {
+                bottom: -12px;
+                left: -12px;
+            }
+
+            .crop-handle-se {
+                bottom: -12px;
+                right: -12px;
             }
         }
 
@@ -1352,6 +1437,36 @@
 
             .arrow-icon {
                 transform: rotate(90deg);
+                margin: 10px 0;
+            }
+
+            /* 手机端按钮布局优化 */
+            .crop-controls,
+            .crop-result-actions {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .crop-action-btn {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .upload-placeholder {
+                min-height: 250px;
+                padding: 40px 20px;
+            }
+
+            .preview-container {
+                min-height: 260px;
+                padding: 40px 20px;
+            }
+
+            /* 防止画布溢出 */
+            .crop-canvas-wrapper,
+            #resultCanvas {
+                max-width: 100%;
+                height: auto !important;
             }
         }
     </style>
@@ -1367,65 +1482,44 @@
                 <div class="dev-title" data-i18n="developer.title">Developer</div>
             </div>
         </div>
-
         <div class="social-links">
             <a href="https://www.youtube.com/@crazytoolman" target="_blank" class="social-link">
-                <span class="social-icon">▶️</span>
-                <span class="social-text">YouTube</span>
+                <span class="social-icon">▶️</span><span class="social-text">YouTube</span>
             </a>
-
             <a href="https://space.bilibili.com/33410454" target="_blank" class="social-link">
-                <span class="social-icon">📺</span>
-                <span class="social-text">Bilibili</span>
+                <span class="social-icon">📺</span><span class="social-text">Bilibili</span>
             </a>
-
             <a href="https://v.douyin.com/ik9R5bMW" target="_blank" class="social-link">
-                <span class="social-icon">🎵</span>
-                <span class="social-text" data-i18n="developer.douyin">抖音</span>
+                <span class="social-icon">🎵</span><span class="social-text" data-i18n="developer.douyin">抖音</span>
             </a>
-
             <div class="social-link qr-trigger">
-                <span class="social-icon">💬</span>
-                <span class="social-text" data-i18n="developer.wechat">微信公众号</span>
+                <span class="social-icon">💬</span><span class="social-text" data-i18n="developer.wechat">微信公众号</span>
                 <div class="qr-popup">
                     <img src="wechat_qr.png" alt="WeChat QR" class="qr-image" id="wechatQR">
                     <div class="qr-label" data-i18n="developer.scanQR">扫码关注</div>
                 </div>
             </div>
-
             <div class="social-link" style="cursor: default; background: var(--preview-bg);">
-                <span class="social-icon">👤</span>
-                <span class="social-text" style="font-size: 12px;">crazytoolman</span>
+                <span class="social-icon">👤</span><span class="social-text"
+                    style="font-size: 12px;">crazytoolman</span>
             </div>
         </div>
-
-        <div class="dev-toggle">
-            <button class="toggle-btn" id="toggleDevCard" data-i18n="developer.collapse">收起</button>
+        <div class="dev-toggle"><button class="toggle-btn" id="toggleDevCard" data-i18n="developer.collapse">收起</button>
         </div>
     </div>
-
     <!-- 控制栏 - 主题和语言 -->
     <div class="controls-bar">
         <!-- 主题切换器 -->
         <div class="theme-toggle">
-            <button class="theme-btn active" data-theme="light">
-                ☀️ <span data-i18n="theme.light">浅色</span>
-            </button>
-            <button class="theme-btn" data-theme="dark">
-                🌙 <span data-i18n="theme.dark">深色</span>
-            </button>
+            <button class="theme-btn active" data-theme="light">☀️ <span data-i18n="theme.light">浅色</span></button>
+            <button class="theme-btn" data-theme="dark">🌙 <span data-i18n="theme.dark">深色</span></button>
         </div>
         <!-- 语言切换器 -->
         <div class="lang-toggle">
-            <button class="lang-btn active" data-lang="zh">
-                中文
-            </button>
-            <button class="lang-btn" data-lang="en">
-                English
-            </button>
+            <button class="lang-btn active" data-lang="zh">中文 </button>
+            <button class="lang-btn" data-lang="en">English </button>
         </div>
     </div>
-
     <div class="container">
         <!-- 头部 -->
         <div class="header">
@@ -1451,7 +1545,6 @@
                     <path d="M16 32V24" stroke="url(#icon-grad-1)" stroke-width="3" stroke-linecap="round"
                         stroke-linejoin="round" />
                 </svg>
-
                 <!-- 裁切图标 -->
                 <svg class="header-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <defs>
@@ -1475,15 +1568,13 @@
                 </svg>
             </div>
             <h1 data-i18n="header.title">比例计算器 & 图像裁切工具</h1>
-            <p data-i18n="header.subtitle">智能计算尺寸比例,精确裁切您的图片</p>
+            <p data-i18n="header.subtitle">智能计算尺寸比例, 精确裁切您的图片</p>
         </div>
-
         <!-- 主内容区 -->
         <div class="main-content">
             <!-- 图像裁切 -->
             <div class="card image-crop-section" style="grid-column: span 2;">
                 <h2 class="card-title" data-i18n="imageCrop.title">✂️ 图像裁切工具</h2>
-
                 <!-- 上传区域 -->
                 <div class="upload-area" id="uploadArea">
                     <input type="file" id="imageInput" accept="image/*" style="display: none;">
@@ -1493,7 +1584,6 @@
                         <div class="upload-hint" data-i18n="imageCrop.uploadHint">支持 JPG、PNG、GIF 等格式</div>
                         <button class="upload-btn" id="uploadBtn" data-i18n="imageCrop.uploadBtn">选择图片</button>
                     </div>
-
                     <!-- 裁切区域 -->
                     <div class="crop-container" id="cropContainer" style="display: none;">
                         <div class="crop-canvas-wrapper">
@@ -1513,62 +1603,46 @@
                                 </div>
                             </div>
                         </div>
-
                         <!-- 裁切控制按钮 -->
                         <div class="crop-controls">
-                            <button class="crop-action-btn crop-btn-primary" id="cropBtn">
-                                <span data-i18n="imageCrop.cropBtn">✂️ 裁切图片</span>
-                            </button>
-                            <button class="crop-action-btn crop-btn-secondary" id="resetCropBtn">
-                                <span data-i18n="imageCrop.resetBtn">🔄 重置裁切区域</span>
-                            </button>
-                            <button class="crop-action-btn crop-btn-danger" id="cancelCropBtn">
-                                <span data-i18n="imageCrop.cancelBtn">❌ 取消并重新上传</span>
-                            </button>
+                            <button class="crop-action-btn crop-btn-primary" id="cropBtn"><span
+                                    data-i18n="imageCrop.cropBtn">✂️ 裁切图片</span></button>
+                            <button class="crop-action-btn crop-btn-secondary" id="resetCropBtn"><span
+                                    data-i18n="imageCrop.resetBtn">🔄 重置裁切区域</span></button>
+                            <button class="crop-action-btn crop-btn-danger" id="cancelCropBtn"><span
+                                    data-i18n="imageCrop.cancelBtn">❌ 取消并重新上传</span></button>
                         </div>
-
                         <!-- 裁切信息 -->
                         <div class="crop-info">
-                            <div class="crop-info-item">
-                                <span class="crop-info-label" data-i18n="imageCrop.originalSize">原始尺寸:</span>
-                                <span class="crop-info-value" id="originalSize">—</span>
-                            </div>
-                            <div class="crop-info-item">
-                                <span class="crop-info-label" data-i18n="imageCrop.cropArea">裁切区域:</span>
-                                <span class="crop-info-value" id="cropSize">—</span>
-                            </div>
-                            <div class="crop-info-item">
-                                <span class="crop-info-label" data-i18n="imageCrop.currentRatio">当前比例:</span>
-                                <span class="crop-info-value" id="cropRatio">—</span>
-                            </div>
+                            <div class="crop-info-item"><span class="crop-info-label"
+                                    data-i18n="imageCrop.originalSize">原始尺寸:</span><span class="crop-info-value"
+                                    id="originalSize">—</span></div>
+                            <div class="crop-info-item"><span class="crop-info-label"
+                                    data-i18n="imageCrop.cropArea">裁切区域:</span><span class="crop-info-value"
+                                    id="cropSize">—</span></div>
+                            <div class="crop-info-item"><span class="crop-info-label"
+                                    data-i18n="imageCrop.currentRatio">当前比例:</span><span class="crop-info-value"
+                                    id="cropRatio">—</span></div>
                         </div>
                     </div>
                 </div>
-
                 <!-- 裁切结果 -->
                 <div class="crop-result" id="cropResult" style="display: none;">
                     <h3 class="crop-result-title" data-i18n="imageCrop.resultTitle">裁切结果预览</h3>
-                    <div class="crop-result-preview">
-                        <canvas id="resultCanvas"></canvas>
-                    </div>
+                    <div class="crop-result-preview"><canvas id="resultCanvas"></canvas></div>
                     <div class="crop-result-actions">
-                        <button class="crop-action-btn crop-btn-success" id="downloadBtn">
-                            <span data-i18n="imageCrop.downloadBtn">💾 下载图片 (PNG)</span>
-                        </button>
-                        <button class="crop-action-btn crop-btn-primary" id="copyBtn">
-                            <span data-i18n="imageCrop.copyBtn">📋 复制图片</span>
-                        </button>
-                        <button class="crop-action-btn crop-btn-secondary" id="newCropBtn">
-                            <span data-i18n="imageCrop.newCropBtn">🔄 裁切新图片</span>
-                        </button>
+                        <button class="crop-action-btn crop-btn-success" id="downloadBtn"><span
+                                data-i18n="imageCrop.downloadBtn">💾 下载图片 (PNG)</span></button>
+                        <button class="crop-action-btn crop-btn-primary" id="copyBtn"><span
+                                data-i18n="imageCrop.copyBtn">📋 复制图片</span></button>
+                        <button class="crop-action-btn crop-btn-secondary" id="newCropBtn"><span
+                                data-i18n="imageCrop.newCropBtn">🔄 裁切新图片</span></button>
                     </div>
                 </div>
             </div>
-
             <!-- 选择比例 -->
             <div class="card">
                 <h2 class="card-title" data-i18n="ratioSelect.title">选择比例</h2>
-
                 <div class="ratio-grid">
                     <button class="ratio-btn" data-ratio="2:3">
                         <div class="ratio-value">2:3</div>
@@ -1619,7 +1693,6 @@
                         <div class="ratio-label" data-i18n="ratioSelect.wechatCover">微信封面</div>
                     </button>
                 </div>
-
                 <div class="custom-ratio">
                     <div class="custom-ratio-title" data-i18n="ratioSelect.custom">自定义比例</div>
                     <div class="custom-input-group">
@@ -1631,901 +1704,996 @@
                     </div>
                 </div>
             </div>
-
             <!-- 比例预览 -->
             <div class="card preview-card">
                 <h2 class="card-title" data-i18n="preview.title">比例预览</h2>
                 <p class="preview-subtitle" data-i18n="preview.subtitle">可视化显示当前选择的比例</p>
-
                 <div class="preview-container">
                     <div class="preview-box" id="previewBox">
                         <div class="preview-ratio-text" id="previewRatio">3:4</div>
                         <div class="preview-description" id="previewDesc">3 × 4</div>
                     </div>
                 </div>
-
                 <div class="result-display" id="resultDisplay" style="display: none;">
                     <div class="result-label" data-i18n="preview.resultLabel">计算结果</div>
                     <div class="result-value" id="resultValue">—</div>
                 </div>
             </div>
-        </div>
-
-        <!-- 尺寸计算 -->
-        <div class="card calculator-section">
-            <h2 class="card-title" data-i18n="calculator.title">尺寸计算</h2>
-
-            <div class="current-ratio">
-                <span data-i18n="calculator.currentRatio">当前比例：</span><span class="current-ratio-value"
-                    id="currentRatioText">3:4</span>
-            </div>
-
-            <div class="input-groups">
-                <div class="input-row">
-                    <div class="input-field">
-                        <label for="inputWidth" data-i18n="calculator.inputWidth">输入宽度</label>
-                        <input type="number" id="inputWidth" data-i18n-placeholder="calculator.widthPlaceholder"
-                            placeholder="输入宽度数值" step="0.01">
+            <!-- 尺寸计算 -->
+            <div class="card calculator-section">
+                <h2 class="card-title" data-i18n="calculator.title">尺寸计算</h2>
+                <div class="current-ratio"><span data-i18n="calculator.currentRatio">当前比例：</span><span
+                        class="current-ratio-value" id="currentRatioText">3:4</span></div>
+                <div class="input-groups">
+                    <div class="input-row">
+                        <div class="input-field">
+                            <label for="inputWidth" data-i18n="calculator.inputWidth">输入宽度</label>
+                            <input type="number" id="inputWidth" data-i18n-placeholder="calculator.widthPlaceholder"
+                                placeholder="输入宽度数值" step="0.01">
+                        </div>
+                        <div class="arrow-icon">➜</div>
+                        <div class="input-field">
+                            <label for="calcHeight" data-i18n="calculator.calcHeight">计算高度</label>
+                            <input type="number" id="calcHeight" placeholder="—" class="calculated" readonly>
+                        </div>
                     </div>
-                    <div class="arrow-icon">➜</div>
-                    <div class="input-field">
-                        <label for="calcHeight" data-i18n="calculator.calcHeight">计算高度</label>
-                        <input type="number" id="calcHeight" placeholder="—" class="calculated" readonly>
-                    </div>
-                </div>
-
-                <div class="input-row">
-                    <div class="input-field">
-                        <label for="inputHeight" data-i18n="calculator.inputHeight">输入高度</label>
-                        <input type="number" id="inputHeight" data-i18n-placeholder="calculator.heightPlaceholder"
-                            placeholder="输入高度数值" step="0.01">
-                    </div>
-                    <div class="arrow-icon">➜</div>
-                    <div class="input-field">
-                        <label for="calcWidth" data-i18n="calculator.calcWidth">计算宽度</label>
-                        <input type="number" id="calcWidth" placeholder="—" class="calculated" readonly>
+                    <div class="input-row">
+                        <div class="input-field">
+                            <label for="inputHeight" data-i18n="calculator.inputHeight">输入高度</label>
+                            <input type="number" id="inputHeight" data-i18n-placeholder="calculator.heightPlaceholder"
+                                placeholder="输入高度数值" step="0.01">
+                        </div>
+                        <div class="arrow-icon">➜</div>
+                        <div class="input-field">
+                            <label for="calcWidth" data-i18n="calculator.calcWidth">计算宽度</label>
+                            <input type="number" id="calcWidth" placeholder="—" class="calculated" readonly>
+                        </div>
                     </div>
                 </div>
+                <button class="clear-btn" id="clearBtn" data-i18n="calculator.clearBtn">清空所有输入</button>
             </div>
-
-            <button class="clear-btn" id="clearBtn" data-i18n="calculator.clearBtn">清空所有输入</button>
+            <!-- 使用说明 -->
+            <div class="instructions">
+                <h3 data-i18n="instructions.title">使用说明：</h3>
+                <p><strong data-i18n="instructions.ratioCalc">📐 比例计算：</strong><span
+                        data-i18n="instructions.ratioCalcDesc">选择预设比例或输入自定义比例, 然后在任意一个输入框中输入数值, 系统将自动计算另一边的尺寸。</span>
+                </p>
+                <p><strong data-i18n="instructions.imageCrop">✂️ 图像裁切：</strong><span
+                        data-i18n="instructions.imageCropDesc">点击上传或拖拽图片到上传区域, 选择合适的比例后, 拖动裁切框或调整角落手柄来定位裁切区域, 点击"裁切图片"
+                        按钮完成裁切, 最后可以下载裁切结果。</span></p>
+                <p data-i18n="instructions.supported">支持的比例包括常用的照片比例、屏幕比例等, 也可以自定义任意比例进行计算和裁切。</p>
+            </div>
         </div>
+        <script> // ========== 国际化系统 ==========
 
-        <!-- 使用说明 -->
-        <div class="instructions">
-            <h3 data-i18n="instructions.title">使用说明：</h3>
-            <p><strong data-i18n="instructions.ratioCalc">📐 比例计算：</strong><span
-                    data-i18n="instructions.ratioCalcDesc">选择预设比例或输入自定义比例,然后在任意一个输入框中输入数值,系统将自动计算另一边的尺寸。</span></p>
-            <p><strong data-i18n="instructions.imageCrop">✂️ 图像裁切：</strong><span
-                    data-i18n="instructions.imageCropDesc">点击上传或拖拽图片到上传区域,选择合适的比例后,拖动裁切框或调整角落手柄来定位裁切区域,点击"裁切图片"按钮完成裁切,最后可以下载裁切结果。</span>
-            </p>
-            <p data-i18n="instructions.supported">支持的比例包括常用的照片比例、屏幕比例等,也可以自定义任意比例进行计算和裁切。</p>
-        </div>
-    </div>
+            const translations = {
+                zh: {
+                    theme: {
+                        light: '浅色', dark: '深色'
+                    }
 
-    <script>
-        // ========== 国际化系统 ==========
-        const translations = {
-            zh: {
-                theme: {
-                    light: '浅色',
-                    dark: '深色'
-                },
-                header: {
-                    title: '比例计算器 & 图像裁切工具',
-                    subtitle: '智能计算尺寸比例,精确裁切您的图片'
-                },
-                imageCrop: {
-                    title: '✂️ 图像裁切工具',
-                    uploadText: '点击上传、拖拽或粘贴图片到这里',
-                    uploadHint: '支持 JPG、PNG、GIF 等格式',
-                    uploadBtn: '选择图片',
-                    cropBtn: '✂️ 裁切图片',
-                    resetBtn: '🔄 重置裁切区域',
-                    cancelBtn: '❌ 取消并重新上传',
-                    originalSize: '原始尺寸:',
-                    cropArea: '裁切区域:',
-                    currentRatio: '当前比例:',
-                    resultTitle: '裁切结果预览',
-                    downloadBtn: '💾 下载图片 (PNG)',
-                    copyBtn: '📋 复制图片',
-                    copiedBtn: '✅ 已复制!',
-                    newCropBtn: '🔄 裁切新图片'
-                },
-                ratioSelect: {
-                    title: '选择比例',
-                    vertical: '竖版照片',
-                    horizontal: '横版照片',
-                    square: '正方形',
-                    widescreen: '宽屏',
-                    portrait: '竖屏',
-                    traditional: '传统屏幕',
-                    verticalTraditional: '竖版传统',
-                    ultrawide: '超宽屏',
-                    tallImage: '竖长图',
-                    ratio45: '4:5',
-                    miniProgram: '小程序封面',
-                    wechatCover: '微信封面',
-                    custom: '自定义比例',
-                    customWidth: '宽',
-                    customHeight: '高'
-                },
-                preview: {
-                    title: '比例预览',
-                    subtitle: '可视化显示当前选择的比例',
-                    resultLabel: '计算结果'
-                },
-                calculator: {
-                    title: '尺寸计算',
-                    currentRatio: '当前比例：',
-                    inputWidth: '输入宽度',
-                    inputHeight: '输入高度',
-                    calcWidth: '计算宽度',
-                    calcHeight: '计算高度',
-                    widthPlaceholder: '输入宽度数值',
-                    heightPlaceholder: '输入高度数值',
-                    clearBtn: '清空所有输入'
-                },
-                instructions: {
-                    title: '使用说明：',
-                    ratioCalc: '📐 比例计算：',
-                    ratioCalcDesc: '选择预设比例或输入自定义比例,然后在任意一个输入框中输入数值,系统将自动计算另一边的尺寸。',
-                    imageCrop: '✂️ 图像裁切：',
-                    imageCropDesc: '点击上传或拖拽图片到上传区域,选择合适的比例后,拖动裁切框或调整角落手柄来定位裁切区域,点击"裁切图片"按钮完成裁切,最后可以下载裁切结果。',
-                    supported: '支持的比例包括常用的照片比例、屏幕比例等,也可以自定义任意比例进行计算和裁切。'
-                },
-                developer: {
-                    name: '工具狂',
-                    title: 'Developer',
-                    douyin: '抖音',
-                    wechat: '微信公众号',
-                    scanQR: '扫码关注',
-                    collapse: '收起',
-                    expand: '展开'
+                    ,
+                    header: {
+                        title: '比例计算器 & 图像裁切工具', subtitle: '智能计算尺寸比例,精确裁切您的图片'
+                    }
+
+                    ,
+                    imageCrop: {
+                        title: '✂️ 图像裁切工具', uploadText: '点击上传、拖拽或粘贴图片到这里', uploadHint: '支持 JPG、PNG、GIF 等格式', uploadBtn: '选择图片',
+                        cropBtn: '✂️ 裁切图片', resetBtn: '🔄 重置裁切区域', cancelBtn: '❌ 取消并重新上传',
+                        originalSize: '原始尺寸:', cropArea: '裁切区域:', currentRatio: '当前比例:', resultTitle: '裁切结果预览',
+                        downloadBtn: '💾 下载图片 (PNG)', copyBtn: '📋 复制图片', copiedBtn: '✅ 已复制!', newCropBtn: '🔄 裁切新图片'
+                    }
+
+                    ,
+                    ratioSelect: {
+                        title: '选择比例', vertical: '竖版照片', horizontal: '横版照片', square: '正方形', widescreen: '宽屏', portrait: '竖屏',
+                        traditional: '传统屏幕', verticalTraditional: '竖版传统', ultrawide: '超宽屏', tallImage: '竖长图', ratio45: '4:5',
+                        miniProgram: '小程序封面', wechatCover: '微信封面', custom: '自定义比例', customWidth: '宽', customHeight: '高'
+                    }
+
+                    ,
+                    preview: {
+                        title: '比例预览', subtitle: '可视化显示当前选择的比例', resultLabel: '计算结果'
+                    }
+
+                    ,
+                    calculator: {
+                        title: '尺寸计算', currentRatio: '当前比例：', inputWidth: '输入宽度', inputHeight: '输入高度', calcWidth: '计算宽度', calcHeight: '计算高度',
+                        widthPlaceholder: '输入宽度数值', heightPlaceholder: '输入高度数值', clearBtn: '清空所有输入'
+                    }
+
+                    ,
+                    instructions: {
+                        title: '使用说明：', ratioCalc: '📐 比例计算：', ratioCalcDesc: '选择预设比例或输入自定义比例,然后在任意一个输入框中输入数值,系统将自动计算另一边的尺寸。',
+                        imageCrop: '✂️ 图像裁切：', imageCropDesc: '点击上传或拖拽图片到上传区域,选择合适的比例后,拖动裁切框或调整角落手柄来定位裁切区域,点击"裁切图片"按钮完成裁切,最后可以下载裁切结果。',
+                        supported: '支持的比例包括常用的照片比例、屏幕比例等,也可以自定义任意比例进行计算和裁切。'
+                    }
+
+                    ,
+                    developer: {
+                        name: '工具狂', title: 'Developer', douyin: '抖音', wechat: '微信公众号', scanQR: '扫码关注', collapse: '收起', expand: '展开'
+                    }
                 }
-            },
-            en: {
-                theme: {
-                    light: 'Light',
-                    dark: 'Dark'
-                },
-                header: {
-                    title: 'Ratio Calculator & Image Crop Tool',
-                    subtitle: 'Smart dimension calculation and precise image cropping'
-                },
-                imageCrop: {
-                    title: '✂️ Image Crop Tool',
-                    uploadText: 'Click to upload, drag and drop, or paste an image here',
-                    uploadHint: 'Supports JPG, PNG, GIF and more',
-                    uploadBtn: 'Select Image',
-                    cropBtn: '✂️ Crop Image',
-                    resetBtn: '🔄 Reset Crop Area',
-                    cancelBtn: '❌ Cancel & Reupload',
-                    originalSize: 'Original Size:',
-                    cropArea: 'Crop Area:',
-                    currentRatio: 'Current Ratio:',
-                    resultTitle: 'Cropped Result Preview',
-                    downloadBtn: '💾 Download (PNG)',
-                    copyBtn: '📋 Copy Image',
-                    copiedBtn: '✅ Copied!',
-                    newCropBtn: '🔄 Crop New Image'
-                },
-                ratioSelect: {
-                    title: 'Select Ratio',
-                    vertical: 'Portrait Photo',
-                    horizontal: 'Landscape Photo',
-                    square: 'Square',
-                    widescreen: 'Widescreen',
-                    portrait: 'Portrait Screen',
-                    traditional: 'Traditional',
-                    verticalTraditional: 'Vertical Traditional',
-                    ultrawide: 'Ultrawide',
-                    tallImage: 'Tall Image',
-                    ratio45: '4:5',
-                    miniProgram: 'Mini Program',
-                    wechatCover: 'WeChat Cover',
-                    custom: 'Custom Ratio',
-                    customWidth: 'Width',
-                    customHeight: 'Height'
-                },
-                preview: {
-                    title: 'Ratio Preview',
-                    subtitle: 'Visual display of selected ratio',
-                    resultLabel: 'Result'
-                },
-                calculator: {
-                    title: 'Dimension Calculator',
-                    currentRatio: 'Current Ratio: ',
-                    inputWidth: 'Input Width',
-                    inputHeight: 'Input Height',
-                    calcWidth: 'Calculated Width',
-                    calcHeight: 'Calculated Height',
-                    widthPlaceholder: 'Enter width value',
-                    heightPlaceholder: 'Enter height value',
-                    clearBtn: 'Clear All Input'
-                },
-                instructions: {
-                    title: 'Instructions:',
-                    ratioCalc: '📐 Ratio Calculation:',
-                    ratioCalcDesc: 'Select a preset ratio or input a custom ratio, then enter a value in any input field. The system will automatically calculate the other dimension.',
-                    imageCrop: '✂️ Image Cropping:',
-                    imageCropDesc: 'Click to upload or drag an image to the upload area. After selecting an appropriate ratio, drag the crop box or adjust the corner handles to position the crop area. Click "Crop Image" to complete, then download the result.',
-                    supported: 'Supported ratios include common photo and screen ratios. Custom ratios are also supported for calculation and cropping.'
-                },
-                developer: {
-                    name: 'ToolBuddy',
-                    title: 'Developer',
-                    douyin: 'Douyin',
-                    wechat: 'WeChat Official',
-                    scanQR: 'Scan to Follow',
-                    collapse: 'Collapse',
-                    expand: 'Expand'
+
+                ,
+                en: {
+                    theme: {
+                        light: 'Light', dark: 'Dark'
+                    }
+
+                    ,
+                    header: {
+                        title: 'Ratio Calculator & Image Crop Tool', subtitle: 'Smart dimension calculation and precise image cropping'
+                    }
+
+                    ,
+                    imageCrop: {
+                        title: '✂️ Image Crop Tool', uploadText: 'Click to upload, drag and drop, or paste an image here', uploadHint: 'Supports JPG, PNG, GIF and more', uploadBtn: 'Select Image',
+                        cropBtn: '✂️ Crop Image', resetBtn: '🔄 Reset Crop Area', cancelBtn: '❌ Cancel & Reupload',
+                        originalSize: 'Original Size:', cropArea: 'Crop Area:', currentRatio: 'Current Ratio:', resultTitle: 'Cropped Result Preview',
+                        downloadBtn: '💾 Download (PNG)', copyBtn: '📋 Copy Image', copiedBtn: '✅ Copied!', newCropBtn: '🔄 Crop New Image'
+                    }
+
+                    ,
+                    ratioSelect: {
+                        title: 'Select Ratio', vertical: 'Portrait Photo', horizontal: 'Landscape Photo', square: 'Square', widescreen: 'Widescreen', portrait: 'Portrait Screen',
+                        traditional: 'Traditional', verticalTraditional: 'Vertical Traditional', ultrawide: 'Ultrawide', tallImage: 'Tall Image', ratio45: '4:5',
+                        miniProgram: 'Mini Program', wechatCover: 'WeChat Cover', custom: 'Custom Ratio', customWidth: 'Width', customHeight: 'Height'
+                    }
+
+                    ,
+                    preview: {
+                        title: 'Ratio Preview', subtitle: 'Visual display of selected ratio', resultLabel: 'Result'
+                    }
+
+                    ,
+                    calculator: {
+                        title: 'Dimension Calculator', currentRatio: 'Current Ratio: ', inputWidth: 'Input Width', inputHeight: 'Input Height', calcWidth: 'Calculated Width', calcHeight: 'Calculated Height',
+                        widthPlaceholder: 'Enter width value', heightPlaceholder: 'Enter height value', clearBtn: 'Clear All Input'
+                    }
+
+                    ,
+                    instructions: {
+                        title: 'Instructions:', ratioCalc: '📐 Ratio Calculation:', ratioCalcDesc: 'Select a preset ratio or input a custom ratio, then enter a value in any input field. The system will automatically calculate the other dimension.',
+                        imageCrop: '✂️ Image Cropping:', imageCropDesc: 'Click to upload or drag an image to the upload area. After selecting an appropriate ratio, drag the crop box or adjust the corner handles to position the crop area. Click "Crop Image" to complete, then download the result.',
+                        supported: 'Supported ratios include common photo and screen ratios. Custom ratios are also supported for calculation and cropping.'
+                    }
+
+                    ,
+                    developer: {
+                        name: 'ToolBuddy', title: 'Developer', douyin: 'Douyin', wechat: 'WeChat Official', scanQR: 'Scan to Follow', collapse: 'Collapse', expand: 'Expand'
+                    }
                 }
             }
-        };
 
-        // 当前语言
-        let currentLang = localStorage.getItem('language') || 'zh';
+                ;
 
-        // 更新页面文本
-        function updateLanguage(lang) {
-            currentLang = lang;
-            localStorage.setItem('language', lang);
+            let currentLang = localStorage.getItem('language') || 'zh';
 
-            // 更新所有带有 data-i18n 属性的元素
-            document.querySelectorAll('[data-i18n]').forEach(elem => {
-                const keys = elem.getAttribute('data-i18n').split('.');
-                let text = translations[lang];
-                for (const key of keys) {
-                    text = text[key];
-                }
-                elem.textContent = text;
-            });
+            function updateLanguage(lang) {
+                currentLang = lang;
+                localStorage.setItem('language', lang);
 
-            // 更新所有带有 data-i18n-placeholder 属性的元素
-            document.querySelectorAll('[data-i18n-placeholder]').forEach(elem => {
-                const keys = elem.getAttribute('data-i18n-placeholder').split('.');
-                let text = translations[lang];
-                for (const key of keys) {
-                    text = text[key];
-                }
-                elem.placeholder = text;
-            });
+                document.querySelectorAll('[data-i18n]').forEach(elem => {
+                    const keys = elem.getAttribute('data-i18n').split('.');
+                    let text = translations[lang];
+                    for (const key of keys) text = text[key];
+                    elem.textContent = text;
+                });
 
-            // 更新标题
-            document.title = lang === 'zh' ?
-                '🧮✂️ 比例计算器与图像裁切工具 - 智能尺寸计算与图片裁切' :
-                '🧮✂️ Ratio Calculator & Image Crop Tool - Smart Calculation & Cropping';
-
-            // 更新 meta description
-            const metaDesc = document.querySelector('meta[name="description"]');
-            if (metaDesc) {
-                metaDesc.content = lang === 'zh' ?
-                    '专业的比例计算器和图像裁切工具,支持常用照片比例、屏幕比例等,自定义比例计算更方便,在线裁切图片' :
-                    'Professional ratio calculator and image crop tool. Supports common photo and screen ratios, custom ratio calculation, and online image cropping.';
+                document.querySelectorAll('[data-i18n-placeholder]').forEach(elem => {
+                    const keys = elem.getAttribute('data-i18n-placeholder').split('.');
+                    let text = translations[lang];
+                    for (const key of keys) text = text[key];
+                    elem.placeholder = text;
+                });
+                document.title = lang === 'zh' ? '🧮✂️ 比例计算器与图像裁切工具 - 智能尺寸计算与图片裁切' : '🧮✂️ Ratio Calculator & Image Crop Tool - Smart Calculation & Cropping';
             }
-        }
 
-        // 语言切换按钮
-        const langButtons = document.querySelectorAll('.lang-btn');
-        langButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const lang = btn.dataset.lang;
+            const langButtons = document.querySelectorAll('.lang-btn');
 
-                // 更新按钮状态
-                langButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                // 更新语言
-                updateLanguage(lang);
-            });
-        });
-
-        // 页面加载时应用保存的语言
-        if (currentLang === 'en') {
             langButtons.forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.lang === 'en');
+                btn.addEventListener('click', () => {
+                    langButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    updateLanguage(btn.dataset.lang);
+                });
             });
-            updateLanguage('en');
-        }
 
-        // ========== 原有代码 ==========
-        // 全局变量
-        let currentRatio = { width: 3, height: 4 };
+            if (currentLang === 'en') {
+                langButtons.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.lang === 'en');
+                });
+                updateLanguage('en');
+            }
 
-        // DOM 元素
-        const ratioButtons = document.querySelectorAll('.ratio-btn');
-        const customWidthInput = document.getElementById('customWidth');
-        const customHeightInput = document.getElementById('customHeight');
-        const inputWidth = document.getElementById('inputWidth');
-        const inputHeight = document.getElementById('inputHeight');
-        const calcHeight = document.getElementById('calcHeight');
-        const calcWidth = document.getElementById('calcWidth');
-        const clearBtn = document.getElementById('clearBtn');
-        const previewBox = document.getElementById('previewBox');
-        const previewRatio = document.getElementById('previewRatio');
-        const previewDesc = document.getElementById('previewDesc');
-        const currentRatioText = document.getElementById('currentRatioText');
-        const resultDisplay = document.getElementById('resultDisplay');
-        const resultValue = document.getElementById('resultValue');
-        const themeButtons = document.querySelectorAll('.theme-btn');
+            let currentRatio = {
+                width: 3, height: 4
+            }
 
-        // 主题切换
-        themeButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const theme = btn.dataset.theme;
+                ;
+            const ratioButtons = document.querySelectorAll('.ratio-btn');
+            const customWidthInput = document.getElementById('customWidth');
+            const customHeightInput = document.getElementById('customHeight');
+            const inputWidth = document.getElementById('inputWidth');
+            const inputHeight = document.getElementById('inputHeight');
+            const calcHeight = document.getElementById('calcHeight');
+            const calcWidth = document.getElementById('calcWidth');
+            const clearBtn = document.getElementById('clearBtn');
+            const previewBox = document.getElementById('previewBox');
+            const previewRatio = document.getElementById('previewRatio');
+            const previewDesc = document.getElementById('previewDesc');
+            const currentRatioText = document.getElementById('currentRatioText');
+            const resultDisplay = document.getElementById('resultDisplay');
+            const resultValue = document.getElementById('resultValue');
+            const themeButtons = document.querySelectorAll('.theme-btn');
 
-                // 更新按钮状态
-                themeButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
+            themeButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    themeButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
 
-                // 应用主题
-                if (theme === 'dark') {
-                    document.body.classList.add('dark-theme');
-                    localStorage.setItem('theme', 'dark');
-                } else {
-                    document.body.classList.remove('dark-theme');
-                    localStorage.setItem('theme', 'light');
+                    if (btn.dataset.theme === 'dark') {
+                        document.body.classList.add('dark-theme');
+                        localStorage.setItem('theme', 'dark');
+                    }
+
+                    else {
+                        document.body.classList.remove('dark-theme');
+                        localStorage.setItem('theme', 'light');
+                    }
+                });
+            });
+
+            if (localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-theme');
+                themeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.theme === 'dark'));
+            }
+
+            function updateRatio(width, height) {
+                currentRatio = {
+                    width,
+                    height
+                }
+
+                    ;
+
+                currentRatioText.textContent = `${width}:${height}`;
+
+                previewRatio.textContent = `${width}:${height}`;
+
+                previewDesc.textContent = `${width} × ${height}`;
+                updatePreviewBox();
+                recalculate();
+            }
+
+            function updatePreviewBox() {
+                const container = document.querySelector('.preview-container');
+                const containerWidth = container ? container.clientWidth : 320;
+                const maxWidth = Math.min(280, containerWidth - 48);
+                const maxHeight = 240;
+                const ratio = currentRatio.width / currentRatio.height;
+                let width,
+                    height;
+
+                if (ratio > maxWidth / maxHeight) {
+                    width = maxWidth;
+                    height = maxWidth / ratio;
+                }
+
+                else {
+                    height = maxHeight;
+                    width = maxHeight * ratio;
+                }
+
+                previewBox.style.width = `${width}px`;
+
+                previewBox.style.height = `${height}px`;
+            }
+
+            ratioButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    ratioButtons.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    customWidthInput.value = '';
+                    customHeightInput.value = '';
+                    const [width, height] = btn.dataset.ratio.split(':').map(Number);
+                    updateRatio(width, height);
+                });
+            });
+
+            function handleCustomRatio() {
+                const width = parseFloat(customWidthInput.value);
+                const height = parseFloat(customHeightInput.value);
+
+                if (width > 0 && height > 0) {
+                    ratioButtons.forEach(b => b.classList.remove('active'));
+                    updateRatio(width, height);
+                }
+            }
+
+            customWidthInput.addEventListener('input', handleCustomRatio);
+            customHeightInput.addEventListener('input', handleCustomRatio);
+
+            inputWidth.addEventListener('input', () => {
+                const width = parseFloat(inputWidth.value);
+
+                if (width > 0) {
+                    const height = (width / currentRatio.width) * currentRatio.height;
+                    calcHeight.value = height.toFixed(2);
+                    inputHeight.value = '';
+                    calcWidth.value = '';
+
+                    showResult(`${width} × ${height.toFixed(2)}`);
+                }
+
+                else {
+                    calcHeight.value = '';
+                    hideResult();
                 }
             });
-        });
 
-        // 加载保存的主题
-        const savedTheme = localStorage.getItem('theme');
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark-theme');
-            themeButtons.forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.theme === 'dark');
+            inputHeight.addEventListener('input', () => {
+                const height = parseFloat(inputHeight.value);
+
+                if (height > 0) {
+                    const width = (height / currentRatio.height) * currentRatio.width;
+                    calcWidth.value = width.toFixed(2);
+                    inputWidth.value = '';
+                    calcHeight.value = '';
+
+                    showResult(`${width.toFixed(2)} × ${height}`);
+                }
+
+                else {
+                    calcWidth.value = '';
+                    hideResult();
+                }
             });
-        }
 
-        // 更新比例
-        function updateRatio(width, height) {
-            currentRatio = { width, height };
-            currentRatioText.textContent = `${width}:${height}`;
-            previewRatio.textContent = `${width}:${height}`;
-            previewDesc.textContent = `${width} × ${height}`;
+            function recalculate() {
+                if (inputWidth.value) {
+                    const width = parseFloat(inputWidth.value);
+                    const height = (width / currentRatio.width) * currentRatio.height;
+                    calcHeight.value = height.toFixed(2);
+
+                    showResult(`${width} × ${height.toFixed(2)}`);
+                }
+
+                else if (inputHeight.value) {
+                    const height = parseFloat(inputHeight.value);
+                    const width = (height / currentRatio.height) * currentRatio.width;
+                    calcWidth.value = width.toFixed(2);
+
+                    showResult(`${width.toFixed(2)} × ${height}`);
+                }
+            }
+
+            function showResult(value) {
+                resultValue.textContent = value;
+                resultDisplay.style.display = 'block';
+            }
+
+            function hideResult() {
+                resultDisplay.style.display = 'none';
+            }
+
+            clearBtn.addEventListener('click', () => {
+                inputWidth.value = ''; inputHeight.value = ''; calcHeight.value = ''; calcWidth.value = '';
+                hideResult();
+            });
 
             updatePreviewBox();
-            recalculate();
-        }
 
-        // 更新预览框尺寸
-        function updatePreviewBox() {
-            const maxWidth = 280;
-            const maxHeight = 240;
-            const ratio = currentRatio.width / currentRatio.height;
-
-            let width, height;
-
-            if (ratio > maxWidth / maxHeight) {
-                width = maxWidth;
-                height = maxWidth / ratio;
-            } else {
-                height = maxHeight;
-                width = maxHeight * ratio;
-            }
-
-            previewBox.style.width = `${width}px`;
-            previewBox.style.height = `${height}px`;
-        }
-
-        // 预设比例按钮
-        ratioButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                ratioButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                customWidthInput.value = '';
-                customHeightInput.value = '';
-
-                const ratioStr = btn.dataset.ratio;
-                const [width, height] = ratioStr.split(':').map(Number);
-                updateRatio(width, height);
+            window.addEventListener('resize', () => {
+                updatePreviewBox();
             });
-        });
 
-        // 自定义比例
-        function handleCustomRatio() {
-            const width = parseFloat(customWidthInput.value);
-            const height = parseFloat(customHeightInput.value);
+            // ========== 图像裁切功能 ==========
+            let uploadedImage = null;
 
-            if (width > 0 && height > 0) {
-                ratioButtons.forEach(b => b.classList.remove('active'));
-                updateRatio(width, height);
+            let cropData = {
+                x: 50, y: 50, width: 300, height: 400
             }
-        }
 
-        customWidthInput.addEventListener('input', handleCustomRatio);
-        customHeightInput.addEventListener('input', handleCustomRatio);
+                ;
+            let isDragging = false;
+            let isResizing = false;
 
-        // 输入宽度，计算高度
-        inputWidth.addEventListener('input', () => {
-            const width = parseFloat(inputWidth.value);
-            if (width > 0) {
-                const height = (width / currentRatio.width) * currentRatio.height;
-                calcHeight.value = height.toFixed(2);
-                inputHeight.value = '';
-                calcWidth.value = '';
-                showResult(`${width} × ${height.toFixed(2)}`);
-            } else {
-                calcHeight.value = '';
-                hideResult();
+            let dragStart = {
+                x: 0, y: 0
             }
-        });
 
-        // 输入高度，计算宽度
-        inputHeight.addEventListener('input', () => {
-            const height = parseFloat(inputHeight.value);
-            if (height > 0) {
-                const width = (height / currentRatio.height) * currentRatio.width;
-                calcWidth.value = width.toFixed(2);
-                inputWidth.value = '';
-                calcHeight.value = '';
-                showResult(`${width.toFixed(2)} × ${height}`);
-            } else {
-                calcWidth.value = '';
-                hideResult();
-            }
-        });
+                ;
+            let currentHandle = null;
+            let canvasScale = 1;
 
-        // 重新计算
-        function recalculate() {
-            if (inputWidth.value) {
-                const width = parseFloat(inputWidth.value);
-                const height = (width / currentRatio.width) * currentRatio.height;
-                calcHeight.value = height.toFixed(2);
-                showResult(`${width} × ${height.toFixed(2)}`);
-            } else if (inputHeight.value) {
-                const height = parseFloat(inputHeight.value);
-                const width = (height / currentRatio.height) * currentRatio.width;
-                calcWidth.value = width.toFixed(2);
-                showResult(`${width.toFixed(2)} × ${height}`);
-            }
-        }
+            const imageInput = document.getElementById('imageInput');
+            const uploadBtn = document.getElementById('uploadBtn');
+            const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+            const uploadArea = document.getElementById('uploadArea');
+            const cropContainer = document.getElementById('cropContainer');
+            const cropCanvas = document.getElementById('cropCanvas');
+            const cropCtx = cropCanvas.getContext('2d');
+            const cropBox = document.getElementById('cropBox');
+            const cropBtn = document.getElementById('cropBtn');
+            const resetCropBtn = document.getElementById('resetCropBtn');
+            const cancelCropBtn = document.getElementById('cancelCropBtn');
+            const originalSizeElem = document.getElementById('originalSize');
+            const cropSizeElem = document.getElementById('cropSize');
+            const cropRatioElem = document.getElementById('cropRatio');
+            const cropResult = document.getElementById('cropResult');
+            const resultCanvas = document.getElementById('resultCanvas');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            const newCropBtn = document.getElementById('newCropBtn');
+            const cropHandles = document.querySelectorAll('.crop-handle');
 
-        // 显示结果
-        function showResult(value) {
-            resultValue.textContent = value;
-            resultDisplay.style.display = 'block';
-        }
+            uploadBtn.addEventListener('click', () => imageInput.click());
 
-        // 隐藏结果
-        function hideResult() {
-            resultDisplay.style.display = 'none';
-        }
+            uploadPlaceholder.addEventListener('click', (e) => {
+                if (e.target.tagName !== 'BUTTON') imageInput.click();
+            });
 
-        // 清空按钮
-        clearBtn.addEventListener('click', () => {
-            inputWidth.value = '';
-            inputHeight.value = '';
-            calcHeight.value = '';
-            calcWidth.value = '';
-            hideResult();
-        });
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault(); uploadPlaceholder.style.borderColor = 'var(--border-glow)';
+            });
 
-        // 初始化
-        updatePreviewBox();
+            uploadArea.addEventListener('dragleave', () => {
+                uploadPlaceholder.style.borderColor = 'var(--border-color)';
+            });
 
-        // ========== 图像裁切功能 ==========
-        let uploadedImage = null;
-        let cropData = {
-            x: 50,
-            y: 50,
-            width: 300,
-            height: 400
-        };
-        let isDragging = false;
-        let isResizing = false;
-        let dragStart = { x: 0, y: 0 };
-        let currentHandle = null;
-        let canvasScale = 1;
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadPlaceholder.style.borderColor = 'var(--border-color)';
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) loadImage(file);
+            });
 
-        // DOM 元素
-        const imageInput = document.getElementById('imageInput');
-        const uploadBtn = document.getElementById('uploadBtn');
-        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
-        const uploadArea = document.getElementById('uploadArea');
-        const cropContainer = document.getElementById('cropContainer');
-        const cropCanvas = document.getElementById('cropCanvas');
-        const cropCtx = cropCanvas.getContext('2d');
-        const cropBox = document.getElementById('cropBox');
-        const cropOverlay = document.getElementById('cropOverlay');
-        const cropBtn = document.getElementById('cropBtn');
-        const resetCropBtn = document.getElementById('resetCropBtn');
-        const cancelCropBtn = document.getElementById('cancelCropBtn');
-        const originalSizeElem = document.getElementById('originalSize');
-        const cropSizeElem = document.getElementById('cropSize');
-        const cropRatioElem = document.getElementById('cropRatio');
-        const cropResult = document.getElementById('cropResult');
-        const resultCanvas = document.getElementById('resultCanvas');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const newCropBtn = document.getElementById('newCropBtn');
-        const cropHandles = document.querySelectorAll('.crop-handle');
+            imageInput.addEventListener('change', (e) => {
+                if (e.target.files[0]) loadImage(e.target.files[0]);
+            });
 
-        // 上传按钮点击
-        uploadBtn.addEventListener('click', () => {
-            imageInput.click();
-        });
+            document.addEventListener('paste', (e) => {
+                const items = e.clipboardData?.items;
+                if (!items) return;
 
-        // 上传区域点击
-        uploadPlaceholder.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'BUTTON') {
-                imageInput.click();
-            }
-        });
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        const file = items[i].getAsFile();
 
-        // 拖拽上传
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadPlaceholder.style.borderColor = 'var(--border-glow)';
-        });
+                        if (file) {
+                            loadImage(file); e.preventDefault();
+                        }
 
-        uploadArea.addEventListener('dragleave', () => {
-            uploadPlaceholder.style.borderColor = 'var(--border-color)';
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadPlaceholder.style.borderColor = 'var(--border-color)';
-            const file = e.dataTransfer.files[0];
-            if (file && file.type.startsWith('image/')) {
-                loadImage(file);
-            }
-        });
-
-        // 文件选择
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                loadImage(file);
-            }
-        });
-
-        // 剪切板粘贴图片
-        document.addEventListener('paste', (e) => {
-            const items = e.clipboardData?.items;
-            if (!items) return;
-
-            for (let i = 0; i < items.length; i++) {
-                const item = items[i];
-                // 检查是否是图片类型
-                if (item.type.indexOf('image') !== -1) {
-                    const file = item.getAsFile();
-                    if (file) {
-                        loadImage(file);
-                        e.preventDefault(); // 阻止默认粘贴行为
+                        break;
                     }
-                    break;
                 }
-            }
-        });
+            });
 
-        // 加载图片
-        function loadImage(file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    uploadedImage = img;
-                    initCropArea();
-                    uploadPlaceholder.style.display = 'none';
-                    cropContainer.style.display = 'block';
-                    cropResult.style.display = 'none';
+            function loadImage(file) {
+                const reader = new FileReader();
+
+                reader.onload = (e) => {
+                    const img = new Image();
+
+                    img.onload = () => {
+                        uploadedImage = img;
+                        initCropArea();
+                        uploadPlaceholder.style.display = 'none';
+                        cropContainer.style.display = 'block';
+                        cropResult.style.display = 'none';
+                    }
+
+                        ;
+                    img.src = e.target.result;
+                }
+
+                    ;
+                reader.readAsDataURL(file);
+            }
+
+            function initCropArea() {
+                const maxWidth = cropContainer.clientWidth || 800;
+                const maxHeight = 600;
+                let displayWidth = uploadedImage.width;
+                let displayHeight = uploadedImage.height;
+
+                if (displayWidth > maxWidth || displayHeight > maxHeight) {
+                    const ratio = Math.min(maxWidth / displayWidth, maxHeight / displayHeight);
+                    displayWidth *= ratio;
+                    displayHeight *= ratio;
+                }
+
+                canvasScale = displayWidth / uploadedImage.width;
+                cropCanvas.width = displayWidth;
+                cropCanvas.height = displayHeight;
+                cropCtx.drawImage(uploadedImage, 0, 0, displayWidth, displayHeight);
+                resetCropArea();
+
+                originalSizeElem.textContent = `${uploadedImage.width} × ${uploadedImage.height}`;
+                updateCropInfo();
+            }
+
+            function resetCropArea() {
+                const ratio = currentRatio.width / currentRatio.height;
+                const targetSize = Math.min(cropCanvas.width, cropCanvas.height) * 0.7;
+                let width,
+                    height;
+
+                if (ratio >= 1) {
+                    width = targetSize;
+                    height = targetSize / ratio;
+                }
+
+                else {
+                    height = targetSize;
+                    width = targetSize * ratio;
+                }
+
+                cropData = {
+                    x: (cropCanvas.width - width) / 2, y: (cropCanvas.height - height) / 2, width: width, height: height
+                }
+
+                    ;
+                updateCropBox();
+            }
+
+            function updateCropBox() {
+                const widthPercent = (cropData.width / cropCanvas.width) * 100;
+                const heightPercent = (cropData.height / cropCanvas.height) * 100;
+                const leftPercent = (cropData.x / cropCanvas.width) * 100;
+                const topPercent = (cropData.y / cropCanvas.height) * 100;
+
+                cropBox.style.left = `${leftPercent}%`;
+                cropBox.style.top = `${topPercent}%`;
+                cropBox.style.width = `${widthPercent}%`;
+                cropBox.style.height = `${heightPercent}%`;
+                updateCropInfo();
+            }
+
+            function updateCropInfo() {
+                const actualWidth = Math.round(cropData.width / canvasScale);
+                const actualHeight = Math.round(cropData.height / canvasScale);
+
+                cropSizeElem.textContent = `${actualWidth} × ${actualHeight}`;
+                const gcd = getGCD(actualWidth, actualHeight);
+
+                cropRatioElem.textContent = `${actualWidth / gcd}:${actualHeight / gcd}`;
+            }
+
+            function getGCD(a, b) {
+                return b === 0 ? a : getGCD(b, a % b);
+            }
+
+            function getVisualScale() {
+                const rect = cropCanvas.getBoundingClientRect();
+                return {
+                    x: cropCanvas.width / rect.width,
+                    y: cropCanvas.height / rect.height
                 };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        // 初始化裁切区域
-        function initCropArea() {
-            const maxWidth = cropContainer.clientWidth || 800;
-            const maxHeight = 600;
-
-            let displayWidth = uploadedImage.width;
-            let displayHeight = uploadedImage.height;
-
-            // 计算缩放比例
-            if (displayWidth > maxWidth || displayHeight > maxHeight) {
-                const ratio = Math.min(maxWidth / displayWidth, maxHeight / displayHeight);
-                displayWidth *= ratio;
-                displayHeight *= ratio;
             }
 
-            canvasScale = displayWidth / uploadedImage.width;
-
-            cropCanvas.width = displayWidth;
-            cropCanvas.height = displayHeight;
-
-            cropCtx.drawImage(uploadedImage, 0, 0, displayWidth, displayHeight);
-
-            // 设置初始裁切区域
-            resetCropArea();
-
-            // 更新信息
-            originalSizeElem.textContent = `${uploadedImage.width} × ${uploadedImage.height}`;
-            updateCropInfo();
-        }
-
-        // 重置裁切区域
-        function resetCropArea() {
-            const ratio = currentRatio.width / currentRatio.height;
-            const canvasWidth = cropCanvas.width;
-            const canvasHeight = cropCanvas.height;
-
-            // 根据当前比例计算合适的初始裁切框大小
-            let width, height;
-            const targetSize = Math.min(canvasWidth, canvasHeight) * 0.7;
-
-            if (ratio >= 1) {
-                width = targetSize;
-                height = targetSize / ratio;
-            } else {
-                height = targetSize;
-                width = targetSize * ratio;
+            function getCanvasPoint(clientX, clientY) {
+                const rect = cropCanvas.getBoundingClientRect();
+                const scale = getVisualScale();
+                return {
+                    x: (clientX - rect.left) * scale.x,
+                    y: (clientY - rect.top) * scale.y
+                };
             }
 
-            cropData = {
-                x: (canvasWidth - width) / 2,
-                y: (canvasHeight - height) / 2,
-                width: width,
-                height: height
-            };
+            cropBox.addEventListener('mousedown', (e) => {
+                if (e.target.classList.contains('crop-handle')) return;
+                isDragging = true;
 
-            updateCropBox();
-        }
-
-        // 更新裁切框位置和大小
-        function updateCropBox() {
-            cropBox.style.left = cropData.x + 'px';
-            cropBox.style.top = cropData.y + 'px';
-            cropBox.style.width = cropData.width + 'px';
-            cropBox.style.height = cropData.height + 'px';
-            updateCropInfo();
-        }
-
-        // 更新裁切信息
-        function updateCropInfo() {
-            const actualWidth = Math.round(cropData.width / canvasScale);
-            const actualHeight = Math.round(cropData.height / canvasScale);
-            cropSizeElem.textContent = `${actualWidth} × ${actualHeight}`;
-
-            const gcd = getGCD(actualWidth, actualHeight);
-            const ratioW = actualWidth / gcd;
-            const ratioH = actualHeight / gcd;
-            cropRatioElem.textContent = `${ratioW}:${ratioH}`;
-        }
-
-        // 计算最大公约数
-        function getGCD(a, b) {
-            return b === 0 ? a : getGCD(b, a % b);
-        }
-
-        // 裁切框拖拽
-        cropBox.addEventListener('mousedown', (e) => {
-            if (e.target.classList.contains('crop-handle')) return;
-            isDragging = true;
-            dragStart = {
-                x: e.clientX - cropData.x,
-                y: e.clientY - cropData.y
-            };
-            e.preventDefault();
-        });
-
-        // 拖拽手柄
-        cropHandles.forEach(handle => {
-            handle.addEventListener('mousedown', (e) => {
-                isResizing = true;
-                currentHandle = handle.classList[1]; // crop-handle-nw 等
+                const point = getCanvasPoint(e.clientX, e.clientY);
                 dragStart = {
-                    x: e.clientX,
-                    y: e.clientY,
-                    cropX: cropData.x,
-                    cropY: cropData.y,
-                    cropW: cropData.width,
-                    cropH: cropData.height
+                    x: point.x - cropData.x, y: point.y - cropData.y
                 };
                 e.preventDefault();
-                e.stopPropagation();
             });
-        });
 
-        // 鼠标移动
-        document.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                const newX = e.clientX - dragStart.x;
-                const newY = e.clientY - dragStart.y;
+            cropHandles.forEach(handle => {
+                handle.addEventListener('mousedown', (e) => {
+                    isResizing = true;
+                    currentHandle = handle.classList[1];
 
-                cropData.x = Math.max(0, Math.min(newX, cropCanvas.width - cropData.width));
-                cropData.y = Math.max(0, Math.min(newY, cropCanvas.height - cropData.height));
+                    const point = getCanvasPoint(e.clientX, e.clientY);
+                    dragStart = {
+                        mouseX: point.x, mouseY: point.y,
+                        cropX: cropData.x, cropY: cropData.y,
+                        cropW: cropData.width, cropH: cropData.height
+                    };
+                    e.preventDefault(); e.stopPropagation();
+                });
+            });
 
-                updateCropBox();
-            } else if (isResizing && currentHandle) {
-                const dx = e.clientX - dragStart.x;
-                const dy = e.clientY - dragStart.y;
-                const ratio = currentRatio.width / currentRatio.height;
+            document.addEventListener('mousemove', (e) => {
+                const point = getCanvasPoint(e.clientX, e.clientY);
 
-                let newX = dragStart.cropX;
-                let newY = dragStart.cropY;
-                let newW = dragStart.cropW;
-                let newH = dragStart.cropH;
-
-                if (currentHandle === 'crop-handle-se') {
-                    newW = dragStart.cropW + dx;
-                    newH = newW / ratio;
-                } else if (currentHandle === 'crop-handle-sw') {
-                    newX = dragStart.cropX + dx;
-                    newW = dragStart.cropW - dx;
-                    newH = newW / ratio;
-                } else if (currentHandle === 'crop-handle-ne') {
-                    newY = dragStart.cropY + dy;
-                    newH = dragStart.cropH - dy;
-                    newW = newH * ratio;
-                } else if (currentHandle === 'crop-handle-nw') {
-                    newX = dragStart.cropX + dx;
-                    newW = dragStart.cropW - dx;
-                    newH = newW / ratio;
-                    newY = dragStart.cropY + (dragStart.cropH - newH);
+                if (isDragging) {
+                    const newX = point.x - dragStart.x;
+                    const newY = point.y - dragStart.y;
+                    cropData.x = Math.max(0, Math.min(newX, cropCanvas.width - cropData.width));
+                    cropData.y = Math.max(0, Math.min(newY, cropCanvas.height - cropData.height));
+                    updateCropBox();
                 }
 
-                // 限制最小尺寸
-                if (newW >= 50 && newH >= 50) {
-                    // 限制边界
-                    if (newX >= 0 && newY >= 0 &&
-                        newX + newW <= cropCanvas.width &&
-                        newY + newH <= cropCanvas.height) {
-                        cropData.x = newX;
-                        cropData.y = newY;
-                        cropData.width = newW;
-                        cropData.height = newH;
+                else if (isResizing && currentHandle) {
+                    const dx = point.x - dragStart.mouseX;
+                    const dy = point.y - dragStart.mouseY;
+                    const ratio = currentRatio.width / currentRatio.height;
+                    let newX = dragStart.cropX;
+                    let newY = dragStart.cropY;
+                    let newW = dragStart.cropW;
+                    let newH = dragStart.cropH;
+
+                    if (currentHandle === 'crop-handle-se') {
+                        newW = dragStart.cropW + dx;
+                        newH = newW / ratio;
+
+                        if (newX + newW > cropCanvas.width) {
+                            newW = cropCanvas.width - newX; newH = newW / ratio;
+                        }
+
+                        if (newY + newH > cropCanvas.height) {
+                            newH = cropCanvas.height - newY; newW = newH * ratio;
+                        }
+                    }
+
+                    else if (currentHandle === 'crop-handle-sw') {
+                        newW = dragStart.cropW - dx;
+
+                        if (dragStart.cropX + dx < 0) {
+                            newW = dragStart.cropX + dragStart.cropW;
+                        }
+
+                        newH = newW / ratio;
+
+                        if (newY + newH > cropCanvas.height) {
+                            newH = cropCanvas.height - newY; newW = newH * ratio;
+                        }
+
+                        newX = dragStart.cropX + (dragStart.cropW - newW);
+                    }
+
+                    else if (currentHandle === 'crop-handle-ne') {
+                        let proposedH = dragStart.cropH - dy;
+                        let proposedW = proposedH * ratio;
+
+                        if (dragStart.cropY + dy < 0) {
+                            proposedH = dragStart.cropY + dragStart.cropH; proposedW = proposedH * ratio;
+                        }
+
+                        if (dragStart.cropX + proposedW > cropCanvas.width) {
+                            proposedW = cropCanvas.width - dragStart.cropX; proposedH = proposedW / ratio;
+                        }
+
+                        newH = proposedH; newW = proposedW;
+                        newY = dragStart.cropY + (dragStart.cropH - newH);
+                    }
+
+                    else if (currentHandle === 'crop-handle-nw') {
+                        let proposedW = dragStart.cropW - dx;
+
+                        if (dragStart.cropX + dx < 0) {
+                            proposedW = dragStart.cropX + dragStart.cropW;
+                        }
+
+                        let proposedH = proposedW / ratio;
+
+                        if (dragStart.cropY + (dragStart.cropH - proposedH) < 0) {
+                            let maxH = dragStart.cropY + dragStart.cropH; proposedH = maxH; proposedW = proposedH * ratio;
+                        }
+
+                        newW = proposedW; newH = proposedH;
+                        newX = dragStart.cropX + (dragStart.cropW - newW);
+                        newY = dragStart.cropY + (dragStart.cropH - newH);
+                    }
+
+                    if (newW >= 50 && newH >= 50) {
+                        cropData.x = newX; cropData.y = newY; cropData.width = newW; cropData.height = newH;
                         updateCropBox();
                     }
                 }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false; isResizing = false; currentHandle = null;
+            });
+
+            // 触摸事件
+            cropBox.addEventListener('touchstart', (e) => {
+                if (e.target.classList.contains('crop-handle')) return;
+                isDragging = true;
+                const touch = e.touches[0];
+                const point = getCanvasPoint(touch.clientX, touch.clientY);
+
+                dragStart = {
+                    x: point.x - cropData.x, y: point.y - cropData.y
+                };
+                e.preventDefault();
             }
-        });
 
-        // 鼠标释放
-        document.addEventListener('mouseup', () => {
-            isDragging = false;
-            isResizing = false;
-            currentHandle = null;
-        });
+                , {
+                    passive: false
+                });
 
-        // 重置裁切区域按钮
-        resetCropBtn.addEventListener('click', () => {
-            resetCropArea();
-        });
+            cropHandles.forEach(handle => {
+                handle.addEventListener('touchstart', (e) => {
+                    isResizing = true;
+                    currentHandle = handle.classList[1];
+                    const touch = e.touches[0];
+                    const point = getCanvasPoint(touch.clientX, touch.clientY);
 
-        // 取消并重新上传
-        cancelCropBtn.addEventListener('click', () => {
-            uploadedImage = null;
-            cropContainer.style.display = 'none';
-            uploadPlaceholder.style.display = 'block';
-            cropResult.style.display = 'none';
-            imageInput.value = '';
-        });
+                    dragStart = {
+                        mouseX: point.x, mouseY: point.y,
+                        cropX: cropData.x, cropY: cropData.y,
+                        cropW: cropData.width, cropH: cropData.height
+                    };
+                    e.preventDefault(); e.stopPropagation();
+                }
 
-        // 执行裁切
-        cropBtn.addEventListener('click', () => {
-            if (!uploadedImage) return;
+                    , {
+                        passive: false
+                    });
+            });
 
-            // 计算实际裁切区域
-            const actualX = cropData.x / canvasScale;
-            const actualY = cropData.y / canvasScale;
-            const actualW = cropData.width / canvasScale;
-            const actualH = cropData.height / canvasScale;
+            document.addEventListener('touchmove', (e) => {
+                if (!isDragging && !isResizing) return;
+                const touch = e.touches[0];
+                const point = getCanvasPoint(touch.clientX, touch.clientY);
 
-            // 创建结果画布
-            resultCanvas.width = actualW;
-            resultCanvas.height = actualH;
-            const resultCtx = resultCanvas.getContext('2d');
+                if (isDragging) {
+                    const newX = point.x - dragStart.x;
+                    const newY = point.y - dragStart.y;
+                    cropData.x = Math.max(0, Math.min(newX, cropCanvas.width - cropData.width));
+                    cropData.y = Math.max(0, Math.min(newY, cropCanvas.height - cropData.height));
+                    updateCropBox();
+                    e.preventDefault();
+                }
 
-            // 裁切图像
-            resultCtx.drawImage(
-                uploadedImage,
-                actualX, actualY, actualW, actualH,
-                0, 0, actualW, actualH
-            );
+                else if (isResizing && currentHandle) {
+                    const dx = point.x - dragStart.mouseX;
+                    const dy = point.y - dragStart.mouseY;
+                    const ratio = currentRatio.width / currentRatio.height;
+                    let newX = dragStart.cropX;
+                    let newY = dragStart.cropY;
+                    let newW = dragStart.cropW;
+                    let newH = dragStart.cropH;
 
-            // 显示结果
-            cropResult.style.display = 'block';
+                    if (currentHandle === 'crop-handle-se') {
+                        newW = dragStart.cropW + dx;
+                        newH = newW / ratio;
 
-            // 滚动到结果
-            setTimeout(() => {
-                cropResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }, 100);
-        });
+                        if (newX + newW > cropCanvas.width) {
+                            newW = cropCanvas.width - newX; newH = newW / ratio;
+                        }
 
-        // 下载图片
-        downloadBtn.addEventListener('click', () => {
-            const link = document.createElement('a');
-            link.download = `cropped-${Date.now()}.png`;
-            link.href = resultCanvas.toDataURL('image/png');
-            link.click();
-        });
-
-        // 复制图片到剪贴板
-        copyBtn.addEventListener('click', async () => {
-            try {
-                // 将canvas转换为blob
-                resultCanvas.toBlob(async (blob) => {
-                    try {
-                        // 创建ClipboardItem并写入剪贴板
-                        const item = new ClipboardItem({ 'image/png': blob });
-                        await navigator.clipboard.write([item]);
-
-                        // 显示成功反馈
-                        const originalText = copyBtn.querySelector('span').getAttribute('data-i18n');
-                        copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copiedBtn;
-                        copyBtn.style.background = 'var(--success-gradient)';
-
-                        // 2秒后恢复原样
-                        setTimeout(() => {
-                            copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copyBtn;
-                            copyBtn.style.background = 'var(--primary-gradient)';
-                        }, 2000);
-                    } catch (err) {
-                        console.error('复制失败:', err);
-                        const errorMsg = currentLang === 'zh' ? '复制失败：' : 'Copy failed: ';
-                        alert(errorMsg + err.message);
+                        if (newY + newH > cropCanvas.height) {
+                            newH = cropCanvas.height - newY; newW = newH * ratio;
+                        }
                     }
-                }, 'image/png');
-            } catch (err) {
-                console.error('复制失败:', err);
-                const errorMsg = currentLang === 'zh' ?
-                    '复制失败，您的浏览器可能不支持此功能' :
-                    'Copy failed. Your browser may not support this feature';
-                alert(errorMsg);
+
+                    else if (currentHandle === 'crop-handle-sw') {
+                        newW = dragStart.cropW - dx;
+
+                        if (dragStart.cropX + dx < 0) {
+                            newW = dragStart.cropX + dragStart.cropW;
+                        }
+
+                        newH = newW / ratio;
+
+                        if (newY + newH > cropCanvas.height) {
+                            newH = cropCanvas.height - newY; newW = newH * ratio;
+                        }
+
+                        newX = dragStart.cropX + (dragStart.cropW - newW);
+                    }
+
+                    else if (currentHandle === 'crop-handle-ne') {
+                        let proposedH = dragStart.cropH - dy;
+                        let proposedW = proposedH * ratio;
+
+                        if (dragStart.cropY + dy < 0) {
+                            proposedH = dragStart.cropY + dragStart.cropH; proposedW = proposedH * ratio;
+                        }
+
+                        if (dragStart.cropX + proposedW > cropCanvas.width) {
+                            proposedW = cropCanvas.width - dragStart.cropX; proposedH = proposedW / ratio;
+                        }
+
+                        newH = proposedH; newW = proposedW;
+                        newY = dragStart.cropY + (dragStart.cropH - newH);
+                    }
+
+                    else if (currentHandle === 'crop-handle-nw') {
+                        let proposedW = dragStart.cropW - dx;
+
+                        if (dragStart.cropX + dx < 0) {
+                            proposedW = dragStart.cropX + dragStart.cropW;
+                        }
+
+                        let proposedH = proposedW / ratio;
+
+                        if (dragStart.cropY + (dragStart.cropH - proposedH) < 0) {
+                            let maxH = dragStart.cropY + dragStart.cropH; proposedH = maxH; proposedW = proposedH * ratio;
+                        }
+
+                        newW = proposedW; newH = proposedH;
+                        newX = dragStart.cropX + (dragStart.cropW - newW);
+                        newY = dragStart.cropY + (dragStart.cropH - newH);
+                    }
+
+                    if (newW >= 50 && newH >= 50) {
+                        cropData.x = newX; cropData.y = newY; cropData.width = newW; cropData.height = newH;
+                        updateCropBox();
+                    }
+
+                    e.preventDefault();
+                }
             }
-        });
 
-        // 裁切新图片
-        newCropBtn.addEventListener('click', () => {
-            cancelCropBtn.click();
-        });
+                , {
+                    passive: false
+                });
 
-        // 当比例改变时，更新裁切区域
-        const originalUpdateRatio = updateRatio;
-        updateRatio = function (width, height) {
-            originalUpdateRatio(width, height);
-            if (uploadedImage && cropContainer.style.display !== 'none') {
+            document.addEventListener('touchend', () => {
+                isDragging = false;
+                isResizing = false;
+                currentHandle = null;
+            });
+
+            // 重置裁切区域按钮
+            resetCropBtn.addEventListener('click', () => {
                 resetCropArea();
+            });
+
+            // 取消并重新上传
+            cancelCropBtn.addEventListener('click', () => {
+                uploadedImage = null;
+                cropContainer.style.display = 'none';
+                uploadPlaceholder.style.display = 'block';
+                cropResult.style.display = 'none';
+                imageInput.value = '';
+            });
+
+            // 执行裁切
+            cropBtn.addEventListener('click', () => {
+                if (!uploadedImage) return;
+
+                // 计算实际裁切区域
+                const actualX = cropData.x / canvasScale;
+                const actualY = cropData.y / canvasScale;
+                const actualW = cropData.width / canvasScale;
+                const actualH = cropData.height / canvasScale;
+
+                // 创建结果画布
+                resultCanvas.width = actualW;
+                resultCanvas.height = actualH;
+                const resultCtx = resultCanvas.getContext('2d');
+
+                // 裁切图像
+                resultCtx.drawImage(uploadedImage,
+                    actualX, actualY, actualW, actualH,
+                    0, 0, actualW, actualH);
+
+                // 显示结果
+                cropResult.style.display = 'block';
+
+                // 滚动到结果
+                setTimeout(() => {
+                    cropResult.scrollIntoView({
+                        behavior: 'smooth', block: 'nearest'
+                    });
+                }
+
+                    , 100);
+            });
+
+            // 下载图片
+            downloadBtn.addEventListener('click', () => {
+                const link = document.createElement('a');
+                link.download = `cropped-${Date.now()}.png`;
+                link.href = resultCanvas.toDataURL('image/png');
+                link.click();
+            });
+
+            // 复制图片到剪贴板
+            copyBtn.addEventListener('click', async () => {
+                try {
+
+                    // 将canvas转换为blob
+                    resultCanvas.toBlob(async (blob) => {
+                        try {
+
+                            // 创建ClipboardItem并写入剪贴板
+                            const item = new ClipboardItem({
+                                'image/png': blob
+                            });
+                            await navigator.clipboard.write([item]);
+
+                            // 显示成功反馈
+                            const originalText = copyBtn.querySelector('span').getAttribute('data-i18n');
+                            copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copiedBtn;
+                            copyBtn.style.background = 'var(--success-gradient)';
+
+                            // 2秒后恢复原样
+                            setTimeout(() => {
+                                copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copyBtn;
+                                copyBtn.style.background = 'var(--primary-gradient)';
+                            }
+
+                                , 2000);
+                        }
+
+                        catch (err) {
+                            console.error('复制失败:', err);
+                            const errorMsg = currentLang === 'zh' ? '复制失败：' : 'Copy failed: ';
+                            alert(errorMsg + err.message);
+                        }
+                    }
+
+                        , 'image/png');
+                }
+
+                catch (err) {
+                    console.error('复制失败:', err);
+                    const errorMsg = currentLang === 'zh' ? '复制失败，您的浏览器可能不支持此功能' : 'Copy failed. Your browser may not support this feature';
+                    alert(errorMsg);
+                }
+            });
+
+            // 裁切新图片
+            newCropBtn.addEventListener('click', () => {
+                cancelCropBtn.click();
+            });
+
+            // 当比例改变时，更新裁切区域
+            const originalUpdateRatio = updateRatio;
+
+            updateRatio = function (width, height) {
+                originalUpdateRatio(width, height);
+
+                if (uploadedImage && cropContainer.style.display !== 'none') {
+                    resetCropArea();
+                }
             }
-        };
 
-        // ========== 开发者卡片功能 ==========
-        const devCard = document.getElementById('devCard');
-        const toggleDevCardBtn = document.getElementById('toggleDevCard');
-        const devAvatar = document.getElementById('devAvatar');
-        const wechatQR = document.getElementById('wechatQR');
+                ;
 
-        // 嵌入头像图片
-        // 这里放置用户的头像图片路径，如果无法外部加载，请将图片转为base64
-        // devAvatar.src = 'path/to/avatar.png';
+            // ========== 开发者卡片功能 ==========
+            const devCard = document.getElementById('devCard');
+            const toggleDevCardBtn = document.getElementById('toggleDevCard');
+            const devAvatar = document.getElementById('devAvatar');
+            const wechatQR = document.getElementById('wechatQR');
 
-        // 嵌入微信二维码
-        // wechatQR.src = 'path/to/wechat_qr.png';
+            // 嵌入头像图片
+            // 这里放置用户的头像图片路径，如果无法外部加载，请将图片转为base64
+            // devAvatar.src = 'path/to/avatar.png';
 
-        // 收起/展开功能
-        let isCollapsed = false;
-        toggleDevCardBtn.addEventListener('click', () => {
-            isCollapsed = !isCollapsed;
-            devCard.classList.toggle('collapsed', isCollapsed);
-            toggleDevCardBtn.textContent = isCollapsed ?
-                translations[currentLang].developer.expand :
-                translations[currentLang].developer.collapse;
-        });
+            // 嵌入微信二维码
+            // wechatQR.src = 'path/to/wechat_qr.png';
 
-        // 点击头像展开
-        devAvatar.addEventListener('click', () => {
-            if (isCollapsed) {
-                isCollapsed = false;
-                devCard.classList.remove('collapsed');
-            }
-        });
-    </script>
+            // 收起/展开功能
+            let isCollapsed = false;
+
+            toggleDevCardBtn.addEventListener('click', () => {
+                isCollapsed = !isCollapsed;
+                devCard.classList.toggle('collapsed', isCollapsed);
+                toggleDevCardBtn.textContent = isCollapsed ? translations[currentLang].developer.expand : translations[currentLang].developer.collapse;
+            });
+
+            // 点击头像展开
+            devAvatar.addEventListener('click', () => {
+                if (isCollapsed) {
+                    isCollapsed = false;
+                    devCard.classList.remove('collapsed');
+                }
+            });
+        </script>
 </body>
 
 </html>
