@@ -1362,11 +1362,14 @@
                 order: -1;
                 /* 确保在最前 */
                 margin-top: 10px !important;
+                z-index: 2000 !important;
+                /* 提高层级，使QR弹窗盖过下面的控制栏 */
             }
 
             .controls-bar {
                 justify-content: center;
                 order: -2;
+                z-index: 1000 !important;
                 /* 放在开发者卡片之前或之后，这里设为-2会比-1更前? 不，body是flex column吗？不是。 */
                 /* 它们是body的直接子元素。body默认是block。static positioning会按源码顺序渲染。
                    HTML顺序: developer-card, controls-bar. 
@@ -1374,9 +1377,7 @@
                 */
             }
 
-            .dev-toggle {
-                display: none;
-            }
+            /* 移除 .dev-toggle { display: none; } 以便在手机端显示收起按钮 */
 
             .developer-card.collapsed {
                 max-width: 100%;
@@ -1440,6 +1441,17 @@
                 margin: 10px 0;
             }
 
+            /* 修复移动端二维码被遮挡问题 */
+            .qr-popup {
+                left: 0;
+                top: 100%;
+                margin-left: 0;
+                margin-top: 8px;
+                width: 100%;
+                position: absolute;
+                z-index: 1002;
+            }
+
             /* 手机端按钮布局优化 */
             .crop-controls,
             .crop-result-actions {
@@ -1499,9 +1511,9 @@
                     <div class="qr-label" data-i18n="developer.scanQR">扫码关注</div>
                 </div>
             </div>
-            <div class="social-link" style="cursor: default; background: var(--preview-bg);">
+            <div class="social-link" id="authorWechatBtn" style="cursor: pointer;">
                 <span class="social-icon">👤</span><span class="social-text"
-                    style="font-size: 12px;">crazytoolman</span>
+                    data-i18n="developer.addWechat">加作者个人微信</span>
             </div>
         </div>
         <div class="dev-toggle"><button class="toggle-btn" id="toggleDevCard" data-i18n="developer.collapse">收起</button>
@@ -1825,7 +1837,9 @@
 
                     ,
                     developer: {
-                        name: '工具狂', title: 'Developer', douyin: '抖音', wechat: '微信公众号', scanQR: '扫码关注', collapse: '收起', expand: '展开'
+                        name: '工具狂', title: '独立开发者', collapse: '收起', expand: '展开',
+                        douyin: '抖音', wechat: '微信公众号', scanQR: '扫码关注',
+                        addWechat: '加作者个人微信'
                     }
                 }
 
@@ -1877,7 +1891,9 @@
 
                     ,
                     developer: {
-                        name: 'ToolBuddy', title: 'Developer', douyin: 'Douyin', wechat: 'WeChat Official', scanQR: 'Scan to Follow', collapse: 'Collapse', expand: 'Expand'
+                        name: 'CrazyToolMan', title: 'Indie Developer', collapse: 'Collapse', expand: 'Expand',
+                        douyin: 'TikTok', wechat: 'WeChat OA', scanQR: 'Scan to Follow',
+                        addWechat: 'Add Author WeChat'
                     }
                 }
             }
@@ -2816,6 +2832,7 @@
             const toggleDevCardBtn = document.getElementById('toggleDevCard');
             const devAvatar = document.getElementById('devAvatar');
             const wechatQR = document.getElementById('wechatQR');
+            const authorWechatBtn = document.getElementById('authorWechatBtn');
 
             // 嵌入头像图片
             // 这里放置用户的头像图片路径，如果无法外部加载，请将图片转为base64
@@ -2838,6 +2855,29 @@
                 if (isCollapsed) {
                     isCollapsed = false;
                     devCard.classList.remove('collapsed');
+                }
+            });
+
+            // 点击加作者微信
+            authorWechatBtn.addEventListener('click', () => {
+                const textSpan = authorWechatBtn.querySelector('.social-text');
+                const wechatId = '微信号: crazytoolman';
+                const originalText = translations[currentLang].developer.addWechat;
+
+                if (textSpan.textContent !== wechatId) {
+                    textSpan.textContent = wechatId;
+                    authorWechatBtn.style.background = 'var(--accent-gradient)';
+                    authorWechatBtn.style.color = 'white';
+
+                    // 复制到剪贴板
+                    navigator.clipboard.writeText('crazytoolman').then(() => {
+                        // Optional: show copied feedback
+                    }).catch(err => console.error('Copy failed', err));
+
+                } else {
+                    textSpan.textContent = originalText;
+                    authorWechatBtn.style.background = '';
+                    authorWechatBtn.style.color = '';
                 }
             });
         </script>
