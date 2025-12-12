@@ -69,14 +69,13 @@
 
 ## 👤 作者 (Author)
 
-**工具狂 (CrazyToolMan)**
+**工具狂 (ToolBuddy)**
 - 📺 Bilibili: [点击关注](https://space.bilibili.com/33410454)
 - ▶️ YouTube: [点击关注](https://www.youtube.com/@crazytoolman)
 - 💬 WeChat: `crazytoolman`
+- 🧡 微信赞赏码（给作者买奶茶）:
 
-<img src="./sponsor.jpg" alt="微信赞赏码" width="200" />
-<br>
-<small>微信赞赏码（给作者买奶茶）</small>
+<img src="./sponsor.jpg" alt="微信赞赏码" width="500" />
 
 ## 📄 许可证 (License)
 

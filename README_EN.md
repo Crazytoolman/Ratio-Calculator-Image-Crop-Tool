@@ -73,10 +73,9 @@ Deeply customized for mobile user habits:
 - 📺 Bilibili: [Follow](https://space.bilibili.com/33410454)
 - ▶️ YouTube: [Follow](https://www.youtube.com/@crazytoolman)
 - 💬 WeChat: `crazytoolman`
+- 🧡 WeChat Reward Code (Buy the author a tea):
 
-<img src="./sponsor.jpg" alt="WeChat Reward Code" width="200" />
-<br>
-<small>WeChat Reward Code (Buy the author a tea)</small>
+<img src="./sponsor.jpg" alt="WeChat Reward Code" width="500" />
 
 ## 📄 License
 
