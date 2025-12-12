@@ -1607,10 +1607,21 @@
                         <div class="crop-controls">
                             <button class="crop-action-btn crop-btn-primary" id="cropBtn"><span
                                     data-i18n="imageCrop.cropBtn">✂️ 裁切图片</span></button>
+                            <button class="crop-action-btn crop-btn-secondary" id="rotateBtn"><span
+                                    data-i18n="imageCrop.rotateBtn">🔄 旋转 90°</span></button>
                             <button class="crop-action-btn crop-btn-secondary" id="resetCropBtn"><span
                                     data-i18n="imageCrop.resetBtn">🔄 重置裁切区域</span></button>
                             <button class="crop-action-btn crop-btn-danger" id="cancelCropBtn"><span
                                     data-i18n="imageCrop.cancelBtn">❌ 取消并重新上传</span></button>
+                        </div>
+                        <div class="rotation-controls"
+                            style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; padding: 0 10px;">
+                            <span data-i18n="imageCrop.rotateLabel"
+                                style="font-size: 14px; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">旋转角度:</span>
+                            <input type="range" id="rotationSlider" min="-180" max="180" value="0"
+                                style="flex: 1; accent-color: #0071e3;">
+                            <span id="rotationValue"
+                                style="min-width: 45px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-primary);">0°</span>
                         </div>
                         <!-- 裁切信息 -->
                         <div class="crop-info">
@@ -1780,7 +1791,9 @@
                     ,
                     imageCrop: {
                         title: '✂️ 图像裁切工具', uploadText: '点击上传、拖拽或粘贴图片到这里', uploadHint: '支持 JPG、PNG、GIF 等格式', uploadBtn: '选择图片',
-                        cropBtn: '✂️ 裁切图片', resetBtn: '🔄 重置裁切区域', cancelBtn: '❌ 取消并重新上传',
+                        cropBtn: '✂️ 裁切图片', rotateBtn: '🔄 旋转 90°', rotateLabel: '旋转角度:',
+                        resetBtn: '🔄 重置裁切区域',
+                        cancelBtn: '❌ 取消并重新上传',
                         originalSize: '原始尺寸:', cropArea: '裁切区域:', currentRatio: '当前比例:', resultTitle: '裁切结果预览',
                         downloadBtn: '💾 下载图片 (PNG)', copyBtn: '📋 复制图片', copiedBtn: '✅ 已复制!', newCropBtn: '🔄 裁切新图片'
                     }
@@ -1830,7 +1843,9 @@
                     ,
                     imageCrop: {
                         title: '✂️ Image Crop Tool', uploadText: 'Click to upload, drag and drop, or paste an image here', uploadHint: 'Supports JPG, PNG, GIF and more', uploadBtn: 'Select Image',
-                        cropBtn: '✂️ Crop Image', resetBtn: '🔄 Reset Crop Area', cancelBtn: '❌ Cancel & Reupload',
+                        cropBtn: '✂️ Crop Image', rotateBtn: '🔄 Rotate 90°', rotateLabel: 'Rotation:',
+                        resetBtn: '🔄 Reset Crop Area',
+                        cancelBtn: '❌ Cancel & Re-upload',
                         originalSize: 'Original Size:', cropArea: 'Crop Area:', currentRatio: 'Current Ratio:', resultTitle: 'Cropped Result Preview',
                         downloadBtn: '💾 Download (PNG)', copyBtn: '📋 Copy Image', copiedBtn: '✅ Copied!', newCropBtn: '🔄 Crop New Image'
                     }
@@ -2108,6 +2123,7 @@
                 ;
             let currentHandle = null;
             let canvasScale = 1;
+            let currentRotation = 0; // 0, 90, 180, 270
 
             const imageInput = document.getElementById('imageInput');
             const uploadBtn = document.getElementById('uploadBtn');
@@ -2118,6 +2134,9 @@
             const cropCtx = cropCanvas.getContext('2d');
             const cropBox = document.getElementById('cropBox');
             const cropBtn = document.getElementById('cropBtn');
+            const rotateBtn = document.getElementById('rotateBtn');
+            const rotationSlider = document.getElementById('rotationSlider');
+            const rotationValue = document.getElementById('rotationValue');
             const resetCropBtn = document.getElementById('resetCropBtn');
             const cancelCropBtn = document.getElementById('cancelCropBtn');
             const originalSizeElem = document.getElementById('originalSize');
@@ -2180,6 +2199,7 @@
 
                     img.onload = () => {
                         uploadedImage = img;
+                        currentRotation = 0;
                         initCropArea();
                         uploadPlaceholder.style.display = 'none';
                         cropContainer.style.display = 'block';
@@ -2195,10 +2215,26 @@
             }
 
             function initCropArea() {
+                drawCanvas();
+                resetCropArea();
+
+                originalSizeElem.textContent = `${uploadedImage.width} × ${uploadedImage.height}`;
+                updateCropInfo();
+            }
+
+            function drawCanvas() {
                 const maxWidth = cropContainer.clientWidth || 800;
                 const maxHeight = 600;
-                let displayWidth = uploadedImage.width;
-                let displayHeight = uploadedImage.height;
+
+                // 计算旋转后的边界框大小 (Bounding Box)
+                const rad = currentRotation * Math.PI / 180;
+                const sin = Math.abs(Math.sin(rad));
+                const cos = Math.abs(Math.cos(rad));
+                const rotatedWidth = uploadedImage.width * cos + uploadedImage.height * sin;
+                const rotatedHeight = uploadedImage.width * sin + uploadedImage.height * cos;
+
+                let displayWidth = rotatedWidth;
+                let displayHeight = rotatedHeight;
 
                 if (displayWidth > maxWidth || displayHeight > maxHeight) {
                     const ratio = Math.min(maxWidth / displayWidth, maxHeight / displayHeight);
@@ -2206,14 +2242,28 @@
                     displayHeight *= ratio;
                 }
 
-                canvasScale = displayWidth / uploadedImage.width;
+                canvasScale = displayWidth / rotatedWidth;
                 cropCanvas.width = displayWidth;
                 cropCanvas.height = displayHeight;
-                cropCtx.drawImage(uploadedImage, 0, 0, displayWidth, displayHeight);
-                resetCropArea();
 
-                originalSizeElem.textContent = `${uploadedImage.width} × ${uploadedImage.height}`;
-                updateCropInfo();
+                // 清空画布并保存状态
+                cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+                cropCtx.save();
+
+                // 移动原点到中心
+                cropCtx.translate(cropCanvas.width / 2, cropCanvas.height / 2);
+
+                // 缩放以适应画布 (必须在旋转前缩放吗？不，坐标系变换顺序很重要)
+                // 我们的目标是把图片画在中心，旋转，并且整体缩放到 canvasScale
+                cropCtx.scale(canvasScale, canvasScale);
+
+                // 旋转
+                cropCtx.rotate(rad);
+
+                // 绘制图片 (偏移量为图片原始宽高的一半的负值)
+                cropCtx.drawImage(uploadedImage, -uploadedImage.width / 2, -uploadedImage.height / 2);
+
+                cropCtx.restore();
             }
 
             function resetCropArea() {
@@ -2546,6 +2596,99 @@
                 currentHandle = null;
             });
 
+            // 辅助函数：更新UI
+            function updateRotationUI() {
+                rotationSlider.value = currentRotation;
+                rotationValue.textContent = Math.round(currentRotation) + '°';
+                drawCanvas();
+                resetCropArea();
+            }
+
+            // 旋转图片按钮 (90度步进)
+            rotateBtn.addEventListener('click', () => {
+                let r = currentRotation + 90;
+                if (r > 180) r -= 360;
+                currentRotation = r;
+                updateRotationUI();
+            });
+
+            // 滑动条控制
+            rotationSlider.addEventListener('input', (e) => {
+                currentRotation = parseFloat(e.target.value);
+                rotationValue.textContent = currentRotation + '°';
+                drawCanvas();
+                resetCropArea();
+            });
+
+            // --- 触摸旋转手势支持 ---
+            let initialRotation = 0;
+            let initialAngle = 0;
+
+            cropCanvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    isDragging = false; // 禁用单指拖拽
+                    isResizing = false;
+                    const p1 = e.touches[0];
+                    const p2 = e.touches[1];
+                    initialAngle = Math.atan2(p2.clientY - p1.clientY, p2.clientX - p1.clientX) * 180 / Math.PI;
+                    initialRotation = currentRotation;
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            cropCanvas.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2) {
+                    const p1 = e.touches[0];
+                    const p2 = e.touches[1];
+                    const currentAngle = Math.atan2(p2.clientY - p1.clientY, p2.clientX - p1.clientX) * 180 / Math.PI;
+                    const delta = currentAngle - initialAngle;
+
+                    let r = initialRotation + delta;
+                    // Normalize to -180 to 180
+                    while (r <= -180) r += 360;
+                    while (r > 180) r -= 360;
+
+                    currentRotation = r;
+                    // 更新但不重置裁切框(太频繁了)，只重绘
+                    rotationSlider.value = currentRotation;
+                    rotationValue.textContent = Math.round(currentRotation) + '°';
+                    drawCanvas();
+                    // 这里不调用 resetCropArea 以免打断用户操作体验，但可能导致裁切框“漂移”。
+                    // 理想情况应重新计算 cropData 相对于新画布的位置，这里简化处理：
+                    // 由于drawCanvas会改变画布尺寸，cropData (px) 会失效，所以必须 reset 或 复杂换算。
+                    // 为流畅起见，手势结束时再 reset 或 保持中心。
+                    e.preventDefault();
+                }
+            }, { passive: false });
+
+            cropCanvas.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) {
+                    resetCropArea(); // 旋转结束后适配一次裁切框
+                }
+            });
+
+            // --- Mac 触控板旋转支持 (Safari gesture events) ---
+            cropCanvas.addEventListener('gesturestart', (e) => {
+                e.preventDefault();
+                initialRotation = currentRotation;
+            });
+
+            cropCanvas.addEventListener('gesturechange', (e) => {
+                e.preventDefault();
+                let r = initialRotation + e.rotation;
+                while (r <= -180) r += 360;
+                while (r > 180) r -= 360;
+                currentRotation = r;
+                rotationSlider.value = currentRotation;
+                rotationValue.textContent = Math.round(currentRotation) + '°';
+                drawCanvas();
+            });
+
+            cropCanvas.addEventListener('gestureend', (e) => {
+                e.preventDefault();
+                resetCropArea();
+            });
+
             // 重置裁切区域按钮
             resetCropBtn.addEventListener('click', () => {
                 resetCropArea();
@@ -2564,7 +2707,7 @@
             cropBtn.addEventListener('click', () => {
                 if (!uploadedImage) return;
 
-                // 计算实际裁切区域
+                // 计算实际裁切区域 (相对于显示画布)
                 const actualX = cropData.x / canvasScale;
                 const actualY = cropData.y / canvasScale;
                 const actualW = cropData.width / canvasScale;
@@ -2575,8 +2718,25 @@
                 resultCanvas.height = actualH;
                 const resultCtx = resultCanvas.getContext('2d');
 
-                // 裁切图像
-                resultCtx.drawImage(uploadedImage,
+                // 为了正确裁切旋转后的图片，我们需要一个临时的离屏Canvas先把原图旋转好
+                // 临时的 Canvas 大小必须是旋转后的 Bounding Box 大小
+                const rad = currentRotation * Math.PI / 180;
+                const sin = Math.abs(Math.sin(rad));
+                const cos = Math.abs(Math.cos(rad));
+                const rotatedWidth = uploadedImage.width * cos + uploadedImage.height * sin;
+                const rotatedHeight = uploadedImage.width * sin + uploadedImage.height * cos;
+
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = rotatedWidth;
+                tempCanvas.height = rotatedHeight;
+                const tempCtx = tempCanvas.getContext('2d');
+
+                tempCtx.translate(rotatedWidth / 2, rotatedHeight / 2);
+                tempCtx.rotate(rad);
+                tempCtx.drawImage(uploadedImage, -uploadedImage.width / 2, -uploadedImage.height / 2);
+
+                // 从旋转后的临时Canvas中裁切
+                resultCtx.drawImage(tempCanvas,
                     actualX, actualY, actualW, actualH,
                     0, 0, actualW, actualH);
 
