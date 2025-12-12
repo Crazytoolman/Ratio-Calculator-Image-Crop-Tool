@@ -2604,45 +2604,32 @@
             // 复制图片到剪贴板
             copyBtn.addEventListener('click', async () => {
                 try {
+                    // 使用 toDataURL + fetch 替代 toBlob 回调，以保持 User Activation 状态 (解决iOS兼容性问题)
+                    const dataUrl = resultCanvas.toDataURL('image/png');
+                    const response = await fetch(dataUrl);
+                    const blob = await response.blob();
 
-                    // 将canvas转换为blob
-                    resultCanvas.toBlob(async (blob) => {
-                        try {
+                    // 创建ClipboardItem并写入剪贴板
+                    const item = new ClipboardItem({
+                        'image/png': blob
+                    });
+                    await navigator.clipboard.write([item]);
 
-                            // 创建ClipboardItem并写入剪贴板
-                            const item = new ClipboardItem({
-                                'image/png': blob
-                            });
-                            await navigator.clipboard.write([item]);
+                    // 显示成功反馈
+                    const originalText = copyBtn.querySelector('span').getAttribute('data-i18n');
+                    copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copiedBtn;
+                    copyBtn.style.background = 'var(--success-gradient)';
 
-                            // 显示成功反馈
-                            const originalText = copyBtn.querySelector('span').getAttribute('data-i18n');
-                            copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copiedBtn;
-                            copyBtn.style.background = 'var(--success-gradient)';
+                    // 2秒后恢复原样
+                    setTimeout(() => {
+                        copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copyBtn;
+                        copyBtn.style.background = 'var(--accent-gradient)';
+                    }, 2000);
 
-                            // 2秒后恢复原样
-                            setTimeout(() => {
-                                copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copyBtn;
-                                copyBtn.style.background = 'var(--primary-gradient)';
-                            }
-
-                                , 2000);
-                        }
-
-                        catch (err) {
-                            console.error('复制失败:', err);
-                            const errorMsg = currentLang === 'zh' ? '复制失败：' : 'Copy failed: ';
-                            alert(errorMsg + err.message);
-                        }
-                    }
-
-                        , 'image/png');
-                }
-
-                catch (err) {
+                } catch (err) {
                     console.error('复制失败:', err);
-                    const errorMsg = currentLang === 'zh' ? '复制失败，您的浏览器可能不支持此功能' : 'Copy failed. Your browser may not support this feature';
-                    alert(errorMsg);
+                    const errorMsg = currentLang === 'zh' ? '复制失败 (iOS请尝试长按图片保存)：' : 'Copy failed (Try long-press to save): ';
+                    alert(errorMsg + err.message);
                 }
             });
 
