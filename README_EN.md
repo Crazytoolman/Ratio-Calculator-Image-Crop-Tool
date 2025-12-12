@@ -1,0 +1,79 @@
+# Ratio Calculator & Image Crop Tool
+
+An elegant, modern online tool integrating **AspectRatio Calculation** and **Image Cropping**. Designed with a refined Apple-style aesthetic, supporting Dark Mode, English/Chinese localization, and optimized for mobile touch interactions.
+
+[![English](https://img.shields.io/badge/Language-English-blue.svg)](./README_EN.md) [![Chinese](https://img.shields.io/badge/Language-中文-red.svg)](./README.md)
+
+![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+
+## ✨ Features
+
+### 🤖 AI Painting Companion (New!)
+- **Draw Things Pre-processing**: Specially optimized for pre-processing images before AI generation. Through precise ratio cropping and rotation, ensuring input images perfectly match AI model dimensions, significantly improving output quality.
+
+### 📐 Smart Ratio Calculator
+- **Common Presets**: One-click selection for 16:9, 4:3, 1:1, 9:16 (Portrait), and more.
+- **Custom Calculation**: Input width or height to automatically calculate the other, or input resolution to calculate the ratio.
+- **Dynamic Preview**: Real-time visual preview box to intuitively feel the shape differences of various ratios.
+
+### ✂️ Powerful Image Cropping
+- **Versatile Uploads**: Supports click-to-upload, drag-and-drop, and **Ctrl+V paste**.
+- **Smart Cropping**: LockAspectRatio cropping (supports 1:1, 16:9, etc.) or freeform adjustment.
+- **Free Rotation**: 
+  - Supports **90° step rotation**.
+  - Supports **Slider free-angle rotation**.
+  - **Gesture Support**: Two-finger rotation on mobile, two-finger rotation on Mac trackpad.
+- **HD Export**: Download results in lossless PNG format.
+- **Clipboard Integration**: One-click copy result (Perfectly compatible with iOS/Android and Desktop).
+
+### 🎨 Ultimate UI/UX Experience
+- **Apple-Style Design**: Glassmorphism, smooth animations, and refined shadow details.
+- **Dark Mode**: Perfectly adapts to system appearance, with manual toggle support.
+- **Internationalization (i18n)**: Real-time switching between **Simplified Chinese** and **English**.
+- **Fully Responsive**: Perfectly adapted for Desktop, Tablet, and Mobile (Solved mobile UI overlapping issues).
+
+## 🚀 Getting Started
+
+### Method 1: Online Access (Recommended)
+Access the officially deployed tool directly, ready to use on PC and Mobile:
+👉 **[crop.toolbuddy.art](http://crop.toolbuddy.art)**
+
+### Method 2: Local Execution
+If you wish to use it in an offline environment:
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/Crazytoolman/Ratio-Calculator-Image-Crop-Tool.git
+   ```
+2. To ensure features like clipboard copying work correctly (due to browser security policies), it is recommended to run a local server:
+   ```bash
+   # Python
+   python -m http.server 8000
+   ```
+
+## 📱 Mobile Optimization
+
+Deeply customized for mobile user habits:
+- **Touch Optimization**: Enlarged crop handles, two-finger rotation gestures.
+- **UI Adaptation**: Smart layout adjustments to prevent top control bars from obscuring content.
+- **Compatibility**: Solved clipboard write permission compatibility issues on iOS Safari.
+
+## 🛠️ Tech Stack
+
+- **Core**: HTML5, CSS3 (Flexbox/Grid), Vanilla JavaScript (ES6+).
+- **Zero Dependencies**: No third-party frameworks (like React, Vue, jQuery), lightweight and fast.
+- **Canvas API**: Used for high-performance image processing (Rotation, Scaling, Cropping).
+
+## 👤 Author
+
+**CrazyToolMan**
+- 📺 Bilibili: [Follow](https://space.bilibili.com/33410454)
+- ▶️ YouTube: [Follow](https://www.youtube.com/@crazytoolman)
+- 💬 WeChat: `crazytoolman`
+
+## 📄 License
+
+This project is open-sourced under the **GPL-3.0 License**.
