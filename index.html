@@ -835,6 +835,7 @@
         }
 
         .crop-container {
+            position: relative;
             animation: fadeIn 0.5s ease;
         }
 
@@ -844,7 +845,7 @@
             width: fit-content;
             margin: 0 auto 24px auto;
             border-radius: 16px;
-            overflow: hidden;
+            overflow: auto;
             background: #000;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
@@ -1341,6 +1342,57 @@
             }
         }
 
+        /* Zoom Controls */
+        .zoom-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .zoom-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Small Floating Zoom Buttons */
+        .zoom-btn-small {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .zoom-btn-small:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .zoom-btn-small:active {
+            transform: scale(0.95);
+        }
+
         @media (max-width: 768px) {
             .ratio-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -1463,6 +1515,48 @@
             .crop-action-btn {
                 width: 100%;
                 min-width: 0;
+            }
+
+            /* Toast Message */
+            .toast-message {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 16px;
+                z-index: 10000;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+                pointer-events: none;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            }
+
+            .toast-message.show {
+                opacity: 1;
+            }
+
+            /* Zoom Input Styling */
+            .zoom-input {
+                background: transparent;
+                border: none;
+                color: white;
+                font-size: 12px;
+                width: 48px;
+                text-align: center;
+                outline: none;
+                font-family: inherit;
+                -moz-appearance: textfield;
+                /* Firefox */
+            }
+
+            .zoom-input::-webkit-outer-spin-button,
+            .zoom-input::-webkit-inner-spin-button {
+                -webkit-appearance: none;
+                margin: 0;
             }
 
             .upload-placeholder {
@@ -1599,19 +1693,31 @@
                     </div>
                     <!-- 裁切区域 -->
                     <div class="crop-container" id="cropContainer" style="display: none;">
-                        <div class="crop-canvas-wrapper">
-                            <canvas id="cropCanvas"></canvas>
-                            <div class="crop-overlay" id="cropOverlay">
-                                <div class="crop-box" id="cropBox">
-                                    <div class="crop-handle crop-handle-nw"></div>
-                                    <div class="crop-handle crop-handle-ne"></div>
-                                    <div class="crop-handle crop-handle-sw"></div>
-                                    <div class="crop-handle crop-handle-se"></div>
-                                    <div class="crop-grid">
-                                        <div class="crop-grid-line crop-grid-v"></div>
-                                        <div class="crop-grid-line crop-grid-v"></div>
-                                        <div class="crop-grid-line crop-grid-h"></div>
-                                        <div class="crop-grid-line crop-grid-h"></div>
+                        <!-- Floating Zoom Controls -->
+                        <div class="zoom-controls-floating"
+                            style="position: absolute; top: 16px; right: 16px; z-index: 100; display: flex; gap: 8px; background: rgba(0,0,0,0.6); padding: 4px; border-radius: 8px; backdrop-filter: blur(4px); align-items: center;">
+                            <button id="zoomOutBtn" class="zoom-btn-small" title="Zoom Out">-</button>
+                            <input type="number" id="zoomInput" class="zoom-input" value="100" min="10" max="5000">
+                            <span style="color: white; font-size: 12px; margin-right: 4px;">%</span>
+                            <button id="zoomInBtn" class="zoom-btn-small" title="Zoom In">+</button>
+                        </div>
+                        <div class="crop-canvas-wrapper" style="position: relative;">
+
+                            <div class="crop-content-layer"
+                                style="position: relative; width: fit-content; min-width: 100%;">
+                                <canvas id="cropCanvas"></canvas>
+                                <div class="crop-overlay" id="cropOverlay">
+                                    <div class="crop-box" id="cropBox">
+                                        <div class="crop-handle crop-handle-nw"></div>
+                                        <div class="crop-handle crop-handle-ne"></div>
+                                        <div class="crop-handle crop-handle-sw"></div>
+                                        <div class="crop-handle crop-handle-se"></div>
+                                        <div class="crop-grid">
+                                            <div class="crop-grid-line crop-grid-v"></div>
+                                            <div class="crop-grid-line crop-grid-v"></div>
+                                            <div class="crop-grid-line crop-grid-h"></div>
+                                            <div class="crop-grid-line crop-grid-h"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1788,6 +1894,8 @@
                 <p data-i18n="instructions.supported">支持的比例包括常用的照片比例、屏幕比例等, 也可以自定义任意比例进行计算和裁切。</p>
             </div>
         </div>
+        <!-- Toast Container -->
+        <div id="toast" class="toast-message"></div>
         <script> // ========== 国际化系统 ==========
 
             const translations = {
@@ -2138,11 +2246,11 @@
             }
 
                 ;
-            let currentHandle = null;
+
             let canvasScale = 1;
             let currentRotation = 0; // 0, 90, 180, 270
+            let currentZoom = 1;
 
-            const imageInput = document.getElementById('imageInput');
             const uploadBtn = document.getElementById('uploadBtn');
             const uploadPlaceholder = document.getElementById('uploadPlaceholder');
             const uploadArea = document.getElementById('uploadArea');
@@ -2164,7 +2272,12 @@
             const downloadBtn = document.getElementById('downloadBtn');
             const copyBtn = document.getElementById('copyBtn');
             const newCropBtn = document.getElementById('newCropBtn');
+            const cropOverlay = document.getElementById('cropOverlay');
             const cropHandles = document.querySelectorAll('.crop-handle');
+            const zoomInBtn = document.getElementById('zoomInBtn');
+            const zoomOutBtn = document.getElementById('zoomOutBtn');
+            const zoomInput = document.getElementById('zoomInput');
+
 
             uploadBtn.addEventListener('click', () => imageInput.click());
 
@@ -2217,9 +2330,16 @@
                     img.onload = () => {
                         uploadedImage = img;
                         currentRotation = 0;
-                        initCropArea();
+                        currentZoom = 1;
+
                         uploadPlaceholder.style.display = 'none';
                         cropContainer.style.display = 'block';
+
+                        // Must be called after container is visible to get correct clientWidth
+                        updateMaxZoom();
+
+                        zoomInput.value = '100';
+                        initCropArea();
                         cropResult.style.display = 'none';
                     }
 
@@ -2259,7 +2379,23 @@
                     displayHeight *= ratio;
                 }
 
+                // Apply Zoom
+                displayWidth *= currentZoom;
+                displayHeight *= currentZoom;
+
+                const oldCanvasScale = canvasScale;
                 canvasScale = displayWidth / rotatedWidth;
+
+                // Update cropData to match new scale if it exists (not first draw)
+                if (oldCanvasScale && oldCanvasScale !== canvasScale && cropData.width) {
+                    const scaleRatio = canvasScale / oldCanvasScale;
+                    cropData.x *= scaleRatio;
+                    cropData.y *= scaleRatio;
+                    cropData.width *= scaleRatio;
+                    cropData.height *= scaleRatio;
+                    updateCropBox();
+                }
+
                 cropCanvas.width = displayWidth;
                 cropCanvas.height = displayHeight;
 
@@ -2270,8 +2406,7 @@
                 // 移动原点到中心
                 cropCtx.translate(cropCanvas.width / 2, cropCanvas.height / 2);
 
-                // 缩放以适应画布 (必须在旋转前缩放吗？不，坐标系变换顺序很重要)
-                // 我们的目标是把图片画在中心，旋转，并且整体缩放到 canvasScale
+                // 缩放以适应画布
                 cropCtx.scale(canvasScale, canvasScale);
 
                 // 旋转
@@ -2617,6 +2752,13 @@
             function updateRotationUI() {
                 rotationSlider.value = currentRotation;
                 rotationValue.textContent = Math.round(currentRotation) + '°';
+
+                updateMaxZoom();
+                if (currentZoom > maxZoom) {
+                    currentZoom = maxZoom;
+                    updateZoomUI();
+                }
+
                 drawCanvas();
                 resetCropArea();
             }
@@ -2637,11 +2779,66 @@
                 resetCropArea();
             });
 
+            let toastTimeout;
+            function showToast(message) {
+                const toast = document.getElementById('toast');
+                toast.textContent = message;
+                toast.classList.add('show');
+
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toastTimeout = setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 2000);
+            }
+
+            // Dynamic Max Zoom
+            let maxZoom = 50;
+            const MIN_ZOOM = 0.1;
+
+            function updateMaxZoom() {
+                if (!uploadedImage) return;
+                const maxWidth = cropContainer.clientWidth || 800;
+
+                const rad = currentRotation * Math.PI / 180;
+                const sin = Math.abs(Math.sin(rad));
+                const cos = Math.abs(Math.cos(rad));
+                const rotatedWidth = uploadedImage.width * cos + uploadedImage.height * sin;
+                const rotatedHeight = uploadedImage.width * sin + uploadedImage.height * cos;
+
+                let displayWidth = rotatedWidth;
+                let displayHeight = rotatedHeight;
+                const maxHeight = 600;
+
+                if (displayWidth > maxWidth || displayHeight > maxHeight) {
+                    const ratio = Math.min(maxWidth / displayWidth, maxHeight / displayHeight);
+                    displayWidth *= ratio;
+                }
+
+                // Allow filling content width
+                maxZoom = maxWidth / displayWidth;
+
+                // Round to 2 decimals
+                maxZoom = Math.floor(maxZoom * 100) / 100;
+                if (maxZoom < 1) maxZoom = 1;
+            }
+
+            window.addEventListener('resize', () => {
+                if (cropContainer.style.display !== 'none') {
+                    updateMaxZoom();
+                    if (currentZoom > maxZoom) {
+                        currentZoom = maxZoom;
+                        updateZoomUI();
+                    }
+                }
+            });
+
             // --- 触摸旋转手势支持 ---
             let initialRotation = 0;
             let initialAngle = 0;
+            let initialZoom = 1;
+            let initialDist = 0;
 
-            cropCanvas.addEventListener('touchstart', (e) => {
+            cropOverlay.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
                     isDragging = false; // 禁用单指拖拽
                     isResizing = false;
@@ -2649,59 +2846,104 @@
                     const p2 = e.touches[1];
                     initialAngle = Math.atan2(p2.clientY - p1.clientY, p2.clientX - p1.clientX) * 180 / Math.PI;
                     initialRotation = currentRotation;
+                    initialDist = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY);
+                    initialZoom = currentZoom;
                     e.preventDefault();
                 }
             }, { passive: false });
 
-            cropCanvas.addEventListener('touchmove', (e) => {
+            cropOverlay.addEventListener('touchmove', (e) => {
                 if (e.touches.length === 2) {
                     const p1 = e.touches[0];
                     const p2 = e.touches[1];
+
+                    // Rotation
                     const currentAngle = Math.atan2(p2.clientY - p1.clientY, p2.clientX - p1.clientX) * 180 / Math.PI;
                     const delta = currentAngle - initialAngle;
 
                     let r = initialRotation + delta;
-                    // Normalize to -180 to 180
                     while (r <= -180) r += 360;
                     while (r > 180) r -= 360;
-
                     currentRotation = r;
-                    // 更新但不重置裁切框(太频繁了)，只重绘
+
+                    // Recalculate max zoom for new rotation
+                    updateMaxZoom();
+
+                    // Zoom
+                    const currentDist = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY);
+                    if (initialDist > 0) {
+                        const scale = currentDist / initialDist;
+                        let newZoom = initialZoom * scale;
+
+                        if (newZoom > maxZoom) {
+                            newZoom = maxZoom;
+                            // Limit toast frequency?
+                            // For now, let's just rely on the fact that if it's already Max, we clamp it.
+                            // We can show toast if we are trying to go bigger.
+                            if (scale > 1 && currentZoom >= maxZoom) {
+                                showToast('已达到最大放大倍数');
+                            }
+                        } else if (newZoom < MIN_ZOOM) {
+                            newZoom = MIN_ZOOM;
+                        }
+
+                        currentZoom = newZoom;
+                        updateZoomUI();
+                    }
+
                     rotationSlider.value = currentRotation;
                     rotationValue.textContent = Math.round(currentRotation) + '°';
                     drawCanvas();
-                    // 这里不调用 resetCropArea 以免打断用户操作体验，但可能导致裁切框“漂移”。
-                    // 理想情况应重新计算 cropData 相对于新画布的位置，这里简化处理：
-                    // 由于drawCanvas会改变画布尺寸，cropData (px) 会失效，所以必须 reset 或 复杂换算。
-                    // 为流畅起见，手势结束时再 reset 或 保持中心。
+
                     e.preventDefault();
                 }
             }, { passive: false });
 
-            cropCanvas.addEventListener('touchend', (e) => {
+            cropOverlay.addEventListener('touchend', (e) => {
                 if (e.touches.length < 2) {
                     resetCropArea(); // 旋转结束后适配一次裁切框
                 }
             });
 
             // --- Mac 触控板旋转支持 (Safari gesture events) ---
-            cropCanvas.addEventListener('gesturestart', (e) => {
+            cropOverlay.addEventListener('gesturestart', (e) => {
                 e.preventDefault();
                 initialRotation = currentRotation;
+                initialZoom = currentZoom;
             });
 
-            cropCanvas.addEventListener('gesturechange', (e) => {
+            cropOverlay.addEventListener('gesturechange', (e) => {
                 e.preventDefault();
+                // Rotation
                 let r = initialRotation + e.rotation;
                 while (r <= -180) r += 360;
                 while (r > 180) r -= 360;
                 currentRotation = r;
+
+                // Recalculate max zoom for new rotation
+                updateMaxZoom();
+
+                // Zoom
+                let newZoom = initialZoom * e.scale;
+
+                if (newZoom > maxZoom) {
+                    newZoom = maxZoom;
+                    if (e.scale > 1 && currentZoom >= maxZoom) {
+                        showToast('已达到最大放大倍数');
+                    }
+                } else if (newZoom < MIN_ZOOM) {
+                    newZoom = MIN_ZOOM;
+                }
+
+                currentZoom = newZoom;
+                updateZoomUI();
+
                 rotationSlider.value = currentRotation;
                 rotationValue.textContent = Math.round(currentRotation) + '°';
                 drawCanvas();
             });
 
-            cropCanvas.addEventListener('gestureend', (e) => {
+            cropOverlay.addEventListener('gestureend', (e) => {
                 e.preventDefault();
                 resetCropArea();
             });
@@ -2710,6 +2952,77 @@
             resetCropBtn.addEventListener('click', () => {
                 resetCropArea();
             });
+
+            // --- 通用滚轮/触控板双指缩放 (针对 Chrome 等浏览器) ---
+            // --- 通用滚轮/触控板双指缩放 ---
+            cropOverlay.addEventListener('wheel', (e) => {
+                // 如果按住 Ctrl 键 (触控板捏合/鼠标滚轮+Ctrl)，则认为是缩放
+                if (e.ctrlKey) {
+                    e.preventDefault();
+
+                    const delta = -e.deltaY;
+                    const scaleChange = delta > 0 ? 1.05 : 0.95;
+
+                    // Check limit before applying
+                    if (scaleChange > 1 && currentZoom >= maxZoom) {
+                        showToast('已达到最大放大倍数');
+                        return;
+                    }
+
+                    let newZoom = currentZoom * scaleChange;
+                    newZoom = Math.max(MIN_ZOOM, Math.min(maxZoom, newZoom));
+                    currentZoom = newZoom;
+
+                    updateZoomUI();
+                }
+            }, { passive: false });
+
+            // 缩放按钮逻辑
+            zoomInBtn.addEventListener('click', () => {
+                if (currentZoom >= maxZoom) {
+                    showToast('已达到最大放大倍数');
+                    return;
+                }
+                currentZoom = Math.min(maxZoom, currentZoom * 1.25);
+                updateZoomUI();
+            });
+
+            zoomOutBtn.addEventListener('click', () => {
+                currentZoom = Math.max(MIN_ZOOM, currentZoom / 1.25);
+                updateZoomUI();
+            });
+
+            // 手动输入缩放逻辑
+            if (zoomInput) {
+                zoomInput.addEventListener('change', () => {
+                    let val = parseFloat(zoomInput.value);
+                    if (isNaN(val)) val = 100;
+
+                    // Convert percentage to scale
+                    let newZoom = val / 100;
+
+                    if (newZoom > maxZoom) {
+                        newZoom = maxZoom;
+                        showToast('已达到最大放大倍数');
+                    } else if (newZoom < MIN_ZOOM) {
+                        newZoom = MIN_ZOOM;
+                    }
+
+                    currentZoom = newZoom;
+                    updateZoomUI(); // formatting
+                });
+
+                zoomInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        zoomInput.blur(); // Trigger change
+                    }
+                });
+            }
+
+            function updateZoomUI() {
+                if (zoomInput) zoomInput.value = Math.round(currentZoom * 100);
+                drawCanvas();
+            }
 
             // 取消并重新上传
             cancelCropBtn.addEventListener('click', () => {
