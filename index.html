@@ -2604,19 +2604,17 @@
             // 复制图片到剪贴板
             copyBtn.addEventListener('click', async () => {
                 try {
-                    // 使用 toDataURL + fetch 替代 toBlob 回调，以保持 User Activation 状态 (解决iOS兼容性问题)
-                    const dataUrl = resultCanvas.toDataURL('image/png');
-                    const response = await fetch(dataUrl);
-                    const blob = await response.blob();
+                    // iOS Safari 最佳实践：直接传 Promise 给 ClipboardItem
+                    // 必须在点击事件的同步执行栈中开始构建 ClipboardItem
+                    const imgBlobPromise = new Promise(resolve => resultCanvas.toBlob(resolve, 'image/png'));
 
-                    // 创建ClipboardItem并写入剪贴板
                     const item = new ClipboardItem({
-                        'image/png': blob
+                        'image/png': imgBlobPromise
                     });
+
                     await navigator.clipboard.write([item]);
 
                     // 显示成功反馈
-                    const originalText = copyBtn.querySelector('span').getAttribute('data-i18n');
                     copyBtn.querySelector('span').textContent = translations[currentLang].imageCrop.copiedBtn;
                     copyBtn.style.background = 'var(--success-gradient)';
 
@@ -2628,7 +2626,9 @@
 
                 } catch (err) {
                     console.error('复制失败:', err);
-                    const errorMsg = currentLang === 'zh' ? '复制失败 (iOS请尝试长按图片保存)：' : 'Copy failed (Try long-press to save): ';
+                    // 降级方案：创建一个临时的 textarea 或 img 供用户长按？ 
+                    // 暂时只显示提示
+                    const errorMsg = currentLang === 'zh' ? '复制失败 (iOS限制，请长按下方图片保存)：' : 'Copy failed (iOS restriction, please long-press image to save): ';
                     alert(errorMsg + err.message);
                 }
             });
