@@ -864,7 +864,6 @@
             height: 100%;
             cursor: move;
             touch-action: none;
-            /* 关键：防止手机端触摸时触发页面滚动 */
         }
 
         .crop-box {
@@ -872,6 +871,11 @@
             border: 2px solid #fff;
             box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(0, 0, 0, 0.3);
             cursor: move;
+            z-index: 5;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
 
         .crop-handle {
@@ -882,6 +886,11 @@
             border: 2px solid #667eea;
             border-radius: 50%;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
         }
 
         .crop-handle-nw {
@@ -1393,6 +1402,28 @@
             transform: scale(0.95);
         }
 
+        /* Toast Message */
+        .toast-message {
+            position: fixed;
+            top: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast-message.show {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .ratio-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -1463,6 +1494,11 @@
                 bottom: -12px;
                 right: -12px;
             }
+
+            /* 移动端禁用缩放控制 */
+            .zoom-controls-floating {
+                display: none !important;
+            }
         }
 
         @media (max-width: 640px) {
@@ -1515,28 +1551,6 @@
             .crop-action-btn {
                 width: 100%;
                 min-width: 0;
-            }
-
-            /* Toast Message */
-            .toast-message {
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                font-size: 16px;
-                z-index: 10000;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-                pointer-events: none;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            }
-
-            .toast-message.show {
-                opacity: 1;
             }
 
             /* Zoom Input Styling */
@@ -2066,7 +2080,6 @@
             const previewDesc = document.getElementById('previewDesc');
             const currentRatioText = document.getElementById('currentRatioText');
             const resultDisplay = document.getElementById('resultDisplay');
-            const resultValue = document.getElementById('resultValue');
             const themeButtons = document.querySelectorAll('.theme-btn');
 
             themeButtons.forEach(btn => {
@@ -2240,16 +2253,19 @@
                 ;
             let isDragging = false;
             let isResizing = false;
+            let currentHandle = null;
 
             let dragStart = {
                 x: 0, y: 0
-            }
-
-                ;
+            };
 
             let canvasScale = 1;
             let currentRotation = 0; // 0, 90, 180, 270
             let currentZoom = 1;
+            let initialAngle = 0;
+            let initialRotation = 0;
+            let initialDist = 0;
+            let initialZoom = 1;
 
             const uploadBtn = document.getElementById('uploadBtn');
             const uploadPlaceholder = document.getElementById('uploadPlaceholder');
@@ -2443,15 +2459,11 @@
             }
 
             function updateCropBox() {
-                const widthPercent = (cropData.width / cropCanvas.width) * 100;
-                const heightPercent = (cropData.height / cropCanvas.height) * 100;
-                const leftPercent = (cropData.x / cropCanvas.width) * 100;
-                const topPercent = (cropData.y / cropCanvas.height) * 100;
-
-                cropBox.style.left = `${leftPercent}%`;
-                cropBox.style.top = `${topPercent}%`;
-                cropBox.style.width = `${widthPercent}%`;
-                cropBox.style.height = `${heightPercent}%`;
+                // 直接使用像素定位
+                cropBox.style.left = `${cropData.x}px`;
+                cropBox.style.top = `${cropData.y}px`;
+                cropBox.style.width = `${cropData.width}px`;
+                cropBox.style.height = `${cropData.height}px`;
                 updateCropInfo();
             }
 
@@ -2471,18 +2483,31 @@
 
             function getVisualScale() {
                 const rect = cropCanvas.getBoundingClientRect();
+                const wrapper = cropCanvas.parentElement;
+                const wrapperRect = wrapper.getBoundingClientRect();
+                
                 return {
-                    x: cropCanvas.width / rect.width,
-                    y: cropCanvas.height / rect.height
+                    x: cropCanvas.width / wrapperRect.width,
+                    y: cropCanvas.height / wrapperRect.height
                 };
             }
 
             function getCanvasPoint(clientX, clientY) {
-                const rect = cropCanvas.getBoundingClientRect();
-                const scale = getVisualScale();
+                // 使用 cropOverlay 的位置作为参考
+                const overlayRect = cropOverlay.getBoundingClientRect();
+                const canvasRect = cropCanvas.getBoundingClientRect();
+                
+                // 相对于 cropOverlay 的坐标
+                const relX = clientX - overlayRect.left;
+                const relY = clientY - overlayRect.top;
+                
+                // 转换为 canvas 坐标
+                const canvasX = (relX / overlayRect.width) * cropCanvas.width;
+                const canvasY = (relY / overlayRect.height) * cropCanvas.height;
+                
                 return {
-                    x: (clientX - rect.left) * scale.x,
-                    y: (clientY - rect.top) * scale.y
+                    x: Math.max(0, Math.min(canvasX, cropCanvas.width)),
+                    y: Math.max(0, Math.min(canvasY, cropCanvas.height))
                 };
             }
 
@@ -2535,61 +2560,42 @@
                     if (currentHandle === 'crop-handle-se') {
                         newW = dragStart.cropW + dx;
                         newH = newW / ratio;
-
                         if (newX + newW > cropCanvas.width) {
                             newW = cropCanvas.width - newX; newH = newW / ratio;
                         }
-
                         if (newY + newH > cropCanvas.height) {
                             newH = cropCanvas.height - newY; newW = newH * ratio;
                         }
-                    }
-
-                    else if (currentHandle === 'crop-handle-sw') {
+                    } else if (currentHandle === 'crop-handle-sw') {
                         newW = dragStart.cropW - dx;
-
                         if (dragStart.cropX + dx < 0) {
                             newW = dragStart.cropX + dragStart.cropW;
                         }
-
                         newH = newW / ratio;
-
                         if (newY + newH > cropCanvas.height) {
                             newH = cropCanvas.height - newY; newW = newH * ratio;
                         }
-
                         newX = dragStart.cropX + (dragStart.cropW - newW);
-                    }
-
-                    else if (currentHandle === 'crop-handle-ne') {
+                    } else if (currentHandle === 'crop-handle-ne') {
                         let proposedH = dragStart.cropH - dy;
                         let proposedW = proposedH * ratio;
-
                         if (dragStart.cropY + dy < 0) {
                             proposedH = dragStart.cropY + dragStart.cropH; proposedW = proposedH * ratio;
                         }
-
                         if (dragStart.cropX + proposedW > cropCanvas.width) {
                             proposedW = cropCanvas.width - dragStart.cropX; proposedH = proposedW / ratio;
                         }
-
                         newH = proposedH; newW = proposedW;
                         newY = dragStart.cropY + (dragStart.cropH - newH);
-                    }
-
-                    else if (currentHandle === 'crop-handle-nw') {
+                    } else if (currentHandle === 'crop-handle-nw') {
                         let proposedW = dragStart.cropW - dx;
-
                         if (dragStart.cropX + dx < 0) {
                             proposedW = dragStart.cropX + dragStart.cropW;
                         }
-
                         let proposedH = proposedW / ratio;
-
                         if (dragStart.cropY + (dragStart.cropH - proposedH) < 0) {
                             let maxH = dragStart.cropY + dragStart.cropH; proposedH = maxH; proposedW = proposedH * ratio;
                         }
-
                         newW = proposedW; newH = proposedH;
                         newX = dragStart.cropX + (dragStart.cropW - newW);
                         newY = dragStart.cropY + (dragStart.cropH - newH);
@@ -2606,45 +2612,51 @@
                 isDragging = false; isResizing = false; currentHandle = null;
             });
 
-            // 触摸事件
+            // 触摸事件 - 统一处理
             cropBox.addEventListener('touchstart', (e) => {
-                if (e.target.classList.contains('crop-handle')) return;
-                isDragging = true;
-                const touch = e.touches[0];
-                const point = getCanvasPoint(touch.clientX, touch.clientY);
-
-                dragStart = {
-                    x: point.x - cropData.x, y: point.y - cropData.y
-                };
-                e.preventDefault();
-            }
-
-                , {
-                    passive: false
-                });
-
-            cropHandles.forEach(handle => {
-                handle.addEventListener('touchstart', (e) => {
-                    isResizing = true;
-                    currentHandle = handle.classList[1];
-                    const touch = e.touches[0];
-                    const point = getCanvasPoint(touch.clientX, touch.clientY);
-
-                    dragStart = {
-                        mouseX: point.x, mouseY: point.y,
-                        cropX: cropData.x, cropY: cropData.y,
-                        cropW: cropData.width, cropH: cropData.height
-                    };
-                    e.preventDefault(); e.stopPropagation();
+                // 检查是否点击到手柄
+                let target = e.target;
+                let isHandle = false;
+                for (let i = 0; i < 5; i++) {
+                    if (target === cropBox) break;
+                    if (target.classList && target.classList.contains('crop-handle')) {
+                        isHandle = true;
+                        currentHandle = target.classList[1];
+                        break;
+                    }
+                    target = target.parentElement;
                 }
 
-                    , {
-                        passive: false
-                    });
-            });
+                if (isHandle) {
+                    // 点击到手柄 - 开始调整大小
+                    isResizing = true;
+                    const touch = e.touches[0];
+                    const point = getCanvasPoint(touch.clientX, touch.clientY);
+                    dragStart = {
+                        mouseX: point.x, 
+                        mouseY: point.y,
+                        cropX: cropData.x, 
+                        cropY: cropData.y,
+                        cropW: cropData.width, 
+                        cropH: cropData.height
+                    };
+                } else {
+                    // 点击到裁切框 - 开始拖动
+                    isDragging = true;
+                    const touch = e.touches[0];
+                    const point = getCanvasPoint(touch.clientX, touch.clientY);
+                    dragStart = {
+                        x: point.x - cropData.x, 
+                        y: point.y - cropData.y
+                    };
+                }
+                e.preventDefault();
+                e.stopPropagation();
+            }, { passive: false });
 
             document.addEventListener('touchmove', (e) => {
                 if (!isDragging && !isResizing) return;
+                
                 const touch = e.touches[0];
                 const point = getCanvasPoint(touch.clientX, touch.clientY);
 
@@ -2655,9 +2667,10 @@
                     cropData.y = Math.max(0, Math.min(newY, cropCanvas.height - cropData.height));
                     updateCropBox();
                     e.preventDefault();
+                    return;
                 }
 
-                else if (isResizing && currentHandle) {
+                if (isResizing && currentHandle) {
                     const dx = point.x - dragStart.mouseX;
                     const dy = point.y - dragStart.mouseY;
                     const ratio = currentRatio.width / currentRatio.height;
@@ -2669,61 +2682,42 @@
                     if (currentHandle === 'crop-handle-se') {
                         newW = dragStart.cropW + dx;
                         newH = newW / ratio;
-
                         if (newX + newW > cropCanvas.width) {
                             newW = cropCanvas.width - newX; newH = newW / ratio;
                         }
-
                         if (newY + newH > cropCanvas.height) {
                             newH = cropCanvas.height - newY; newW = newH * ratio;
                         }
-                    }
-
-                    else if (currentHandle === 'crop-handle-sw') {
+                    } else if (currentHandle === 'crop-handle-sw') {
                         newW = dragStart.cropW - dx;
-
                         if (dragStart.cropX + dx < 0) {
                             newW = dragStart.cropX + dragStart.cropW;
                         }
-
                         newH = newW / ratio;
-
                         if (newY + newH > cropCanvas.height) {
                             newH = cropCanvas.height - newY; newW = newH * ratio;
                         }
-
                         newX = dragStart.cropX + (dragStart.cropW - newW);
-                    }
-
-                    else if (currentHandle === 'crop-handle-ne') {
+                    } else if (currentHandle === 'crop-handle-ne') {
                         let proposedH = dragStart.cropH - dy;
                         let proposedW = proposedH * ratio;
-
                         if (dragStart.cropY + dy < 0) {
                             proposedH = dragStart.cropY + dragStart.cropH; proposedW = proposedH * ratio;
                         }
-
                         if (dragStart.cropX + proposedW > cropCanvas.width) {
                             proposedW = cropCanvas.width - dragStart.cropX; proposedH = proposedW / ratio;
                         }
-
                         newH = proposedH; newW = proposedW;
                         newY = dragStart.cropY + (dragStart.cropH - newH);
-                    }
-
-                    else if (currentHandle === 'crop-handle-nw') {
+                    } else if (currentHandle === 'crop-handle-nw') {
                         let proposedW = dragStart.cropW - dx;
-
                         if (dragStart.cropX + dx < 0) {
                             proposedW = dragStart.cropX + dragStart.cropW;
                         }
-
                         let proposedH = proposedW / ratio;
-
                         if (dragStart.cropY + (dragStart.cropH - proposedH) < 0) {
                             let maxH = dragStart.cropY + dragStart.cropH; proposedH = maxH; proposedW = proposedH * ratio;
                         }
-
                         newW = proposedW; newH = proposedH;
                         newX = dragStart.cropX + (dragStart.cropW - newW);
                         newY = dragStart.cropY + (dragStart.cropH - newH);
@@ -2733,20 +2727,15 @@
                         cropData.x = newX; cropData.y = newY; cropData.width = newW; cropData.height = newH;
                         updateCropBox();
                     }
-
                     e.preventDefault();
                 }
-            }
+            }, { passive: false });
 
-                , {
-                    passive: false
-                });
-
-            document.addEventListener('touchend', () => {
+            document.addEventListener('touchend', (e) => {
                 isDragging = false;
                 isResizing = false;
                 currentHandle = null;
-            });
+            }, { passive: false });
 
             // 辅助函数：更新UI
             function updateRotationUI() {
@@ -2812,6 +2801,7 @@
                 if (displayWidth > maxWidth || displayHeight > maxHeight) {
                     const ratio = Math.min(maxWidth / displayWidth, maxHeight / displayHeight);
                     displayWidth *= ratio;
+                    displayHeight *= ratio;
                 }
 
                 // Allow filling content width
@@ -2832,15 +2822,17 @@
                 }
             });
 
-            // --- 触摸旋转手势支持 ---
-            let initialRotation = 0;
-            let initialAngle = 0;
-            let initialZoom = 1;
-            let initialDist = 0;
+            // 移动端：禁用所有二指手势和滚轮缩放
+            const isMobile = window.innerWidth <= 768;
+            
+            // 标记是否正在进行二指手势
+            let isGestureActive = false;
 
+            // 为所有设备添加二指手势支持（旋转和缩放）
             cropOverlay.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
-                    isDragging = false; // 禁用单指拖拽
+                    isGestureActive = true;
+                    isDragging = false;
                     isResizing = false;
                     const p1 = e.touches[0];
                     const p2 = e.touches[1];
@@ -2857,7 +2849,6 @@
                     const p1 = e.touches[0];
                     const p2 = e.touches[1];
 
-                    // Rotation
                     const currentAngle = Math.atan2(p2.clientY - p1.clientY, p2.clientX - p1.clientX) * 180 / Math.PI;
                     const delta = currentAngle - initialAngle;
 
@@ -2866,10 +2857,8 @@
                     while (r > 180) r -= 360;
                     currentRotation = r;
 
-                    // Recalculate max zoom for new rotation
                     updateMaxZoom();
 
-                    // Zoom
                     const currentDist = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY);
                     if (initialDist > 0) {
                         const scale = currentDist / initialDist;
@@ -2877,9 +2866,6 @@
 
                         if (newZoom > maxZoom) {
                             newZoom = maxZoom;
-                            // Limit toast frequency?
-                            // For now, let's just rely on the fact that if it's already Max, we clamp it.
-                            // We can show toast if we are trying to go bigger.
                             if (scale > 1 && currentZoom >= maxZoom) {
                                 showToast('已达到最大放大倍数');
                             }
@@ -2900,85 +2886,58 @@
             }, { passive: false });
 
             cropOverlay.addEventListener('touchend', (e) => {
-                if (e.touches.length < 2) {
-                    resetCropArea(); // 旋转结束后适配一次裁切框
+                // 只有在二指手势结束时才重置（不是单点触摸结束）
+                if (isGestureActive && e.touches.length < 2) {
+                    isGestureActive = false;
+                    resetCropArea();
                 }
             });
 
-            // --- Mac 触控板旋转支持 (Safari gesture events) ---
-            cropOverlay.addEventListener('gesturestart', (e) => {
-                e.preventDefault();
-                initialRotation = currentRotation;
-                initialZoom = currentZoom;
-            });
-
-            cropOverlay.addEventListener('gesturechange', (e) => {
-                e.preventDefault();
-                // Rotation
-                let r = initialRotation + e.rotation;
-                while (r <= -180) r += 360;
-                while (r > 180) r -= 360;
-                currentRotation = r;
-
-                // Recalculate max zoom for new rotation
-                updateMaxZoom();
-
-                // Zoom
-                let newZoom = initialZoom * e.scale;
-
-                if (newZoom > maxZoom) {
-                    newZoom = maxZoom;
-                    if (e.scale > 1 && currentZoom >= maxZoom) {
-                        showToast('已达到最大放大倍数');
-                    }
-                } else if (newZoom < MIN_ZOOM) {
-                    newZoom = MIN_ZOOM;
-                }
-
-                currentZoom = newZoom;
-                updateZoomUI();
-
-                rotationSlider.value = currentRotation;
-                rotationValue.textContent = Math.round(currentRotation) + '°';
-                drawCanvas();
-            });
-
-            cropOverlay.addEventListener('gestureend', (e) => {
-                e.preventDefault();
-                resetCropArea();
-            });
-
-            // 重置裁切区域按钮
-            resetCropBtn.addEventListener('click', () => {
-                resetCropArea();
-            });
-
-            // --- 通用滚轮/触控板双指缩放 (针对 Chrome 等浏览器) ---
-            // --- 通用滚轮/触控板双指缩放 ---
-            cropOverlay.addEventListener('wheel', (e) => {
-                // 如果按住 Ctrl 键 (触控板捏合/鼠标滚轮+Ctrl)，则认为是缩放
-                if (e.ctrlKey) {
+            // Mac 触控板支持
+            if (!isMobile) {
+                cropOverlay.addEventListener('gesturestart', (e) => {
                     e.preventDefault();
+                    initialRotation = currentRotation;
+                    initialZoom = currentZoom;
+                });
 
-                    const delta = -e.deltaY;
-                    const scaleChange = delta > 0 ? 1.05 : 0.95;
+                cropOverlay.addEventListener('gesturechange', (e) => {
+                    e.preventDefault();
+                    let r = initialRotation + e.rotation;
+                    while (r <= -180) r += 360;
+                    while (r > 180) r -= 360;
+                    currentRotation = r;
 
-                    // Check limit before applying
-                    if (scaleChange > 1 && currentZoom >= maxZoom) {
-                        showToast('已达到最大放大倍数');
-                        return;
+                    updateMaxZoom();
+
+                    let newZoom = initialZoom * e.scale;
+
+                    if (newZoom > maxZoom) {
+                        newZoom = maxZoom;
+                        if (e.scale > 1 && currentZoom >= maxZoom) {
+                            showToast('已达到最大放大倍数');
+                        }
+                    } else if (newZoom < MIN_ZOOM) {
+                        newZoom = MIN_ZOOM;
                     }
 
-                    let newZoom = currentZoom * scaleChange;
-                    newZoom = Math.max(MIN_ZOOM, Math.min(maxZoom, newZoom));
                     currentZoom = newZoom;
-
                     updateZoomUI();
-                }
-            }, { passive: false });
 
-            // 缩放按钮逻辑
+                    rotationSlider.value = currentRotation;
+                    rotationValue.textContent = Math.round(currentRotation) + '°';
+                    drawCanvas();
+                });
+
+                cropOverlay.addEventListener('gestureend', (e) => {
+                    e.preventDefault();
+                    resetCropArea();
+                });
+            }
+
+            // 缩放按钮（PC端才显示）
             zoomInBtn.addEventListener('click', () => {
+                if (isMobile) return;
                 if (currentZoom >= maxZoom) {
                     showToast('已达到最大放大倍数');
                     return;
@@ -2988,6 +2947,7 @@
             });
 
             zoomOutBtn.addEventListener('click', () => {
+                if (isMobile) return;
                 currentZoom = Math.max(MIN_ZOOM, currentZoom / 1.25);
                 updateZoomUI();
             });
@@ -3009,12 +2969,12 @@
                     }
 
                     currentZoom = newZoom;
-                    updateZoomUI(); // formatting
+                    updateZoomUI();
                 });
 
                 zoomInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter') {
-                        zoomInput.blur(); // Trigger change
+                        zoomInput.blur();
                     }
                 });
             }
@@ -3137,9 +3097,7 @@
                 if (uploadedImage && cropContainer.style.display !== 'none') {
                     resetCropArea();
                 }
-            }
-
-                ;
+            };
 
             // ========== 开发者卡片功能 ==========
             const devCard = document.getElementById('devCard');
@@ -3148,28 +3106,21 @@
             const wechatQR = document.getElementById('wechatQR');
             const authorWechatBtn = document.getElementById('authorWechatBtn');
 
-            // 嵌入头像图片
-            // 这里放置用户的头像图片路径，如果无法外部加载，请将图片转为base64
-            // devAvatar.src = 'path/to/avatar.png';
-
-            // 嵌入微信二维码
-            // wechatQR.src = 'path/to/wechat_qr.png';
-
             // 收起/展开功能
             let isCollapsed = false;
 
-            toggleDevCardBtn.addEventListener('click', () => {
+            // 统一的切换函数
+            function toggleDevCard() {
                 isCollapsed = !isCollapsed;
                 devCard.classList.toggle('collapsed', isCollapsed);
                 toggleDevCardBtn.textContent = isCollapsed ? translations[currentLang].developer.expand : translations[currentLang].developer.collapse;
-            });
+            }
 
-            // 点击头像展开
+            toggleDevCardBtn.addEventListener('click', toggleDevCard);
+
+            // 点击头像切换展开/收起
             devAvatar.addEventListener('click', () => {
-                if (isCollapsed) {
-                    isCollapsed = false;
-                    devCard.classList.remove('collapsed');
-                }
+                toggleDevCard();
             });
 
             // 点击加作者微信
@@ -3183,7 +3134,6 @@
                     authorWechatBtn.style.background = 'var(--accent-gradient)';
                     authorWechatBtn.style.color = 'white';
 
-                    // 复制到剪贴板
                     navigator.clipboard.writeText('crazytoolman').then(() => {
                         // Optional: show copied feedback
                     }).catch(err => console.error('Copy failed', err));
