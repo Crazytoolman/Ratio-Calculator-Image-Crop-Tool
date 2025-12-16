@@ -876,6 +876,8 @@
             -webkit-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
+            border-radius: 0px;
+            /* 不使用overflow:hidden，让控制点始终可见 */
         }
 
         .crop-handle {
@@ -957,6 +959,108 @@
 
         .crop-grid-h:nth-child(4) {
             top: 66.666%;
+        }
+
+        /* 圆角控制点 - 边缘箭头样式 */
+        .corner-radius-handle {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: rgba(0, 113, 227, 0.9);
+            border: 2px solid #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            z-index: 15;
+            cursor: pointer;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            transition: transform 0.2s ease, background 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .corner-radius-handle::before {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-style: solid;
+        }
+
+        .corner-radius-handle:hover {
+            transform: scale(1.2);
+            background: #0071e3;
+        }
+
+        .corner-radius-handle.active {
+            background: #0071e3;
+            transform: scale(1.2);
+        }
+
+        /* 上边 - 向下箭头（指向内部） */
+        .corner-radius-handle-top {
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .corner-radius-handle-top::before {
+            border-width: 0 4px 6px 4px;
+            border-color: transparent transparent white transparent;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -20%);
+        }
+
+        /* 右边 - 向左箭头（指向内部） */
+        .corner-radius-handle-right {
+            right: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .corner-radius-handle-right::before {
+            border-width: 4px 6px 4px 0;
+            border-color: transparent white transparent transparent;
+            top: 50%;
+            left: 50%;
+            transform: translate(-20%, -50%);
+        }
+
+        /* 下边 - 向上箭头（指向内部） */
+        .corner-radius-handle-bottom {
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .corner-radius-handle-bottom::before {
+            border-width: 6px 4px 0 4px;
+            border-color: white transparent transparent transparent;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -80%);
+        }
+
+        /* 左边 - 向右箭头（指向内部） */
+        .corner-radius-handle-left {
+            left: -12px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .corner-radius-handle-left::before {
+            border-width: 4px 0 4px 6px;
+            border-color: transparent transparent transparent white;
+            top: 50%;
+            left: 50%;
+            transform: translate(-80%, -50%);
         }
 
         .crop-controls {
@@ -1726,6 +1830,15 @@
                                         <div class="crop-handle crop-handle-ne"></div>
                                         <div class="crop-handle crop-handle-sw"></div>
                                         <div class="crop-handle crop-handle-se"></div>
+                                        <!-- 圆角控制点 - 四条边 -->
+                                        <div class="corner-radius-handle corner-radius-handle-top" data-edge="top">
+                                        </div>
+                                        <div class="corner-radius-handle corner-radius-handle-right" data-edge="right">
+                                        </div>
+                                        <div class="corner-radius-handle corner-radius-handle-bottom"
+                                            data-edge="bottom"></div>
+                                        <div class="corner-radius-handle corner-radius-handle-left" data-edge="left">
+                                        </div>
                                         <div class="crop-grid">
                                             <div class="crop-grid-line crop-grid-v"></div>
                                             <div class="crop-grid-line crop-grid-v"></div>
@@ -1753,8 +1866,19 @@
                                 style="font-size: 14px; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">旋转角度:</span>
                             <input type="range" id="rotationSlider" min="-180" max="180" value="0"
                                 style="flex: 1; accent-color: #0071e3;">
-                            <span id="rotationValue"
-                                style="min-width: 45px; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text-primary);">0°</span>
+                            <input type="number" id="rotationInput" min="-180" max="180" value="0"
+                                style="width: 70px; padding: 6px 8px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); background: var(--input-bg); text-align: center;">
+                            <span style="font-size: 14px; font-weight: 600; color: var(--text-secondary);">°</span>
+                        </div>
+                        <div class="border-radius-controls"
+                            style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px; padding: 0 10px;">
+                            <span data-i18n="imageCrop.borderRadiusLabel"
+                                style="font-size: 14px; font-weight: 600; color: var(--text-secondary); white-space: nowrap;">圆角调节:</span>
+                            <input type="range" id="borderRadiusSlider" min="0" max="200" value="0"
+                                style="flex: 1; accent-color: #0071e3;">
+                            <input type="number" id="borderRadiusInput" min="0" max="200" value="0"
+                                style="width: 70px; padding: 6px 8px; border: 2px solid var(--border-color); border-radius: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary); background: var(--input-bg); text-align: center;">
+                            <span style="font-size: 14px; font-weight: 600; color: var(--text-secondary);">px</span>
                         </div>
                         <!-- 裁切信息 -->
                         <div class="crop-info">
@@ -1926,7 +2050,7 @@
                     ,
                     imageCrop: {
                         title: '✂️ 图像裁切工具', uploadText: '点击上传、拖拽或粘贴图片到这里', uploadHint: '支持 JPG、PNG、GIF 等格式', uploadBtn: '选择图片',
-                        cropBtn: '✂️ 裁切图片', rotateBtn: '🔄 旋转 90°', rotateLabel: '旋转角度:',
+                        cropBtn: '✂️ 裁切图片', rotateBtn: '🔄 旋转 90°', rotateLabel: '旋转角度:', borderRadiusLabel: '圆角调节:',
                         resetBtn: '🔄 重置裁切区域',
                         cancelBtn: '❌ 取消并重新上传',
                         originalSize: '原始尺寸:', cropArea: '裁切区域:', currentRatio: '当前比例:', resultTitle: '裁切结果预览',
@@ -1980,7 +2104,7 @@
                     ,
                     imageCrop: {
                         title: '✂️ Image Crop Tool', uploadText: 'Click to upload, drag and drop, or paste an image here', uploadHint: 'Supports JPG, PNG, GIF and more', uploadBtn: 'Select Image',
-                        cropBtn: '✂️ Crop Image', rotateBtn: '🔄 Rotate 90°', rotateLabel: 'Rotation:',
+                        cropBtn: '✂️ Crop Image', rotateBtn: '🔄 Rotate 90°', rotateLabel: 'Rotation:', borderRadiusLabel: 'Border Radius:',
                         resetBtn: '🔄 Reset Crop Area',
                         cancelBtn: '❌ Cancel & Re-upload',
                         originalSize: 'Original Size:', cropArea: 'Crop Area:', currentRatio: 'Current Ratio:', resultTitle: 'Cropped Result Preview',
@@ -2063,10 +2187,8 @@
             }
 
             let currentRatio = {
-                width: 3, height: 4
+                width: 3, height: 4, label: '3:4'
             }
-
-                ;
             const ratioButtons = document.querySelectorAll('.ratio-btn');
             const customWidthInput = document.getElementById('customWidth');
             const customHeightInput = document.getElementById('customHeight');
@@ -2107,10 +2229,9 @@
             function updateRatio(width, height) {
                 currentRatio = {
                     width,
-                    height
-                }
-
-                    ;
+                    height,
+                    label: `${width}:${height}`
+                };
 
                 currentRatioText.textContent = `${width}:${height}`;
 
@@ -2277,7 +2398,9 @@
             const cropBtn = document.getElementById('cropBtn');
             const rotateBtn = document.getElementById('rotateBtn');
             const rotationSlider = document.getElementById('rotationSlider');
-            const rotationValue = document.getElementById('rotationValue');
+            const rotationInput = document.getElementById('rotationInput');
+            const borderRadiusSlider = document.getElementById('borderRadiusSlider');
+            const borderRadiusInput = document.getElementById('borderRadiusInput');
             const resetCropBtn = document.getElementById('resetCropBtn');
             const cancelCropBtn = document.getElementById('cancelCropBtn');
             const originalSizeElem = document.getElementById('originalSize');
@@ -2290,6 +2413,7 @@
             const newCropBtn = document.getElementById('newCropBtn');
             const cropOverlay = document.getElementById('cropOverlay');
             const cropHandles = document.querySelectorAll('.crop-handle');
+            const cornerRadiusHandles = document.querySelectorAll('.corner-radius-handle');
             const zoomInBtn = document.getElementById('zoomInBtn');
             const zoomOutBtn = document.getElementById('zoomOutBtn');
             const zoomInput = document.getElementById('zoomInput');
@@ -2436,25 +2560,37 @@
 
             function resetCropArea() {
                 const ratio = currentRatio.width / currentRatio.height;
-                const targetSize = Math.min(cropCanvas.width, cropCanvas.height) * 0.7;
-                let width,
-                    height;
+                const canvasWidth = cropCanvas.width;
+                const canvasHeight = cropCanvas.height;
 
-                if (ratio >= 1) {
-                    width = targetSize;
-                    height = targetSize / ratio;
+                let width, height;
+
+                // 计算按比例填满画布的最大尺寸
+                // 尝试填满宽度
+                const widthBasedHeight = canvasWidth / ratio;
+
+                // 尝试填满高度
+                const heightBasedWidth = canvasHeight * ratio;
+
+                // 选择能完全包含在画布内的最大尺寸
+                if (widthBasedHeight <= canvasHeight) {
+                    // 填满宽度
+                    width = canvasWidth;
+                    height = widthBasedHeight;
+                } else {
+                    // 填满高度
+                    width = heightBasedWidth;
+                    height = canvasHeight;
                 }
 
-                else {
-                    height = targetSize;
-                    width = targetSize * ratio;
-                }
-
+                // 居中显示
                 cropData = {
-                    x: (cropCanvas.width - width) / 2, y: (cropCanvas.height - height) / 2, width: width, height: height
-                }
+                    x: (canvasWidth - width) / 2,
+                    y: (canvasHeight - height) / 2,
+                    width: width,
+                    height: height
+                };
 
-                    ;
                 updateCropBox();
             }
 
@@ -2472,9 +2608,9 @@
                 const actualHeight = Math.round(cropData.height / canvasScale);
 
                 cropSizeElem.textContent = `${actualWidth} × ${actualHeight}`;
-                const gcd = getGCD(actualWidth, actualHeight);
 
-                cropRatioElem.textContent = `${actualWidth / gcd}:${actualHeight / gcd}`;
+                // 使用用户选择的比例，而不是实际像素比例
+                cropRatioElem.textContent = currentRatio.label || `${currentRatio.width}:${currentRatio.height}`;
             }
 
             function getGCD(a, b) {
@@ -2485,7 +2621,7 @@
                 const rect = cropCanvas.getBoundingClientRect();
                 const wrapper = cropCanvas.parentElement;
                 const wrapperRect = wrapper.getBoundingClientRect();
-                
+
                 return {
                     x: cropCanvas.width / wrapperRect.width,
                     y: cropCanvas.height / wrapperRect.height
@@ -2496,15 +2632,15 @@
                 // 使用 cropOverlay 的位置作为参考
                 const overlayRect = cropOverlay.getBoundingClientRect();
                 const canvasRect = cropCanvas.getBoundingClientRect();
-                
+
                 // 相对于 cropOverlay 的坐标
                 const relX = clientX - overlayRect.left;
                 const relY = clientY - overlayRect.top;
-                
+
                 // 转换为 canvas 坐标
                 const canvasX = (relX / overlayRect.width) * cropCanvas.width;
                 const canvasY = (relY / overlayRect.height) * cropCanvas.height;
-                
+
                 return {
                     x: Math.max(0, Math.min(canvasX, cropCanvas.width)),
                     y: Math.max(0, Math.min(canvasY, cropCanvas.height))
@@ -2633,11 +2769,11 @@
                     const touch = e.touches[0];
                     const point = getCanvasPoint(touch.clientX, touch.clientY);
                     dragStart = {
-                        mouseX: point.x, 
+                        mouseX: point.x,
                         mouseY: point.y,
-                        cropX: cropData.x, 
+                        cropX: cropData.x,
                         cropY: cropData.y,
-                        cropW: cropData.width, 
+                        cropW: cropData.width,
                         cropH: cropData.height
                     };
                 } else {
@@ -2646,7 +2782,7 @@
                     const touch = e.touches[0];
                     const point = getCanvasPoint(touch.clientX, touch.clientY);
                     dragStart = {
-                        x: point.x - cropData.x, 
+                        x: point.x - cropData.x,
                         y: point.y - cropData.y
                     };
                 }
@@ -2656,7 +2792,7 @@
 
             document.addEventListener('touchmove', (e) => {
                 if (!isDragging && !isResizing) return;
-                
+
                 const touch = e.touches[0];
                 const point = getCanvasPoint(touch.clientX, touch.clientY);
 
@@ -2740,7 +2876,7 @@
             // 辅助函数：更新UI
             function updateRotationUI() {
                 rotationSlider.value = currentRotation;
-                rotationValue.textContent = Math.round(currentRotation) + '°';
+                rotationInput.value = Math.round(currentRotation);
 
                 updateMaxZoom();
                 if (currentZoom > maxZoom) {
@@ -2749,7 +2885,6 @@
                 }
 
                 drawCanvas();
-                resetCropArea();
             }
 
             // 旋转图片按钮 (90度步进)
@@ -2760,13 +2895,140 @@
                 updateRotationUI();
             });
 
-            // 滑动条控制
-            rotationSlider.addEventListener('input', (e) => {
-                currentRotation = parseFloat(e.target.value);
-                rotationValue.textContent = currentRotation + '°';
-                drawCanvas();
+            // 重置裁切区域按钮
+            resetCropBtn.addEventListener('click', () => {
                 resetCropArea();
             });
+
+            // 滑动条控制 - 旋转角度
+            rotationSlider.addEventListener('input', (e) => {
+                currentRotation = parseFloat(e.target.value);
+                rotationInput.value = currentRotation;
+                drawCanvas();
+            });
+
+            // 输入框控制 - 旋转角度
+            rotationInput.addEventListener('input', (e) => {
+                let value = parseFloat(e.target.value);
+                if (isNaN(value)) return;
+                value = Math.max(-180, Math.min(180, value));
+                currentRotation = value;
+                rotationSlider.value = value;
+                drawCanvas();
+            });
+
+            // 双击旋转滑块恢复0度
+            rotationSlider.addEventListener('dblclick', () => {
+                currentRotation = 0;
+                rotationSlider.value = 0;
+                rotationInput.value = 0;
+                drawCanvas();
+            });
+
+            // 圆角调节滑块控制
+            borderRadiusSlider.addEventListener('input', (e) => {
+                const radius = parseFloat(e.target.value);
+                borderRadiusInput.value = radius;
+                cropBox.style.borderRadius = radius + 'px';
+            });
+
+            // 圆角输入框控制
+            borderRadiusInput.addEventListener('input', (e) => {
+                let value = parseFloat(e.target.value);
+                if (isNaN(value)) return;
+                value = Math.max(0, Math.min(200, value));
+                borderRadiusSlider.value = value;
+                cropBox.style.borderRadius = value + 'px';
+            });
+
+            // 双击圆角滑块恢复0px
+            borderRadiusSlider.addEventListener('dblclick', () => {
+                borderRadiusSlider.value = 0;
+                borderRadiusInput.value = 0;
+                cropBox.style.borderRadius = '0px';
+            });
+
+            // 圆角控制点拖动功能
+            let isDraggingRadius = false;
+            let activeRadiusHandle = null;
+            let radiusDragStart = { x: 0, y: 0 };
+            let initialRadius = 0;
+
+            cornerRadiusHandles.forEach(handle => {
+                handle.addEventListener('mousedown', startRadiusDrag);
+                handle.addEventListener('touchstart', startRadiusDrag, { passive: false });
+            });
+
+            function startRadiusDrag(e) {
+                // 只有点击圆角控制点时才处理
+                if (!e.target.classList.contains('corner-radius-handle')) {
+                    return;
+                }
+
+                e.stopPropagation();
+                e.preventDefault();
+
+                isDraggingRadius = true;
+                activeRadiusHandle = e.target;
+                activeRadiusHandle.classList.add('active');
+
+                const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY;
+
+                radiusDragStart = { x: clientX, y: clientY };
+                initialRadius = parseFloat(borderRadiusSlider.value);
+
+                document.addEventListener('mousemove', onRadiusDrag);
+                document.addEventListener('mouseup', stopRadiusDrag);
+                document.addEventListener('touchmove', onRadiusDrag, { passive: false });
+                document.addEventListener('touchend', stopRadiusDrag);
+            }
+
+            function onRadiusDrag(e) {
+                if (!isDraggingRadius) return;
+                e.preventDefault();
+
+                const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY;
+
+                const edge = activeRadiusHandle.dataset.edge;
+                let deltaX = clientX - radiusDragStart.x;
+                let deltaY = clientY - radiusDragStart.y;
+
+                // 根据边的位置确定拖动方向 - 向内拖动增加圆角
+                let delta = 0;
+                if (edge === 'top') {
+                    delta = deltaY; // 向下拖动（向内）增加圆角
+                } else if (edge === 'right') {
+                    delta = -deltaX; // 向左拖动（向内）增加圆角
+                } else if (edge === 'bottom') {
+                    delta = -deltaY; // 向上拖动（向内）增加圆角
+                } else if (edge === 'left') {
+                    delta = deltaX; // 向右拖动（向内）增加圆角
+                }
+
+                let newRadius = Math.max(0, Math.min(200, initialRadius + delta));
+                newRadius = Math.round(newRadius);
+
+                borderRadiusSlider.value = newRadius;
+                borderRadiusInput.value = newRadius;
+                cropBox.style.borderRadius = newRadius + 'px';
+            }
+
+            function stopRadiusDrag() {
+                if (!isDraggingRadius) return;
+
+                isDraggingRadius = false;
+                if (activeRadiusHandle) {
+                    activeRadiusHandle.classList.remove('active');
+                    activeRadiusHandle = null;
+                }
+
+                document.removeEventListener('mousemove', onRadiusDrag);
+                document.removeEventListener('mouseup', stopRadiusDrag);
+                document.removeEventListener('touchmove', onRadiusDrag);
+                document.removeEventListener('touchend', stopRadiusDrag);
+            }
 
             let toastTimeout;
             function showToast(message) {
@@ -2824,7 +3086,7 @@
 
             // 移动端：禁用所有二指手势和滚轮缩放
             const isMobile = window.innerWidth <= 768;
-            
+
             // 标记是否正在进行二指手势
             let isGestureActive = false;
 
@@ -2889,7 +3151,6 @@
                 // 只有在二指手势结束时才重置（不是单点触摸结束）
                 if (isGestureActive && e.touches.length < 2) {
                     isGestureActive = false;
-                    resetCropArea();
                 }
             });
 
@@ -2931,7 +3192,6 @@
 
                 cropOverlay.addEventListener('gestureend', (e) => {
                     e.preventDefault();
-                    resetCropArea();
                 });
             }
 
@@ -3024,6 +3284,29 @@
                 tempCtx.translate(rotatedWidth / 2, rotatedHeight / 2);
                 tempCtx.rotate(rad);
                 tempCtx.drawImage(uploadedImage, -uploadedImage.width / 2, -uploadedImage.height / 2);
+
+                // 获取当前圆角值
+                const borderRadius = parseFloat(borderRadiusSlider.value) / canvasScale;
+
+                // 应用圆角裁切
+                if (borderRadius > 0) {
+                    resultCtx.clearRect(0, 0, actualW, actualH);
+                    resultCtx.beginPath();
+
+                    // 绘制圆角矩形路径
+                    const radius = Math.min(borderRadius, actualW / 2, actualH / 2);
+                    resultCtx.moveTo(radius, 0);
+                    resultCtx.lineTo(actualW - radius, 0);
+                    resultCtx.quadraticCurveTo(actualW, 0, actualW, radius);
+                    resultCtx.lineTo(actualW, actualH - radius);
+                    resultCtx.quadraticCurveTo(actualW, actualH, actualW - radius, actualH);
+                    resultCtx.lineTo(radius, actualH);
+                    resultCtx.quadraticCurveTo(0, actualH, 0, actualH - radius);
+                    resultCtx.lineTo(0, radius);
+                    resultCtx.quadraticCurveTo(0, 0, radius, 0);
+                    resultCtx.closePath();
+                    resultCtx.clip();
+                }
 
                 // 从旋转后的临时Canvas中裁切
                 resultCtx.drawImage(tempCanvas,
