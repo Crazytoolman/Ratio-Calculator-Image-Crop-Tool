@@ -22,9 +22,13 @@ An elegant, modern online tool integrating **AspectRatio Calculation** and **Ima
 ### ✂️ Powerful Image Cropping
 - **Versatile Uploads**: Supports click-to-upload, drag-and-drop, and **Ctrl+V paste**.
 - **Smart Cropping**: LockAspectRatio cropping (supports 1:1, 16:9, etc.) or freeform adjustment.
+- **Border Radius Control**:
+  - **Edge Dragging**: Intuitively adjust radius using arrow indicators on all four edges.
+  - **Precise Control**: Supports slider adjustment and precise numeric input.
+  - **Quick Reset**: Double-click the slider to instantly reset radius to 0px.
 - **Free Rotation**: 
   - Supports **90° step rotation**.
-  - Supports **Slider free-angle rotation**.
+  - Supports **Slider free-angle rotation** (Double-click to reset to 0°).
   - **Gesture Support**: Two-finger rotation on mobile, two-finger rotation on Mac trackpad.
 - **HD Export**: Download results in lossless PNG format.
 - **Clipboard Integration**: One-click copy result (Perfectly compatible with iOS/Android and Desktop).
