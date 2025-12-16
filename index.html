@@ -1668,6 +1668,7 @@
                 outline: none;
                 font-family: inherit;
                 -moz-appearance: textfield;
+                appearance: textfield;
                 /* Firefox */
             }
 
@@ -3295,15 +3296,16 @@
 
                     // 绘制圆角矩形路径
                     const radius = Math.min(borderRadius, actualW / 2, actualH / 2);
+                    // Use arcTo for perfect circular rounded corners to match CSS border-radius
                     resultCtx.moveTo(radius, 0);
                     resultCtx.lineTo(actualW - radius, 0);
-                    resultCtx.quadraticCurveTo(actualW, 0, actualW, radius);
+                    resultCtx.arcTo(actualW, 0, actualW, radius, radius);
                     resultCtx.lineTo(actualW, actualH - radius);
-                    resultCtx.quadraticCurveTo(actualW, actualH, actualW - radius, actualH);
+                    resultCtx.arcTo(actualW, actualH, actualW - radius, actualH, radius);
                     resultCtx.lineTo(radius, actualH);
-                    resultCtx.quadraticCurveTo(0, actualH, 0, actualH - radius);
+                    resultCtx.arcTo(0, actualH, 0, actualH - radius, radius);
                     resultCtx.lineTo(0, radius);
-                    resultCtx.quadraticCurveTo(0, 0, radius, 0);
+                    resultCtx.arcTo(0, 0, radius, 0, radius);
                     resultCtx.closePath();
                     resultCtx.clip();
                 }
