@@ -237,7 +237,8 @@
         .card {
             background: var(--card-bg-gradient);
             border-radius: 32px;
-            padding: 36px;
+            --card-padding: 36px;
+            padding: var(--card-padding);
             box-shadow: var(--card-shadow);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             animation: fadeInUp 0.8s ease;
@@ -1045,10 +1046,15 @@
 
         .crop-canvas-wrapper {
             position: relative;
-            max-width: 100%;
-            width: fit-content;
-            margin: 0 auto 24px auto;
-            border-radius: 16px;
+            /* 突破父级 padding 限制，撑满整个卡片宽度 */
+            margin-left: calc(var(--card-padding) * -1);
+            margin-right: calc(var(--card-padding) * -1);
+            width: calc(100% + var(--card-padding) * 2);
+            max-width: none;
+
+            margin-bottom: 24px;
+            /* 移除自身的圆角，依靠卡片的 overflow:hidden 来裁切圆角，或者保留直角 */
+            border-radius: 0;
             overflow: hidden;
             background: #000;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
@@ -1564,7 +1570,8 @@
             }
 
             .card {
-                padding: 24px;
+                --card-padding: 24px;
+                padding: var(--card-padding);
                 border-radius: 24px;
             }
 
@@ -3843,10 +3850,22 @@
                     stitchedImg.onload = () => {
                         uploadedImage = stitchedImg;
                         // 不再清除 stitchImages，以便撤回
+                        // 确保隐藏拼接 UI (虽然之前可能漏了，这里补上更稳健)
+                        if (typeof hideStitchUI === 'function') hideStitchUI();
+                        else stitchContainer.style.display = 'none';
+
                         initCropArea();
                         uploadPlaceholder.style.display = 'none';
                         cropContainer.style.display = 'block';
                         cropResult.style.display = 'none';
+
+                        // 自动滚动到裁切框
+                        setTimeout(() => {
+                            const target = document.getElementById('cropContainer');
+                            if (target) {
+                                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        }, 100);
                     };
                     stitchedImg.src = canvas.toDataURL('image/png');
                 } else {
@@ -3879,6 +3898,14 @@
                         uploadPlaceholder.style.display = 'none';
                         cropContainer.style.display = 'block';
                         cropResult.style.display = 'none';
+
+                        // 自动滚动到裁切框
+                        setTimeout(() => {
+                            const target = document.getElementById('cropContainer');
+                            if (target) {
+                                target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        }, 100);
                     };
                     stitchedImg.src = canvas.toDataURL('image/png');
                 }
@@ -4307,8 +4334,10 @@
             // 绘制底图（支持旋转与缩放）
             function drawCanvas() {
                 const wrapper = document.querySelector('.crop-canvas-wrapper');
+                // 获取容器宽度（不含 padding，因为 wrapper 已经处理了负 margin 撑满卡片）
+                // 这里直接用 clientWidth 即可，它现在代表满宽
                 const maxWidth = wrapper.clientWidth || 800;
-                const maxHeight = 600; // Max height for the canvas display
+                // 彻底移除高度限制，允许长图纵向延伸
 
                 // Calculate rotated bounding box dimensions
                 const rad = currentRotation * Math.PI / 180;
@@ -4320,12 +4349,10 @@
                 let displayWidth = rotatedWidth;
                 let displayHeight = rotatedHeight;
 
-                // Scale to fit within max dimensions
-                if (displayWidth > maxWidth || displayHeight > maxHeight) {
-                    const ratio = Math.min(maxWidth / displayWidth, maxHeight / displayHeight);
-                    displayWidth *= ratio;
-                    displayHeight *= ratio;
-                }
+                // 移除自动 fit 逻辑
+                // 图片尺寸完全由 currentZoom 控制
+                // 初始状态下，currentZoom 已在 initCropArea 中被设为适合容器宽度的值(maxZoom)
+
 
                 // Apply zoom
                 displayWidth *= currentZoom;
@@ -4387,12 +4414,12 @@
             function updateMaxZoom() {
                 if (!uploadedImage) return;
                 const wrapper = document.querySelector('.crop-canvas-wrapper');
-                // 使用 parent (crop-container) 的宽度作为最大限制
-                const container = wrapper.parentElement;
-                // 极小边距，确保能贴到边缘
-                // 如果容器尚未渲染完成(clientWidth=0)，回退到窗口宽度
-                const containerWidth = container.clientWidth > 0 ? container.clientWidth : window.innerWidth;
-                const maxWidth = containerWidth - 2;
+
+                // 关键修正：直接使用 wrapper 自身的宽度作为最大限制
+                // 因为我们在 CSS 中通过 negative margin 让 wrapper 比 parent 更宽（撑满了卡片）
+                // 所以必须用 wrapper.clientWidth 才能获取到真正的“满宽”数值
+                const currentWidth = wrapper.clientWidth;
+                const maxWidth = currentWidth > 0 ? currentWidth : window.innerWidth;
 
                 const rad = currentRotation * Math.PI / 180;
                 const absCos = Math.abs(Math.cos(rad));
