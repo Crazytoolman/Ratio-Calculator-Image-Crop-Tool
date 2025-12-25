@@ -4004,23 +4004,40 @@
             }
 
             // 通用复制图片到剪贴板函数（兼容 Safari 和 Chrome）
-            async function copyImageToClipboard(canvas, successCallback, failCallback) {
+            // 通用复制图片到剪贴板函数（兼容 Safari 和 Chrome）
+            async function copyImageToClipboard(imageSource, successCallback, failCallback) {
                 try {
                     // 检查剪贴板 API 是否可用
                     if (!navigator.clipboard || typeof ClipboardItem === 'undefined') {
                         throw new Error('Clipboard API not supported');
                     }
 
-                    // Safari 需要在用户手势的同步上下文中创建 ClipboardItem
-                    // 并且需要传入 Promise<Blob> 而非 Blob
-                    const blobPromise = new Promise((resolve, reject) => {
-                        canvas.toBlob((blob) => {
-                            if (blob) resolve(blob);
-                            else reject(new Error('Failed to create blob'));
-                        }, 'image/png');
+                    // 构造一个 Promise，该 Promise 最终会 Resolve 为一个 Blob
+                    // 这允许我们在数据准备好之前就调用 clipboard.write，从而满足 Safari 的同步调用要求
+                    const blobPromise = new Promise(async (resolve, reject) => {
+                        try {
+                            let canvas = imageSource;
+                            // 如果传入的是 Promise（例如来自 createStitchCanvas()），先等待其解析
+                            if (imageSource instanceof Promise) {
+                                canvas = await imageSource;
+                            }
+
+                            if (!canvas) {
+                                reject(new Error('Canvas generation failed'));
+                                return;
+                            }
+
+                            canvas.toBlob((blob) => {
+                                if (blob) resolve(blob);
+                                else reject(new Error('Failed to create blob'));
+                            }, 'image/png');
+                        } catch (err) {
+                            reject(err);
+                        }
                     });
 
-                    // Safari 兼容：使用 Promise 作为 ClipboardItem 的值
+                    // 关键点：这里必须同步创建 ClipboardItem 并立即调用 write
+                    // 将 Blob 的 Promise 传递给 ClipboardItem
                     const item = new ClipboardItem({ 'image/png': blobPromise });
                     await navigator.clipboard.write([item]);
 
@@ -4034,17 +4051,22 @@
             }
 
             // 直接复制
-            async function copyStitchResult() {
-                const canvas = await createStitchCanvas();
-                if (!canvas) {
+            function copyStitchResult() {
+                // 1. 同步检查是否有足够的图片（不能使用 await，否则会断开 User Gesture）
+                if (!stitchImages || stitchImages.length < 2) {
                     showToast(currentLang === 'zh' ? '⚠️ 至少需要2张图片才能拼接' : '⚠️ Need at least 2 images');
                     return;
                 }
 
+                // 2. 立即启动 Canvas 生成任务，拿到 Promise
+                const canvasPromise = createStitchCanvas();
+
+                // 3. 获取原始按钮文本用于后续恢复
                 const originalText = copyStitchBtn.querySelector('span:last-child').textContent;
 
-                const success = await copyImageToClipboard(
-                    canvas,
+                // 4. 将 Promise 传递给复制函数，这样 clipboard.write 可以立即被同步调用
+                copyImageToClipboard(
+                    canvasPromise,
                     () => {
                         // 成功反馈
                         copyStitchBtn.querySelector('span:last-child').textContent = translations[currentLang].stitch.copied;
@@ -4058,27 +4080,25 @@
                             copyStitchBtn.classList.remove('crop-btn-success');
                         }, 2000);
                     },
-                    () => {
-                        // 复制失败处理逻辑
-                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                    (err) => {
+                        console.log('Copy error caught:', err); // Debug
+                        // 复制失败处理逻辑 Fallback
+                        // 虽然我们尽力适配了 Safari，但如果还是失败（比如iOS版本极老），走自动下载
+                        const link = document.createElement('a');
+                        link.download = `stitch-result-${new Date().getTime()}.png`;
 
-                        // 如果是 Safari 或移动端，尝试自动下载作为 Fallback
-                        if (isMobile || isSafari) {
-                            try {
-                                const link = document.createElement('a');
-                                link.download = `stitch-result-${new Date().getTime()}.png`;
+                        // 注意：这里需要再次等待 promise 才能拿到 URL，因为 copy 失败了
+                        canvasPromise.then(canvas => {
+                            if (canvas) {
                                 link.href = canvas.toDataURL('image/png');
                                 document.body.appendChild(link);
                                 link.click();
                                 document.body.removeChild(link);
                                 showToast(currentLang === 'zh' ? '⚠️ 浏览器限制无法直接复制，已自动为您下载' : '⚠️ Copied failed, downloading instead');
-                            } catch (e) {
-                                showToast(currentLang === 'zh' ? '❌ 复制失败，请尝试手动下载' : '❌ Copy failed, please download manually');
                             }
-                        } else {
-                            showToast(currentLang === 'zh' ? '❌ 复制失败，请尝试下载' : '❌ Copy failed, try download');
-                        }
+                        }).catch(e => {
+                            showToast(currentLang === 'zh' ? '❌ 复制失败，请尝试手动下载' : '❌ Copy failed, please download manually');
+                        });
                     }
                 );
             }
