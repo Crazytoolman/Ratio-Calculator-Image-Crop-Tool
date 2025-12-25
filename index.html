@@ -1054,6 +1054,10 @@
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
+        .crop-canvas-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
         #cropCanvas {
             display: block;
             max-width: 100%;
@@ -2369,17 +2373,16 @@
 
                 <!-- 裁切区域 -->
                 <div class="crop-container" id="cropContainer" style="display: none;">
-                    <!-- Floating Zoom Controls -->
-                    <div class="zoom-controls-floating"
-                        style="position: absolute; top: 16px; right: 16px; z-index: 100; display: flex; gap: 8px; background: rgba(0,0,0,0.6); padding: 4px; border-radius: 8px; backdrop-filter: blur(4px); align-items: center;">
-                        <button id="zoomOutBtn" class="zoom-btn-small" title="Zoom Out">-</button>
-                        <input type="number" id="zoomInput" class="zoom-input" value="100" min="10" max="5000">
-                        <span style="color: white; font-size: 12px; margin-right: 4px;">%</span>
-                        <button id="zoomInBtn" class="zoom-btn-small" title="Zoom In">+</button>
-                    </div>
-
                     <div class="crop-canvas-wrapper">
-                        <div class="crop-content-layer" style="position: relative; width: fit-content;">
+                        <!-- Zoom Controls Header -->
+                        <div class="zoom-controls-header"
+                            style="width: 100%; display: flex; justify-content: flex-end; align-items: center; gap: 8px; padding: 10px 16px; box-sizing: border-box; background: rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <button id="zoomOutBtn" class="zoom-btn-small" title="Zoom Out">-</button>
+                            <input type="number" id="zoomInput" class="zoom-input" value="100" min="10" max="5000">
+                            <span style="color: white; font-size: 12px; margin-right: 4px;">%</span>
+                            <button id="zoomInBtn" class="zoom-btn-small" title="Zoom In">+</button>
+                        </div>
+                        <div class="crop-content-layer" style="position: relative; width: fit-content; margin: 0 auto;">
                             <canvas id="cropCanvas"></canvas>
                             <div class="crop-overlay" id="cropOverlay">
                                 <div class="crop-box" id="cropBox">
@@ -3157,7 +3160,10 @@
 
                     const curDist = Math.hypot(p2.clientX - p1.clientX, p2.clientY - p1.clientY);
                     if (initialDist > 0) {
-                        currentZoom = Math.max(MIN_ZOOM, Math.min(maxZoom, initialZoom * (curDist / initialDist)));
+                        // 增加阻尼系数，降低灵敏度 (0.6)
+                        const rawScale = curDist / initialDist;
+                        const dampedScale = 1 + (rawScale - 1) * 0.6;
+                        currentZoom = Math.max(MIN_ZOOM, Math.min(maxZoom, initialZoom * dampedScale));
                         updateZoomUI();
                     }
                     drawCanvas();
@@ -3174,8 +3180,13 @@
             const handleWheel = (e) => {
                 if (e.ctrlKey || e.metaKey) {
                     e.preventDefault();
-                    const delta = e.deltaY > 0 ? 0.9 : 1.1;
-                    currentZoom = Math.max(MIN_ZOOM, Math.min(maxZoom, currentZoom * delta));
+                    // 动态阻尼算法：基于 deltaY 的微量计算
+                    const zoomSensitivity = 0.005; // 极低灵敏度
+                    // 限制变化幅度，防止甚至在极快滑动时失控
+                    const delta = Math.max(-0.2, Math.min(0.2, e.deltaY * zoomSensitivity));
+
+                    // 使用 1 - delta 来平滑过渡
+                    currentZoom = Math.max(MIN_ZOOM, Math.min(maxZoom, currentZoom * (1 - delta)));
                     updateZoomUI();
                 }
             };
@@ -3193,7 +3204,11 @@
                 currentRotation = initialRotation + e.rotation;
                 rotationSlider.value = Math.round(currentRotation);
                 rotationInput.value = Math.round(currentRotation);
-                currentZoom = Math.max(MIN_ZOOM, Math.min(maxZoom, initialZoom * e.scale));
+
+                // 深度阻尼 (0.3)，适合高灵敏度触控板
+                const dampedScale = 1 + (e.scale - 1) * 0.3;
+                currentZoom = Math.max(MIN_ZOOM, Math.min(maxZoom, initialZoom * dampedScale));
+
                 updateZoomUI();
                 drawCanvas();
                 if (e.cancelable) e.preventDefault();
@@ -4267,18 +4282,22 @@
             // 初始化裁切区域
             function initCropArea() {
                 currentRotation = 0;
-                currentZoom = 1;
                 borderRadiusSlider.value = 0;
                 borderRadiusInput.value = 0;
                 rotationSlider.value = 0;
                 rotationInput.value = 0;
                 cropBox.style.borderRadius = '0px';
 
+                // 先计算最大缩放限制
                 updateMaxZoom();
-                zoomInput.value = '100';
+
+                // 初始缩放不应超过最大限制 (防止大图加载时初始溢出)
+                currentZoom = Math.min(1.0, maxZoom);
+                zoomInput.value = Math.round(currentZoom * 100);
 
                 drawCanvas();
                 resetCropArea();
+                updateZoomUI();
 
                 // 更新信息
                 originalSizeElem.textContent = `${uploadedImage.width} × ${uploadedImage.height}`;
@@ -4322,6 +4341,28 @@
                     cropData.y *= scaleRatio;
                     cropData.width *= scaleRatio;
                     cropData.height *= scaleRatio;
+
+                    // 边界检查：防止放大且裁切框贴边时，因精度或偏移导致溢出
+                    // 始终将其限制在当前的显示范围内
+                    const maxW = displayWidth;
+                    const maxH = displayHeight;
+
+                    // 1. 尺寸不能超过画布
+                    if (cropData.width > maxW) cropData.width = maxW;
+                    if (cropData.height > maxH) cropData.height = maxH;
+
+                    // 2. 位置不能小于0
+                    if (cropData.x < 0) cropData.x = 0;
+                    if (cropData.y < 0) cropData.y = 0;
+
+                    // 3. 确保不溢出右下边界
+                    if (cropData.x + cropData.width > maxW) {
+                        cropData.x = maxW - cropData.width;
+                    }
+                    if (cropData.y + cropData.height > maxH) {
+                        cropData.y = maxH - cropData.height;
+                    }
+
                     updateCropBox();
                 }
 
@@ -4346,30 +4387,31 @@
             function updateMaxZoom() {
                 if (!uploadedImage) return;
                 const wrapper = document.querySelector('.crop-canvas-wrapper');
-                const maxWidth = wrapper.clientWidth || 800;
-                const maxHeight = 600;
+                // 使用 parent (crop-container) 的宽度作为最大限制
+                const container = wrapper.parentElement;
+                // 极小边距，确保能贴到边缘
+                // 如果容器尚未渲染完成(clientWidth=0)，回退到窗口宽度
+                const containerWidth = container.clientWidth > 0 ? container.clientWidth : window.innerWidth;
+                const maxWidth = containerWidth - 2;
 
                 const rad = currentRotation * Math.PI / 180;
                 const absCos = Math.abs(Math.cos(rad));
                 const absSin = Math.abs(Math.sin(rad));
                 const rotatedWidth = uploadedImage.width * absCos + uploadedImage.height * absSin;
-                const rotatedHeight = uploadedImage.width * absSin + uploadedImage.height * absCos;
 
-                let baseDisplayWidth = rotatedWidth;
-                let baseDisplayHeight = rotatedHeight;
+                // 这里的缩放仅受容器当前宽度的物理限制，不再强制限制高度（由滚动或溢出处理）
+                // 计算让图片填满容器所需的最大 Zoom 值
+                // 限制 Zoom 上限，使得图片宽度永远不会超过容器宽度
+                // 这样就防止了“数值增加单图片不变大”的问题
+                maxZoom = maxWidth / rotatedWidth;
 
-                if (baseDisplayWidth > maxWidth || baseDisplayHeight > maxHeight) {
-                    const ratio = Math.min(maxWidth / baseDisplayWidth, maxHeight / baseDisplayHeight);
-                    baseDisplayWidth *= ratio;
-                    baseDisplayHeight *= ratio;
+                // 更新输入框的最大值 (显示为百分比)
+                // 允许一定的最小值以防计算异常
+                if (maxZoom < 0.01) maxZoom = 0.01;
+
+                if (zoomInput) {
+                    zoomInput.max = Math.floor(maxZoom * 100);
                 }
-
-                // Allow zooming up to 4x the original image size, or 50x the container width, whichever is smaller
-                maxZoom = Math.min(
-                    (uploadedImage.width * 4) / baseDisplayWidth, // 4x original image size
-                    (maxWidth * 50) / baseDisplayWidth // 50x container width
-                );
-                maxZoom = Math.max(1, maxZoom); // Ensure at least 1x zoom
             }
 
             // 重置裁切区域
@@ -4412,10 +4454,16 @@
             }
 
             function updateCropBox() {
-                cropBox.style.left = cropData.x + 'px';
-                cropBox.style.top = cropData.y + 'px';
-                cropBox.style.width = cropData.width + 'px';
-                cropBox.style.height = cropData.height + 'px';
+                // 计算 CSS 视觉尺寸与 Canvas 物理尺寸的比例
+                // 当 CSS max-width 生效时，offsetWidth 会小于 width
+                const visualScale = (cropCanvas.offsetWidth > 0 && cropCanvas.width > 0)
+                    ? cropCanvas.offsetWidth / cropCanvas.width
+                    : 1;
+
+                cropBox.style.left = (cropData.x * visualScale) + 'px';
+                cropBox.style.top = (cropData.y * visualScale) + 'px';
+                cropBox.style.width = (cropData.width * visualScale) + 'px';
+                cropBox.style.height = (cropData.height * visualScale) + 'px';
                 updateCropInfo();
             }
 
