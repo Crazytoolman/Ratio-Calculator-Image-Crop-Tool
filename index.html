@@ -1671,9 +1671,12 @@
             transition: all 0.3s ease;
         }
 
-        .stitch-image-thumb:hover {
-            border-color: var(--border-glow);
-            transform: scale(1.05);
+        /* 仅在支持 Hover 的设备（PC）上启用悬停效果 */
+        @media (hover: hover) {
+            .stitch-image-thumb:hover {
+                border-color: var(--border-glow);
+                transform: scale(1.05);
+            }
         }
 
         .stitch-image-thumb.dragging {
@@ -1716,12 +1719,25 @@
             opacity: 0;
         }
 
-        .stitch-image-item:hover .stitch-image-remove {
-            opacity: 1;
+        @media (hover: hover) {
+            .stitch-image-item:hover .stitch-image-remove {
+                opacity: 1;
+            }
+
+            .stitch-image-remove:hover {
+                transform: scale(1.15);
+            }
         }
 
-        .stitch-image-remove:hover {
-            transform: scale(1.15);
+        /* 移动端/触摸屏优化：始终显示删除按钮，禁用Hover干扰 */
+        @media (hover: none) {
+            .stitch-image-remove {
+                opacity: 1 !important;
+                background: rgba(255, 59, 48, 0.9);
+                width: 28px;
+                /* 稍微加大触摸区域 */
+                height: 28px;
+            }
         }
 
         .stitch-image-order {
@@ -4043,7 +4059,26 @@
                         }, 2000);
                     },
                     () => {
-                        showToast(currentLang === 'zh' ? '❌ 复制失败，请尝试下载' : '❌ Copy failed, try download');
+                        // 复制失败处理逻辑
+                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+                        // 如果是 Safari 或移动端，尝试自动下载作为 Fallback
+                        if (isMobile || isSafari) {
+                            try {
+                                const link = document.createElement('a');
+                                link.download = `stitch-result-${new Date().getTime()}.png`;
+                                link.href = canvas.toDataURL('image/png');
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                showToast(currentLang === 'zh' ? '⚠️ 浏览器限制无法直接复制，已自动为您下载' : '⚠️ Copied failed, downloading instead');
+                            } catch (e) {
+                                showToast(currentLang === 'zh' ? '❌ 复制失败，请尝试手动下载' : '❌ Copy failed, please download manually');
+                            }
+                        } else {
+                            showToast(currentLang === 'zh' ? '❌ 复制失败，请尝试下载' : '❌ Copy failed, try download');
+                        }
                     }
                 );
             }

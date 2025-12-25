@@ -13,6 +13,8 @@ An elegant, modern online tool integrating **Aspect Ratio Calculation**, **Image
 
 ### 🤖 AI Painting Companion (New!)
 - **Draw Things Pre-processing**: Specially optimized for pre-processing images before AI generation. Through precise ratio cropping and rotation, ensuring input images perfectly match AI model dimensions, significantly improving output quality.
+- **Perfect for ACE++**: The new "Pre-stitch" workflow is ideal for models like **ACE (ACE++)**, allowing for pre-arranged multi-character or scene compositions on a single canvas as guided input.
+- **Qwen Image Edit Assistant**: Tailored for multimodal editing models like **Qwen Image Edit**. Use the stitching feature to pre-layout relationships between multiple characters or scenes for precise in-painting and guided generation.
 
 ### 📐 Smart Ratio Calculator
 - **Common Presets**: One-click selection for 16:9, 4:3, 1:1, 9:16 (Portrait), and more.
