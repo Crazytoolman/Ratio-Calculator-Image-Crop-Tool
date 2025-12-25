@@ -33,6 +33,17 @@ An elegant, modern online tool integrating **AspectRatio Calculation** and **Ima
 - **HD Export**: Download results in lossless PNG format.
 - **Clipboard Integration**: One-click copy result (Perfectly compatible with iOS/Android and Desktop).
 
+### 🧩 Image Stitching (New!)
+- **Batch Upload**: Upload multiple images at once, or add images via paste/drag-and-drop.
+- **Stitching Modes**: 
+  - **Horizontal (Side-by-Side)**: Arrange images horizontally, auto-aligned by the tallest image height.
+  - **Vertical (Top-to-Bottom)**: Stack images vertically, auto-aligned by the widest image width.
+- **Drag-to-Reorder**: Drag images to rearrange order, with real-time stitching preview.
+- **Pre-crop Support**: Crop/rotate individual images before adding them to the stitching queue.
+- **Real-time Preview**: Displays live preview of stitched result and final resolution.
+- **Flexible Output**: Download/copy stitched result directly, or continue editing as a new image.
+
+
 ### 🎨 Ultimate UI/UX Experience
 - **Apple-Style Design**: Glassmorphism, smooth animations, and refined shadow details.
 - **Dark Mode**: Perfectly adapts to system appearance, with manual toggle support.
