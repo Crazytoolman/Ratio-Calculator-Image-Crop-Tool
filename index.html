@@ -4193,10 +4193,16 @@
                         uploadedImage = img;
                         isFromStitch = false; // 普通上传，关闭标志
                         cancelStitchBtn.style.display = 'none';
-                        initCropArea();
+
+                        // 先显示容器，确保能获取到正确的各种尺寸
                         uploadPlaceholder.style.display = 'none';
                         cropContainer.style.display = 'block';
                         cropResult.style.display = 'none';
+
+                        // 稍微延迟以确保DOM布局更新完成，解决移动端裁切框过大问题
+                        setTimeout(() => {
+                            initCropArea();
+                        }, 10);
                     };
                     img.src = e.target.result;
                 };
@@ -4660,7 +4666,26 @@
                         }, 2000);
                     },
                     () => {
-                        showToast(currentLang === 'zh' ? '❌ 复制失败，请尝试下载' : '❌ Copy failed, try download');
+                        // 复制失败处理逻辑
+                        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                        const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+                        // 如果是 Safari 或移动端，尝试自动下载作为 Fallback
+                        if (isMobile || isSafari) {
+                            try {
+                                const link = document.createElement('a');
+                                link.download = `ratio-crop-${new Date().getTime()}.png`;
+                                link.href = resultCanvas.toDataURL('image/png');
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                showToast(currentLang === 'zh' ? '⚠️ 浏览器限制无法直接复制，已自动为您下载' : '⚠️ Copied failed, downloading instead');
+                            } catch (e) {
+                                showToast(currentLang === 'zh' ? '❌ 复制失败，请尝试手动下载' : '❌ Copy failed, please download manually');
+                            }
+                        } else {
+                            showToast(currentLang === 'zh' ? '❌ 复制失败，请尝试下载' : '❌ Copy failed, try download');
+                        }
                     }
                 );
             });
