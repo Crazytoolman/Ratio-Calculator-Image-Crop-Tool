@@ -1890,6 +1890,236 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
+
+        /* 移动端专属优化 - 解决遮挡和拥挤问题 */
+        @media (max-width: 968px) {
+            body {
+                display: flex;
+                /* 改为 Flex 布局以调整顺序 */
+                flex-direction: column;
+                padding: 0;
+                /* 接管 padding */
+                background-attachment: fixed;
+            }
+
+            /* 1. 调整控制栏 (主题/语言切换) */
+            /* 移至顶部文档流，不再悬浮遮挡 */
+            .controls-bar {
+                position: static;
+                order: 0;
+                width: 100%;
+                justify-content: flex-end;
+                /* 居右显示 */
+                padding: 16px 24px;
+                background: transparent;
+                height: auto;
+                margin-bottom: 0;
+            }
+
+            /* 2. 主内容区域 */
+            .container {
+                order: 1;
+                width: 100%;
+                max-width: 100%;
+                padding: 10px 20px 40px 20px;
+                margin: 0;
+            }
+
+            /* 3. 开发者卡片 - 移至底部 Footer */
+            .developer-card {
+                position: static;
+                order: 2;
+                /* 放在最底部 */
+                width: 100%;
+                max-width: 100%;
+                margin: 20px 0 0 0;
+                border-radius: 0;
+                border: none;
+                border-top: 1px solid var(--border-color);
+                background: var(--card-bg-gradient);
+                box-shadow: none;
+                padding: 32px 24px 60px 24px;
+                /* 底部留多一点空间 */
+            }
+
+            /* 移动端强制展开开发者信息，并不再支持收起（因为已经在底部了） */
+            .developer-card.collapsed {
+                max-width: 100%;
+                padding: 32px 24px 60px 24px;
+            }
+
+            .developer-card .dev-toggle {
+                display: none !important;
+            }
+
+            .developer-card.collapsed .dev-info,
+            .developer-card.collapsed .social-links {
+                display: block !important;
+            }
+
+            .developer-card.collapsed .dev-header {
+                flex-direction: row;
+                margin-bottom: 16px;
+            }
+
+            /* 社交链接横向自适应排列 */
+            .social-links {
+                display: grid !important;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 12px;
+            }
+
+            /* 4. 解决模块拥挤问题 */
+            .main-content {
+                display: flex;
+                flex-direction: column;
+                gap: 32px;
+                /* 增加模块间距 */
+                margin-bottom: 0;
+            }
+
+            .card {
+                padding: 24px 20px;
+                /* 调整卡片内边距 */
+            }
+
+            /* 输入框组优化 */
+            .input-row {
+                gap: 16px;
+            }
+
+            /* 头部字体自适应 */
+            .header {
+                margin-bottom: 32px;
+                padding: 0 10px;
+            }
+
+            .header h1 {
+                font-size: 32px;
+            }
+
+
+            /* 比例选择按钮优化 */
+            .ratio-grid {
+                gap: 12px;
+            }
+
+            .ratio-btn {
+                padding: 16px 8px;
+                /* 减小内边距 */
+            }
+
+            /* 裁切区域优化 */
+            .file-upload-label {
+                padding: 40px 20px;
+            }
+
+            /* 预览和结果区域优化 padding */
+            .crop-container,
+            .stitch-container {
+                padding: 16px;
+            }
+
+            /* 修正移动端二维码弹窗位置 - 显示在上方居中 */
+            .qr-popup {
+                left: 50% !important;
+                top: auto !important;
+                bottom: 100% !important;
+                margin-left: 0 !important;
+                margin-bottom: 12px;
+                transform: translateX(-50%);
+                z-index: 100;
+            }
+
+            /* 5. 按钮组优化 - 修复溢出和对齐问题 */
+            /* 统一将所有主要操作区域改为双列网格布局，确保排版整齐且不溢出 */
+            .crop-result-actions,
+            .crop-controls,
+            .stitch-actions {
+                display: grid !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                /* 强制两列 */
+                gap: 12px;
+                width: 100%;
+                justify-content: stretch;
+                flex-wrap: wrap !important;
+                /* 覆盖可能存在的flex-wrap */
+            }
+
+            /* 按钮样式复写：填满网格单元，高度拉伸对齐 */
+            .crop-action-btn,
+            .stitch-actions .crop-action-btn {
+                min-width: 0 !important;
+                /* 解除最小宽度限制 */
+                width: 100% !important;
+                padding: 12px 6px;
+                /* 稍微减小Padding以防文字太多 */
+                height: 100%;
+                /* 确保在Grid中占满高度，实现等高 */
+                white-space: normal;
+                /* 允许文字换行 */
+                line-height: 1.3;
+                text-align: center;
+            }
+
+            /* 拼接模式选项优化 */
+            .stitch-mode-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .stitch-mode-options {
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .stitch-mode-btn {
+                justify-content: center;
+                width: 100%;
+                text-align: center;
+                /* 改为垂直堆叠，解决文字挤压难看的问题 */
+                flex-direction: column !important;
+                gap: 6px;
+                padding: 14px 8px;
+            }
+
+            .stitch-mode-btn .stitch-icon {
+                font-size: 22px;
+                margin-bottom: 2px;
+            }
+
+            .stitch-mode-btn>span:not(.stitch-icon) {
+                white-space: nowrap;
+                /* 防止 "左右拼接" 换行 */
+            }
+
+            .stitch-mode-btn small {
+                white-space: nowrap;
+                /* 防止 "(高度对齐)" 换行 */
+                display: block;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .controls-bar {
+                justify-content: center;
+                /* 手机端居中可能更好看 */
+                padding: 12px 16px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            /* 再次微调小屏幕的间距 */
+            .ratio-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
     </style>
 </head>
 
