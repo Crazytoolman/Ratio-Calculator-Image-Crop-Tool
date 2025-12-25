@@ -1,6 +1,6 @@
-# Ratio Calculator & Image Crop Tool
+# Ratio Calculator & Image Crop & Stitch Tool
 
-An elegant, modern online tool integrating **AspectRatio Calculation** and **Image Cropping**. Designed with a refined Apple-style aesthetic, supporting Dark Mode, English/Chinese localization, and optimized for mobile touch interactions.
+An elegant, modern online tool integrating **Aspect Ratio Calculation**, **Image Cropping**, and **Image Stitching**. Designed with a refined Apple-style aesthetic, supporting Dark Mode, English/Chinese localization, and optimized for mobile touch interactions.
 
 [![English](https://img.shields.io/badge/Language-English-blue.svg)](./README_EN.md) [![Chinese](https://img.shields.io/badge/Language-中文-red.svg)](./README.md)
 

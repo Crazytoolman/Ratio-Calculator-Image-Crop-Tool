@@ -1,6 +1,6 @@
-# 比例计算器 & 图像裁切工具 (Ratio Calculator & Image Crop Tool)
+# 比例计算器 & 图像裁切拼接工具 (Ratio Calculator & Image Crop & Stitch Tool)
 
-一个优雅、现代化的在线工具，集成了**比例计算**与**图片裁切**功能。采用精致的 Apple 风格设计，支持深色模式、中英多语言切换，并针对移动端触控进行了深度优化。
+一个优雅、现代化的在线工具，集成了**比例计算**、**图片裁切**与**图片拼接**功能。采用精致的 Apple 风格设计，支持深色模式、中英多语言切换，并针对移动端触控进行了深度优化。
 
 [![English](https://img.shields.io/badge/Language-English-blue.svg)](./README_EN.md) [![Chinese](https://img.shields.io/badge/Language-中文-red.svg)](./README.md)
 
