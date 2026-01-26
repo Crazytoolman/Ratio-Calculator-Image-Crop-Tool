@@ -13,6 +13,7 @@ An elegant, modern online tool integrating **Aspect Ratio Calculation**, **Image
 
 ### 🤖 AI Painting Companion (New!)
 - **Draw Things Pre-processing**: Specially optimized for pre-processing images before AI generation. Through precise ratio cropping and rotation, ensuring input images perfectly match AI model dimensions, significantly improving output quality.
+- **Draw Things Outpainting Base**: Specially designed for AI outpainting workflows. Quickly create a green background base that perfectly matches outpainting LoRAs (trained with pure green) in tools like Draw Things. Facilitates a "Layout -> Fill Green -> Paste & Gen" high-speed workflow.
 - **Perfect for ACE++**: The new "Pre-stitch" workflow is ideal for models like **ACE (ACE++)**, allowing for pre-arranged multi-character or scene compositions on a single canvas as guided input.
 - **Qwen Image Edit Assistant**: Tailored for multimodal editing models like **Qwen Image Edit**. Use the stitching feature to pre-layout relationships between multiple characters or scenes for precise in-painting and guided generation.
 
@@ -44,6 +45,12 @@ An elegant, modern online tool integrating **Aspect Ratio Calculation**, **Image
 - **Pre-crop Support**: Crop/rotate individual images before adding them to the stitching queue.
 - **Real-time Preview**: Displays live preview of stitched result and final resolution.
 - **Flexible Output**: Download/copy stitched result directly, or continue editing as a new image.
+
+### 🖼️ Outpainting Base (New!)
+- **Smart Base Generation**: One-click generation of pure green (#00FF00) canvases in 4:3, 16:9, or custom ratios using the integrated calculator.
+- **Multi-layer Interaction**: Add images via click, paste, or drag-and-drop to create custom layouts.
+- **Precision Controls**: Freely move, scale, and rotate floating images for professional layer management.
+- **Seamless Export**: Download or copy results directly, perfectly integrated with AI creators like Draw Things.
 
 
 ### 🎨 Ultimate UI/UX Experience
