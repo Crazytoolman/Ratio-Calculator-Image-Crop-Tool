@@ -2243,6 +2243,13 @@
         }
 
         /* 扩图底板交互层样式 */
+        .outpainting-overlay {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
         .outpainting-overlay .outpainting-item {
             cursor: grab;
             position: absolute;
@@ -2493,7 +2500,8 @@
         <div class="header">
             <div class="header-icon" id="toolTabs">
                 <!-- 裁切与拼接模式 (橙色 + 紫色) - 默认激活 -->
-                <div class="tool-icon-btn active" data-tool="image-tool" title="图像裁切/拼接">
+                <div class="tool-icon-btn active" data-tool="image-tool" title="图像裁切/拼接"
+                    data-i18n-title="nav.cropStitch">
                     <svg class="header-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="icon-grad-merged" x1="0" y1="0" x2="48" y2="48"
@@ -2520,11 +2528,11 @@
                             stroke-width="2.5" />
                         <path d="M32 30H36" stroke="url(#icon-grad-merged)" stroke-width="2" stroke-dasharray="1 2" />
                     </svg>
-                    <div class="tool-label">图像裁切/拼接</div>
+                    <div class="tool-label" data-i18n="nav.cropStitch">图像裁切/拼接</div>
                 </div>
 
                 <!-- 扩图/底板模式 (蓝色) -->
-                <div class="tool-icon-btn" data-tool="outpainting" title="扩图底板">
+                <div class="tool-icon-btn" data-tool="outpainting" title="扩图底板" data-i18n-title="nav.outpainting">
                     <svg class="header-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <defs>
                             <linearGradient id="icon-grad-1" x1="0" y1="0" x2="48" y2="48"
@@ -2546,7 +2554,7 @@
                         <path d="M16 32V24" stroke="url(#icon-grad-1)" stroke-width="3" stroke-linecap="round"
                             stroke-linejoin="round" />
                     </svg>
-                    <div class="tool-label">扩图底板</div>
+                    <div class="tool-label" data-i18n="nav.outpainting">扩图底板</div>
                 </div>
             </div>
             <h1 data-i18n="header.title">全能比例工具箱：计算 · 裁切 · 拼接 · 扩图</h1>
@@ -2734,6 +2742,17 @@
                                     <polyline points="20 6 9 17 4 12"></polyline>
                                 </svg></span>
                             <span data-i18n="outpainting.confirmBtn">确认合成</span>
+                        </button>
+                        <button class="crop-action-btn crop-btn-secondary" id="cancelOutpaintingBtn"
+                            style="display: none;">
+                            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    style="margin-right: 6px;">
+                                    <path d="M3 6h18"></path>
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                </svg></span>
+                            <span data-i18n="outpainting.cancelBtn">取消合成</span>
                         </button>
                         <button class="crop-action-btn crop-btn-primary" id="downloadOutpaintingBtn"
                             style="display: none;">
@@ -3239,9 +3258,18 @@
     </div>
 
     <script>
+        const toolLabels = {
+            'image-tool': { zh: '裁切与拼接管理', en: 'Crop & Stitch Manager' },
+            outpainting: { zh: '扩图底板创作', en: 'Outpainting Creator' }
+        };
+
         // ========== 国际化系统 ==========
         const translations = {
             zh: {
+                nav: {
+                    cropStitch: '图像裁切/拼接',
+                    outpainting: '扩图底板'
+                },
                 theme: {
                     light: '浅色',
                     dark: '深色'
@@ -3255,6 +3283,7 @@
                     uploadText: '点击上传、拖拽或粘贴图片到这里',
                     uploadHint: '支持 JPG、PNG、GIF 等格式（可粘贴多张）',
                     uploadBtn: '选择图片',
+                    uploadTextSmall: '继续添加图片',
                     cropBtn: '裁切图片',
                     rotate90Btn: '旋转 90°',
                     resetBtn: '重置裁切区域',
@@ -3355,10 +3384,15 @@
                     downloadBtn: '下载结果',
                     copyBtn: '复制图片',
                     resetBtn: '重置画布',
+                    cancelBtn: '取消合成',
                     copied: '已复制到剪贴板！'
                 }
             },
             en: {
+                nav: {
+                    cropStitch: 'Crop & Stitch',
+                    outpainting: 'Outpainting'
+                },
                 theme: {
                     light: 'Light',
                     dark: 'Dark'
@@ -3372,6 +3406,7 @@
                     uploadText: 'Click to upload, drag and drop, or paste an image here',
                     uploadHint: 'Supports JPG, PNG, GIF and more (can paste multiple)',
                     uploadBtn: 'Select Image',
+                    uploadTextSmall: 'Continue adding images',
                     cropBtn: 'Crop Image',
                     rotate90Btn: 'Rotate 90°',
                     resetBtn: 'Reset Crop Area',
@@ -3472,6 +3507,7 @@
                     downloadBtn: 'Download Result',
                     copyBtn: 'Copy Image',
                     resetBtn: 'Reset Canvas',
+                    cancelBtn: 'Cancel Merge',
                     copied: 'Copied to clipboard!'
                 }
             }
@@ -3490,9 +3526,14 @@
                 const keys = elem.getAttribute('data-i18n').split('.');
                 let text = translations[lang];
                 for (const key of keys) {
-                    text = text[key];
+                    if (text && text[key] !== undefined) {
+                        text = text[key];
+                    } else {
+                        text = null;
+                        break;
+                    }
                 }
-                elem.textContent = text;
+                if (text !== null) elem.textContent = text;
             });
 
             // 更新所有带有 data-i18n-placeholder 属性的元素
@@ -3500,9 +3541,29 @@
                 const keys = elem.getAttribute('data-i18n-placeholder').split('.');
                 let text = translations[lang];
                 for (const key of keys) {
-                    text = text[key];
+                    if (text && text[key] !== undefined) {
+                        text = text[key];
+                    } else {
+                        text = null;
+                        break;
+                    }
                 }
-                elem.placeholder = text;
+                if (text !== null) elem.placeholder = text;
+            });
+
+            // 更新所有带有 data-i18n-title 属性的元素
+            document.querySelectorAll('[data-i18n-title]').forEach(elem => {
+                const keys = elem.getAttribute('data-i18n-title').split('.');
+                let text = translations[lang];
+                for (const key of keys) {
+                    if (text && text[key] !== undefined) {
+                        text = text[key];
+                    } else {
+                        text = null;
+                        break;
+                    }
+                }
+                if (text !== null) elem.title = text;
             });
 
             // 更新标题
@@ -5590,10 +5651,6 @@
 
         // ========== 扩图底板与 Tab 切换逻辑 (新增) ==========
         const toolTabs = document.querySelectorAll('.tool-icon-btn');
-        const toolLabels = {
-            'image-tool': { zh: '裁切与拼接管理', en: 'Crop & Stitch Manager' },
-            outpainting: { zh: '扩图底板创作', en: 'Outpainting Creator' }
-        };
 
         const outpaintingContainer = document.getElementById('outpaintingContainer');
         const outpaintingCanvas = document.getElementById('outpaintingCanvas');
@@ -5606,6 +5663,7 @@
         const downloadOutpaintingBtn = document.getElementById('downloadOutpaintingBtn');
         const copyOutpaintingBtn = document.getElementById('copyOutpaintingBtn');
         const resetOutpaintingBtn = document.getElementById('resetOutpaintingBtn');
+        const cancelOutpaintingBtn = document.getElementById('cancelOutpaintingBtn');
 
         // 当前激活的扩图图片元素
         let activeOutpaintingImg = null;
@@ -5686,9 +5744,53 @@
                     if (opRatioGroup) opRatioGroup.style.display = 'contents';
                     outpaintingContainer.style.display = 'block';
                     initOutpaintingBase();
+                    // 关键修复：如果当前处于“已合成”状态（取消按钮显示中），则切换回来时需要重新渲染画面
+                    if (cancelOutpaintingBtn && cancelOutpaintingBtn.style.display !== 'none') {
+                        renderMergedOutpainting();
+                    }
                 }
             });
         });
+
+        // 提取渲染合成图像的逻辑，以便在切换标签时复用
+        function renderMergedOutpainting() {
+            if (!outpaintingCanvas || !outpaintingCtx) return;
+
+            // 1. 重新绘制纯绿色背景 (确保底色干净)
+            const w = outpaintingCanvas.width;
+            const h = outpaintingCanvas.height;
+            outpaintingCtx.fillStyle = '#00FF00';
+            outpaintingCtx.fillRect(0, 0, w, h);
+
+            // 2. 绘制所有悬浮层中的图片到画布
+            const wrapper = document.getElementById('outpaintingWrapper');
+            if (!wrapper) return;
+
+            const canvasW = outpaintingCanvas.width;
+            const visualW = parseFloat(wrapper.style.width);
+            const scaleRatio = canvasW / visualW;
+
+            const items = outpaintingOverlay.querySelectorAll('.outpainting-item');
+            items.forEach(item => {
+                const img = item.querySelector('img');
+                if (!img) return;
+
+                const rect = {
+                    left: parseFloat(item.style.left),
+                    top: parseFloat(item.style.top),
+                    width: parseFloat(item.style.width),
+                    height: parseFloat(item.style.height)
+                };
+
+                outpaintingCtx.drawImage(
+                    img,
+                    rect.left * scaleRatio,
+                    rect.top * scaleRatio,
+                    rect.width * scaleRatio,
+                    rect.height * scaleRatio
+                );
+            });
+        }
 
         // 初始化扩图底板
         function initOutpaintingBase() {
@@ -5703,8 +5805,8 @@
             const custH = document.getElementById('opCustomHeight');
 
             // 使用 opCurrentRatio 代替全局 currentRatio
-            let w = parseFloat(iw?.value) || parseFloat(cw?.value) || parseFloat(custW?.value) || 1280;
-            let h = parseFloat(ih?.value) || parseFloat(ch?.value) || parseFloat(custH?.value) || 720;
+            let w = Math.min(5000, parseFloat(iw?.value) || parseFloat(cw?.value) || parseFloat(custW?.value) || 1280);
+            let h = Math.min(5000, parseFloat(ih?.value) || parseFloat(ch?.value) || parseFloat(custH?.value) || 720);
 
             // 如果没有任何输入，尝试基于该模块当前选中的比例按钮计算
             if (w === 1280 && h === 720 && typeof opCurrentRatio !== 'undefined') {
@@ -5747,14 +5849,23 @@
             // 重新绘制背景以便它是干净的 (CSS缩放不会模糊Canvas内容，但会影响点击坐标)
         }
 
-        // 监听尺寸输入变化，实时更新底板
+        // 监听尺寸输入变化，实时更新底板 (增加防抖处理，防止频繁触发导致性能问题或冻结)
+        let opResizeTimeout;
         const watchOpInputs = ['opInputWidth', 'opInputHeight', 'opCalcWidth', 'opCalcHeight'];
         watchOpInputs.forEach(id => {
             const el = document.getElementById(id);
             if (el) {
                 el.addEventListener('input', () => {
-                    if (document.querySelector('[data-tool="outpainting"]').classList.contains('active')) {
-                        setTimeout(initOutpaintingBase, 200);
+                    const opBtn = document.querySelector('[data-tool="outpainting"]');
+                    if (opBtn && opBtn.classList.contains('active')) {
+                        clearTimeout(opResizeTimeout);
+                        opResizeTimeout = setTimeout(() => {
+                            initOutpaintingBase();
+                            // 如果合成过，重置也是为了性能和逻辑正确
+                            if (cancelOutpaintingBtn && cancelOutpaintingBtn.style.display !== 'none') {
+                                cancelOutpaintingBtn.click();
+                            }
+                        }, 300);
                     }
                 });
             }
@@ -6041,42 +6152,32 @@
         // 确认合成
         if (confirmOutpaintingBtn) {
             confirmOutpaintingBtn.addEventListener('click', () => {
-                // 1. 重新绘制纯绿色背景 (必须是绝对纯绿 #00FF00)
-                const w = outpaintingCanvas.width;
-                const h = outpaintingCanvas.height;
-                outpaintingCtx.fillStyle = '#00FF00';
-                outpaintingCtx.fillRect(0, 0, w, h);
+                // 调用统一渲染函数
+                renderMergedOutpainting();
 
-                // 2. 绘制所有悬浮图片
-                const wrapper = document.getElementById('outpaintingWrapper');
-                // Canvas Scale Ratio
-                const canvasW = outpaintingCanvas.width;
-                const visualW = parseFloat(wrapper.style.width);
-                const scaleRatio = canvasW / visualW;
-
-                const images = outpaintingOverlay.querySelectorAll('.outpainting-item');
-                images.forEach(item => {
-                    const img = item.querySelector('img');
-                    const rect = {
-                        left: parseFloat(item.style.left),
-                        top: parseFloat(item.style.top),
-                        width: parseFloat(item.style.width),
-                        height: parseFloat(item.style.height)
-                    };
-
-                    outpaintingCtx.drawImage(
-                        img,
-                        rect.left * scaleRatio,
-                        rect.top * scaleRatio,
-                        rect.width * scaleRatio,
-                        rect.height * scaleRatio
-                    );
-                });
-
-                // 3. 显示下载和复制按钮
+                // 3. 状态切换：隐藏交互层（禁用拖拽），切换按钮
+                outpaintingOverlay.style.display = 'none';
+                confirmOutpaintingBtn.style.display = 'none';
+                cancelOutpaintingBtn.style.display = 'inline-flex';
                 downloadOutpaintingBtn.style.display = 'inline-flex';
                 copyOutpaintingBtn.style.display = 'inline-flex';
+
                 if (toast) showToast(currentLang === 'zh' ? '✅ 合成成功！' : '✅ Merged successfully!');
+            });
+        }
+
+        // 取消合成（悔棋项）
+        if (cancelOutpaintingBtn) {
+            cancelOutpaintingBtn.addEventListener('click', () => {
+                // 1. 重新初始化背景（清除合成结果）
+                initOutpaintingBase();
+
+                // 2. 恢复交互层和原始按钮
+                outpaintingOverlay.style.display = 'block';
+                confirmOutpaintingBtn.style.display = 'inline-flex';
+                cancelOutpaintingBtn.style.display = 'none';
+                downloadOutpaintingBtn.style.display = 'none';
+                copyOutpaintingBtn.style.display = 'none';
             });
         }
 
@@ -6120,12 +6221,20 @@
         // 重置
         if (resetOutpaintingBtn) {
             resetOutpaintingBtn.addEventListener('click', () => {
-                outpaintingOverlay.innerHTML = '';
-                outpaintingOverlay.appendChild(outpaintingPlaceholder);
-                outpaintingPlaceholder.style.display = 'block';
+                // 1. 清除所有上传的图片，但保留 placeholder
+                const items = outpaintingOverlay.querySelectorAll('.outpainting-item');
+                items.forEach(item => item.remove());
+
+                // 2. 恢复初始状态
+                outpaintingOverlay.style.display = 'block';
+                outpaintingPlaceholder.style.display = 'flex';
+                confirmOutpaintingBtn.style.display = 'inline-flex';
+                cancelOutpaintingBtn.style.display = 'none';
                 downloadOutpaintingBtn.style.display = 'none';
                 copyOutpaintingBtn.style.display = 'none';
-                initOutpaintingBase(); // 重置背景
+
+                // 3. 重新绘制空背景
+                initOutpaintingBase();
             });
         }
     </script>
