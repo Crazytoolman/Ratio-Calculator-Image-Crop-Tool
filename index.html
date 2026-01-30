@@ -2255,6 +2255,7 @@
             position: absolute;
             user-select: none;
             touch-action: none;
+            transform-origin: center center;
         }
 
         .outpainting-overlay .outpainting-item img {
@@ -2270,48 +2271,134 @@
 
         /* 选中状态的边框与手柄 */
         .outpainting-overlay .outpainting-item.active {
-            outline: 2px dashed #007aff;
-            box-shadow: 0 0 15px rgba(0, 122, 255, 0.4);
+            outline: 2px dashed #3b82f6 !important;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
             z-index: 100;
         }
 
+        /* 精致缩放手柄 (NW, NE, SW, SE) */
         .outpainting-overlay .outpainting-item .op-handle {
             position: absolute;
             width: 14px;
             height: 14px;
-            background: #fff;
-            border: 2px solid #007aff;
-            border-radius: 50%;
+            background: white !important;
+            border: 2px solid #3b82f6 !important;
+            border-radius: 50% !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             z-index: 101;
             display: none;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         .outpainting-overlay .outpainting-item.active .op-handle {
             display: block;
         }
 
+        .outpainting-overlay .outpainting-item .op-handle:hover {
+            transform: scale(1.3);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
         .op-handle-nw {
             top: -7px;
             left: -7px;
-            cursor: nwse-resize;
         }
 
         .op-handle-ne {
             top: -7px;
             right: -7px;
-            cursor: nesw-resize;
         }
 
         .op-handle-sw {
             bottom: -7px;
             left: -7px;
-            cursor: nesw-resize;
         }
 
         .op-handle-se {
             bottom: -7px;
             right: -7px;
-            cursor: nwse-resize;
+        }
+
+        /* 现代浮动旋转徽章 (Modern Floating Rotation Badge) */
+        .outpainting-overlay .outpainting-item.active .op-handle-rot {
+            display: flex !important;
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            top: -40px;
+            /* 浮动在图片上方，无需连接杆 */
+            left: 50%;
+            margin-left: -16px;
+            cursor: grab;
+
+            /* 毛玻璃质感 - 现代感十足 */
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1.5px solid rgba(59, 130, 246, 0.3) !important;
+            border-radius: 50% !important;
+
+            align-items: center;
+            justify-content: center;
+            z-index: 120;
+
+            /* 清晰的循环箭头图标 - 通用旋转符号 */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16'/%3E%3C/svg%3E") !important;
+            background-repeat: no-repeat !important;
+            background-position: center !important;
+            background-size: 18px 18px !important;
+
+            /* 柔和阴影 + 微妙发光 */
+            box-shadow:
+                0 4px 12px rgba(0, 0, 0, 0.08),
+                0 0 0 4px rgba(59, 130, 246, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* 微妙的脉动动画 - 提示可交互 */
+            animation: rotationPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes rotationPulse {
+
+            0%,
+            100% {
+                box-shadow:
+                    0 4px 12px rgba(0, 0, 0, 0.08),
+                    0 0 0 4px rgba(59, 130, 246, 0.08),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            }
+
+            50% {
+                box-shadow:
+                    0 4px 12px rgba(0, 0, 0, 0.08),
+                    0 0 0 6px rgba(59, 130, 246, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            }
+        }
+
+        .outpainting-overlay .outpainting-item.active .op-handle-rot:hover {
+            transform: scale(1.15);
+            background: rgba(255, 255, 255, 1) !important;
+            border-color: #3b82f6 !important;
+            box-shadow:
+                0 8px 20px rgba(59, 130, 246, 0.2),
+                0 0 0 6px rgba(59, 130, 246, 0.12);
+            animation: none;
+            /* 停止脉动 */
+        }
+
+        .outpainting-overlay .outpainting-item.active .op-handle-rot:active {
+            cursor: grabbing;
+            transform: scale(0.95);
+            background: rgba(239, 246, 255, 1) !important;
+        }
+
+        /* 当未激活时完全隐藏所有手柄组件 */
+        .outpainting-overlay .outpainting-item:not(.active) .op-handle,
+        .outpainting-overlay .outpainting-item:not(.active) .op-handle-rot {
+            display: none !important;
         }
 
         /* 扩图底板占位符美化 - 极致毛玻璃设计 */
@@ -3614,7 +3701,8 @@
         }
 
         // ========== 全局变量与 DOM 元素 ==========
-        let currentRatio = { width: 3, height: 4 };
+        let currentRatio = { width: 4, height: 3 }; // 默认设为 4:3，与 UI 保持一致
+        let currentUnit = 'cm'; // 默认单位为厘米
         let uploadedImage = null;
         let stitchImages = [];
         let draggedItem = null;
@@ -5036,6 +5124,17 @@
                     customHeightInput.value = currentRatio.height;
                 }
                 updateRatio(currentRatio.width, currentRatio.height);
+                // 同步更新扩图按钮状态
+                if (typeof opRatioButtons !== 'undefined') {
+                    opRatioButtons.forEach(btn => {
+                        const [w, h] = btn.dataset.ratio.split(':').map(Number);
+                        if (w === currentRatio.width && h === currentRatio.height) {
+                            btn.classList.add('active');
+                        } else {
+                            btn.classList.remove('active');
+                        }
+                    });
+                }
             }
 
             inputWidth.value = config.inputWidth || '';
@@ -5668,8 +5767,16 @@
         // 当前激活的扩图图片元素
         let activeOutpaintingImg = null;
         let isDraggingOutpainting = false;
-        let dragStartX, dragStartY;
-        let imgStartX, imgStartY;
+        let isResizingOutpainting = false;
+        let isRotatingOutpainting = false;
+        let dragOutpaintingStartX, dragOutpaintingStartY;
+        let imgOutpaintingStartX, imgOutpaintingStartY;
+        let outpaintingInitialRect = null;
+        let outpaintingResizeHandle = null;
+        let outpaintingStartAngle = 0;
+        let outpaintingInitialRotation = 0;
+        let outpaintingCenterX = 0;
+        let outpaintingCenterY = 0;
 
         // 初始化 Tab 切换
         toolTabs.forEach(tab => {
@@ -5742,8 +5849,33 @@
                 } else if (tool === 'outpainting') {
                     if (cropRatioGroup) cropRatioGroup.style.display = 'none';
                     if (opRatioGroup) opRatioGroup.style.display = 'contents';
+
+                    // 同步比例：共用比例裁剪器的比例
+                    if (typeof currentRatio !== 'undefined' && typeof opCurrentRatio !== 'undefined') {
+                        opCurrentRatio = { ...currentRatio };
+                        if (typeof opCurrentRatioText !== 'undefined') {
+                            opCurrentRatioText.textContent = `${opCurrentRatio.width}:${opCurrentRatio.height}`;
+                        }
+                        // 同步按钮激活状态
+                        if (typeof opRatioButtons !== 'undefined') {
+                            opRatioButtons.forEach(btn => {
+                                const [w, h] = btn.dataset.ratio.split(':').map(Number);
+                                if (w === opCurrentRatio.width && h === opCurrentRatio.height) {
+                                    btn.classList.add('active');
+                                } else {
+                                    btn.classList.remove('active');
+                                }
+                            });
+                        }
+                    }
+
                     outpaintingContainer.style.display = 'block';
                     initOutpaintingBase();
+                    // 确保重置所有状态
+                    isDraggingOutpainting = false;
+                    isResizingOutpainting = false;
+                    isRotatingOutpainting = false;
+
                     // 关键修复：如果当前处于“已合成”状态（取消按钮显示中），则切换回来时需要重新渲染画面
                     if (cancelOutpaintingBtn && cancelOutpaintingBtn.style.display !== 'none') {
                         renderMergedOutpainting();
@@ -5775,6 +5907,7 @@
                 const img = item.querySelector('img');
                 if (!img) return;
 
+                const rotation = parseFloat(item.dataset.rotation || 0) * Math.PI / 180;
                 const rect = {
                     left: parseFloat(item.style.left),
                     top: parseFloat(item.style.top),
@@ -5782,13 +5915,22 @@
                     height: parseFloat(item.style.height)
                 };
 
+                outpaintingCtx.save();
+                // 移动到图片中心
+                const centerX = (rect.left + rect.width / 2) * scaleRatio;
+                const centerY = (rect.top + rect.height / 2) * scaleRatio;
+                outpaintingCtx.translate(centerX, centerY);
+                // 旋转
+                outpaintingCtx.rotate(rotation);
+                // 绘制 (注意这里要把坐标移回左上角)
                 outpaintingCtx.drawImage(
                     img,
-                    rect.left * scaleRatio,
-                    rect.top * scaleRatio,
+                    -rect.width / 2 * scaleRatio,
+                    -rect.height / 2 * scaleRatio,
                     rect.width * scaleRatio,
                     rect.height * scaleRatio
                 );
+                outpaintingCtx.restore();
             });
         }
 
@@ -5934,10 +6076,7 @@
             }
         });
 
-        // 扩图交互全局状态
-        let isResizingOutpainting = false;
-        let resizeHandle = null;
-        let initialRect = {};
+        // 移除重复声明部分
 
         function addOutpaintingImage(file) {
             const img = new Image();
@@ -5971,13 +6110,18 @@
                 itemWrapper.appendChild(imgEl);
 
                 // 添加控制手柄
-                const handles = ['nw', 'ne', 'sw', 'se'];
+                const handles = ['nw', 'ne', 'sw', 'se', 'rot'];
                 handles.forEach(h => {
                     const handle = document.createElement('div');
                     handle.className = `op-handle op-handle-${h}`;
                     handle.dataset.handle = h;
                     itemWrapper.appendChild(handle);
                 });
+
+                // 初始化旋转信息
+                itemWrapper.dataset.rotation = 0;
+                itemWrapper.style.transform = 'rotate(0deg)';
+                updateOutpaintingCursors(itemWrapper); // 初始化光标
 
                 // 绑定交互事件
                 bindOutpaintingInteraction(itemWrapper);
@@ -6005,25 +6149,38 @@
                 el.classList.add('active');
 
                 if (e.target.classList.contains('op-handle')) {
-                    // 开始缩放
-                    isResizingOutpainting = true;
-                    resizeHandle = e.target.dataset.handle;
-                    initialRect = {
-                        left: parseFloat(el.style.left),
-                        top: parseFloat(el.style.top),
-                        width: parseFloat(el.style.width),
-                        height: parseFloat(el.style.height),
-                        startX: e.clientX,
-                        startY: e.clientY,
-                        ratio: parseFloat(el.style.width) / parseFloat(el.style.height)
-                    };
+                    const hType = e.target.dataset.handle;
+                    if (hType === 'rot') {
+                        // 开始旋转
+                        isRotatingOutpainting = true;
+                        const rect = el.getBoundingClientRect();
+                        // 锁定中心点坐标，避免旋转引起的 rect 变化导致计算漂移
+                        outpaintingCenterX = rect.left + rect.width / 2;
+                        outpaintingCenterY = rect.top + rect.height / 2;
+                        outpaintingStartAngle = Math.atan2(e.clientY - outpaintingCenterY, e.clientX - outpaintingCenterX);
+                        outpaintingInitialRotation = parseFloat(el.dataset.rotation || 0);
+                    } else {
+                        // 开始缩放
+                        isResizingOutpainting = true;
+                        outpaintingResizeHandle = hType;
+                        outpaintingInitialRect = {
+                            left: parseFloat(el.style.left),
+                            top: parseFloat(el.style.top),
+                            width: parseFloat(el.style.width),
+                            height: parseFloat(el.style.height),
+                            startX: e.clientX,
+                            startY: e.clientY,
+                            ratio: parseFloat(el.style.width) / parseFloat(el.style.height),
+                            rotation: (parseFloat(el.dataset.rotation || 0) * Math.PI) / 180
+                        };
+                    }
                 } else {
                     // 开始移动
                     isDraggingOutpainting = true;
-                    dragStartX = e.clientX;
-                    dragStartY = e.clientY;
-                    imgStartX = parseFloat(el.style.left);
-                    imgStartY = parseFloat(el.style.top);
+                    dragOutpaintingStartX = e.clientX;
+                    dragOutpaintingStartY = e.clientY;
+                    imgOutpaintingStartX = parseFloat(el.style.left);
+                    imgOutpaintingStartY = parseFloat(el.style.top);
                 }
                 e.stopPropagation();
             });
@@ -6082,42 +6239,78 @@
             }, { passive: false });
         }
 
+        // 动态更新缩放手柄的光标，使其始终指向中心/外侧
+        function updateOutpaintingCursors(el) {
+            const rotation = parseFloat(el.dataset.rotation || 0);
+            const cursors = ['n-resize', 'ne-resize', 'e-resize', 'se-resize', 's-resize', 'sw-resize', 'w-resize', 'nw-resize'];
+            // 定义四个角的初始方位角
+            const baseAngles = { 'nw': 315, 'ne': 45, 'se': 135, 'sw': 225 };
+
+            Object.keys(baseAngles).forEach(handle => {
+                const handleEl = el.querySelector(`.op-handle-${handle}`);
+                if (handleEl) {
+                    // 计算旋转后的总角度
+                    const currentAngle = (baseAngles[handle] + rotation) % 360;
+                    // 映射到 8 个方向索引 (每个方向 45度)
+                    // (angle + 22.5) / 45 确保四舍五入到最近的 45度
+                    const index = Math.floor(((currentAngle + 360) % 360 + 22.5) / 45) % 8;
+                    handleEl.style.cursor = cursors[index];
+                }
+            });
+        }
+
         function handleOutpaintingMove(clientX, clientY) {
             if (isDraggingOutpainting && activeOutpaintingImg) {
-                const dx = clientX - dragStartX;
-                const dy = clientY - dragStartY;
-                activeOutpaintingImg.style.left = `${imgStartX + dx}px`;
-                activeOutpaintingImg.style.top = `${imgStartY + dy}px`;
+                const dx = clientX - dragOutpaintingStartX;
+                const dy = clientY - dragOutpaintingStartY;
+                activeOutpaintingImg.style.left = `${imgOutpaintingStartX + dx}px`;
+                activeOutpaintingImg.style.top = `${imgOutpaintingStartY + dy}px`;
+            } else if (isRotatingOutpainting && activeOutpaintingImg) {
+                // 使用之前锁定的中心点进行计算
+                const currentAngle = Math.atan2(clientY - outpaintingCenterY, clientX - outpaintingCenterX);
+                let rotation = outpaintingInitialRotation + (currentAngle - outpaintingStartAngle) * (180 / Math.PI);
+                activeOutpaintingImg.dataset.rotation = rotation;
+                activeOutpaintingImg.style.transform = `rotate(${rotation}deg)`;
+                // 实时更新光标方向
+                updateOutpaintingCursors(activeOutpaintingImg);
             } else if (isResizingOutpainting && activeOutpaintingImg) {
-                const dx = clientX - initialRect.startX;
-                const dy = clientY - initialRect.startY;
-                let newW, newH;
+                const dx = clientX - outpaintingInitialRect.startX;
+                const dy = clientY - outpaintingInitialRect.startY;
+                const theta = outpaintingInitialRect.rotation;
 
-                if (resizeHandle === 'se') {
-                    newW = Math.max(20, initialRect.width + dx);
-                    newH = newW / initialRect.ratio;
-                    activeOutpaintingImg.style.width = `${newW}px`;
-                    activeOutpaintingImg.style.height = `${newH}px`;
-                } else if (resizeHandle === 'sw') {
-                    newW = Math.max(20, initialRect.width - dx);
-                    newH = newW / initialRect.ratio;
-                    activeOutpaintingImg.style.width = `${newW}px`;
-                    activeOutpaintingImg.style.height = `${newH}px`;
-                    activeOutpaintingImg.style.left = `${initialRect.left + (initialRect.width - newW)}px`;
-                } else if (resizeHandle === 'ne') {
-                    newH = Math.max(20, initialRect.height - dy);
-                    newW = newH * initialRect.ratio;
-                    activeOutpaintingImg.style.width = `${newW}px`;
-                    activeOutpaintingImg.style.height = `${newH}px`;
-                    activeOutpaintingImg.style.top = `${initialRect.top + (initialRect.height - newH)}px`;
-                } else if (resizeHandle === 'nw') {
-                    newW = Math.max(20, initialRect.width - dx);
-                    newH = newW / initialRect.ratio;
-                    activeOutpaintingImg.style.width = `${newW}px`;
-                    activeOutpaintingImg.style.height = `${newH}px`;
-                    activeOutpaintingImg.style.left = `${initialRect.left + (initialRect.width - newW)}px`;
-                    activeOutpaintingImg.style.top = `${initialRect.top + (initialRect.height - newH)}px`;
-                }
+                // 将屏幕空间的位移转换到图片坐标系中 (局部 $dx'$, $dy'$)
+                const localDx = dx * Math.cos(theta) + dy * Math.sin(theta);
+                const localDy = -dx * Math.sin(theta) + dy * Math.cos(theta);
+
+                let factorX = 0, factorY = 0;
+                if (outpaintingResizeHandle === 'se') { factorX = 1; factorY = 1; }
+                else if (outpaintingResizeHandle === 'sw') { factorX = -1; factorY = 1; }
+                else if (outpaintingResizeHandle === 'ne') { factorX = 1; factorY = -1; }
+                else if (outpaintingResizeHandle === 'nw') { factorX = -1; factorY = -1; }
+
+                // 计算新尺寸
+                let changeW = localDx * factorX;
+                let newW = Math.max(20, outpaintingInitialRect.width + changeW);
+                let actualChangeW = newW - outpaintingInitialRect.width;
+                let actualChangeH = actualChangeW / outpaintingInitialRect.ratio;
+                let newH = outpaintingInitialRect.height + actualChangeH;
+
+                // 更新宽高
+                activeOutpaintingImg.style.width = `${newW}px`;
+                activeOutpaintingImg.style.height = `${newH}px`;
+
+                // 核心控制：由于 transform-origin 在中心，改变宽高会导致四角同时移动
+                // 我们需要移动中心点 (left, top) 来抵消缩放带来的位移，从而固定住对角点
+                // 局部空间中心位移
+                const localOffsetX = (actualChangeW * factorX) / 2;
+                const localOffsetY = (actualChangeH * factorY) / 2;
+
+                // 将局部偏移转回到屏幕/父容器坐标系
+                const globalOffsetX = localOffsetX * Math.cos(theta) - localOffsetY * Math.sin(theta);
+                const globalOffsetY = localOffsetX * Math.sin(theta) + localOffsetY * Math.cos(theta);
+
+                activeOutpaintingImg.style.left = `${outpaintingInitialRect.left + globalOffsetX}px`;
+                activeOutpaintingImg.style.top = `${outpaintingInitialRect.top + globalOffsetY}px`;
             }
         }
 
@@ -6136,6 +6329,7 @@
         const clearOutpaintingStates = () => {
             isDraggingOutpainting = false;
             isResizingOutpainting = false;
+            isRotatingOutpainting = false;
         };
         document.addEventListener('mouseup', clearOutpaintingStates);
         document.addEventListener('touchend', clearOutpaintingStates);
