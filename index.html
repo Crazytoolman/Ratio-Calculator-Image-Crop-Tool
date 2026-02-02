@@ -6449,6 +6449,37 @@
                     handleEl.style.cursor = cursors[index];
                 }
             });
+
+            // 智能调整旋转手柄位置，避免被遮挡
+            adjustRotationHandlePosition(el);
+        }
+
+        // 智能调整旋转手柄位置，防止超出边界
+        function adjustRotationHandlePosition(el) {
+            const rotHandle = el.querySelector('.op-handle-rot');
+            if (!rotHandle) return;
+
+            const wrapper = document.getElementById('outpaintingWrapper');
+            const wrapperRect = wrapper.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+
+            // 计算旋转手柄的默认位置（图片顶部中心上方40px）
+            const handleDefaultTop = elRect.top - 40;
+            const handleDefaultBottom = elRect.bottom + 40;
+            const handleLeft = elRect.left + elRect.width / 2;
+
+            // 检查顶部是否有足够空间（需要至少50px）
+            const topSpace = elRect.top - wrapperRect.top;
+            const bottomSpace = wrapperRect.bottom - elRect.bottom;
+
+            // 如果顶部空间不足，将旋转手柄移到底部
+            if (topSpace < 50 && bottomSpace >= 50) {
+                rotHandle.style.top = 'auto';
+                rotHandle.style.bottom = '-40px';
+            } else {
+                rotHandle.style.top = '-40px';
+                rotHandle.style.bottom = 'auto';
+            }
         }
 
         function handleOutpaintingMove(clientX, clientY) {
@@ -6457,6 +6488,8 @@
                 const dy = clientY - dragOutpaintingStartY;
                 activeOutpaintingImg.style.left = `${imgOutpaintingStartX + dx}px`;
                 activeOutpaintingImg.style.top = `${imgOutpaintingStartY + dy}px`;
+                // 拖动时实时调整旋转手柄位置
+                adjustRotationHandlePosition(activeOutpaintingImg);
             } else if (isRotatingOutpainting && activeOutpaintingImg) {
                 // 使用之前锁定的中心点进行计算
                 const currentAngle = Math.atan2(clientY - outpaintingCenterY, clientX - outpaintingCenterX);
