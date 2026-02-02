@@ -2831,6 +2831,15 @@
                                 </svg></span>
                             <span data-i18n="outpainting.pasteBtn">粘贴图片</span>
                         </button>
+                        <button class="crop-action-btn crop-btn-secondary" id="resetRotationBtn">
+                            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    style="margin-right: 6px;">
+                                    <path d="M1 4v6h6"></path>
+                                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                                </svg></span>
+                            <span data-i18n="outpainting.resetRotationBtn">恢复水平</span>
+                        </button>
                         <button class="crop-action-btn crop-btn-success" id="confirmOutpaintingBtn">
                             <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
@@ -3482,7 +3491,8 @@
                     resetBtn: '重置画布',
                     cancelBtn: '取消合成',
                     copied: '已复制到剪贴板！',
-                    pasteBtn: '粘贴图片'
+                    pasteBtn: '粘贴图片',
+                    resetRotationBtn: '恢复水平'
                 }
             },
             en: {
@@ -3606,7 +3616,8 @@
                     resetBtn: 'Reset Canvas',
                     cancelBtn: 'Cancel Merge',
                     copied: 'Copied to clipboard!',
-                    pasteBtn: 'Paste Image'
+                    pasteBtn: 'Paste Image',
+                    resetRotationBtn: 'Reset Rotation'
                 }
             }
         };
@@ -6076,6 +6087,24 @@
                     } else {
                         showToast(currentLang === 'zh' ? '❌ 读取剪切板失败' : '❌ Failed to read clipboard');
                     }
+                }
+            });
+        }
+
+        // 恢复水平按钮点击事件
+        const resetRotationBtn = document.getElementById('resetRotationBtn');
+        if (resetRotationBtn) {
+            resetRotationBtn.addEventListener('click', () => {
+                const activeItem = document.querySelector('.outpainting-item.active');
+                if (activeItem) {
+                    // 重置旋转角度为0
+                    activeItem.dataset.rotation = 0;
+                    activeItem.style.transform = 'rotate(0deg)';
+                    // 更新手柄光标方向
+                    updateOutpaintingCursors(activeItem);
+                    showToast(currentLang === 'zh' ? '✅ 已恢复水平' : '✅ Rotation reset');
+                } else {
+                    showToast(currentLang === 'zh' ? '⚠️ 请先选中一张图片' : '⚠️ Please select an image first');
                 }
             });
         }
