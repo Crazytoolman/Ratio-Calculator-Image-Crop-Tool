@@ -2822,6 +2822,15 @@
                     </div>
 
                     <div class="stitch-actions" style="margin-top: 20px;">
+                        <button class="crop-action-btn crop-btn-primary" id="outpaintingPasteBtn">
+                            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    style="margin-right: 6px;">
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                </svg></span>
+                            <span data-i18n="outpainting.pasteBtn">粘贴图片</span>
+                        </button>
                         <button class="crop-action-btn crop-btn-success" id="confirmOutpaintingBtn">
                             <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
@@ -3472,7 +3481,8 @@
                     copyBtn: '复制图片',
                     resetBtn: '重置画布',
                     cancelBtn: '取消合成',
-                    copied: '已复制到剪贴板！'
+                    copied: '已复制到剪贴板！',
+                    pasteBtn: '粘贴图片'
                 }
             },
             en: {
@@ -3595,7 +3605,8 @@
                     copyBtn: 'Copy Image',
                     resetBtn: 'Reset Canvas',
                     cancelBtn: 'Cancel Merge',
-                    copied: 'Copied to clipboard!'
+                    copied: 'Copied to clipboard!',
+                    pasteBtn: 'Paste Image'
                 }
             }
         };
@@ -6020,6 +6031,46 @@
             });
         }
 
+        // 粘贴按钮点击事件
+        const outpaintingPasteBtn = document.getElementById('outpaintingPasteBtn');
+        if (outpaintingPasteBtn) {
+            outpaintingPasteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                try {
+                    // 检查浏览器是否支持剪切板API
+                    if (!navigator.clipboard || !navigator.clipboard.read) {
+                        showToast(currentLang === 'zh' ? '⚠️ 您的浏览器不支持剪切板功能' : '⚠️ Clipboard not supported');
+                        return;
+                    }
+
+                    // 读取剪切板内容
+                    const clipboardItems = await navigator.clipboard.read();
+                    
+                    for (const clipboardItem of clipboardItems) {
+                        for (const type of clipboardItem.types) {
+                            if (type.startsWith('image/')) {
+                                const blob = await clipboardItem.getType(type);
+                                const file = new File([blob], 'pasted-image.png', { type: blob.type });
+                                addOutpaintingImage(file);
+                                showToast(currentLang === 'zh' ? '✅ 图片已粘贴' : '✅ Image pasted');
+                                return;
+                            }
+                        }
+                    }
+                    
+                    // 没有找到图片
+                    showToast(currentLang === 'zh' ? '⚠️ 剪切板中没有图片' : '⚠️ No image in clipboard');
+                } catch (err) {
+                    console.error('读取剪切板失败:', err);
+                    if (err.name === 'NotAllowedError') {
+                        showToast(currentLang === 'zh' ? '⚠️ 请允许访问剪切板' : '⚠️ Clipboard permission denied');
+                    } else {
+                        showToast(currentLang === 'zh' ? '❌ 读取剪切板失败' : '❌ Failed to read clipboard');
+                    }
+                }
+            });
+        }
+
         if (outpaintingInput) {
             outpaintingInput.addEventListener('change', (e) => {
                 if (e.target.files && e.target.files[0]) {
@@ -6058,17 +6109,20 @@
             });
         }
 
-        // 粘贴上传 (修复语法错误)
+        // 粘贴上传 - 扩图底板
         document.addEventListener('paste', (e) => {
-            const isOutpaintingActive = document.querySelector('[data-tool="outpainting"]').classList.contains('active');
+            const isOutpaintingActive = document.querySelector('[data-tool="outpainting"]')?.classList.contains('active');
             if (!isOutpaintingActive) return;
 
-            const items = e.clipboardData.items;
+            // 如果是输入框相关的粘贴，不在此处处理
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            const items = e.clipboardData?.items;
+            if (!items) return;
+
             const imageFiles = Array.from(items).filter(item => item.type.startsWith('image/'));
             if (imageFiles.length > 0) {
                 const files = imageFiles.map(item => item.getAsFile()).filter(f => f);
-                // Assuming handleMultipleFiles is a function that can process an array of files
-                // For outpainting, we typically only add one image at a time, so we'll take the first one.
                 if (files.length > 0) {
                     addOutpaintingImage(files[0]);
                     e.preventDefault();
@@ -6216,23 +6270,36 @@
                 el.classList.add('active');
 
                 if (e.target.classList.contains('op-handle')) {
-                    isResizingOutpainting = true;
-                    resizeHandle = e.target.dataset.handle;
-                    initialRect = {
-                        left: parseFloat(el.style.left),
-                        top: parseFloat(el.style.top),
-                        width: parseFloat(el.style.width),
-                        height: parseFloat(el.style.height),
-                        startX: touch.clientX,
-                        startY: touch.clientY,
-                        ratio: parseFloat(el.style.width) / parseFloat(el.style.height)
-                    };
+                    const hType = e.target.dataset.handle;
+                    if (hType === 'rot') {
+                        // 开始旋转
+                        isRotatingOutpainting = true;
+                        const rect = el.getBoundingClientRect();
+                        outpaintingCenterX = rect.left + rect.width / 2;
+                        outpaintingCenterY = rect.top + rect.height / 2;
+                        outpaintingStartAngle = Math.atan2(touch.clientY - outpaintingCenterY, touch.clientX - outpaintingCenterX);
+                        outpaintingInitialRotation = parseFloat(el.dataset.rotation || 0);
+                    } else {
+                        // 开始缩放
+                        isResizingOutpainting = true;
+                        outpaintingResizeHandle = hType;
+                        outpaintingInitialRect = {
+                            left: parseFloat(el.style.left),
+                            top: parseFloat(el.style.top),
+                            width: parseFloat(el.style.width),
+                            height: parseFloat(el.style.height),
+                            startX: touch.clientX,
+                            startY: touch.clientY,
+                            ratio: parseFloat(el.style.width) / parseFloat(el.style.height),
+                            rotation: (parseFloat(el.dataset.rotation || 0) * Math.PI) / 180
+                        };
+                    }
                 } else {
                     isDraggingOutpainting = true;
-                    dragStartX = touch.clientX;
-                    dragStartY = touch.clientY;
-                    imgStartX = parseFloat(el.style.left);
-                    imgStartY = parseFloat(el.style.top);
+                    dragOutpaintingStartX = touch.clientX;
+                    dragOutpaintingStartY = touch.clientY;
+                    imgOutpaintingStartX = parseFloat(el.style.left);
+                    imgOutpaintingStartY = parseFloat(el.style.top);
                 }
                 if (e.cancelable) e.preventDefault();
                 e.stopPropagation();
@@ -6319,7 +6386,7 @@
         });
 
         document.addEventListener('touchmove', (e) => {
-            if (isDraggingOutpainting || isResizingOutpainting) {
+            if (isDraggingOutpainting || isResizingOutpainting || isRotatingOutpainting) {
                 const touch = e.touches[0];
                 handleOutpaintingMove(touch.clientX, touch.clientY);
                 if (e.cancelable) e.preventDefault();
