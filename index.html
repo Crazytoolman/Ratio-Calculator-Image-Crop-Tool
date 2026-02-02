@@ -6268,50 +6268,137 @@
                 el.style.top = `${cy - newH / 2}px`;
             });
 
+            // 触控手势支持变量
+            let gestureStartDist = 0;
+            let gestureStartAngle = 0;
+            let gestureStartWidth = 0;
+            let gestureStartHeight = 0;
+            let gestureStartRotation = 0;
+            let gestureStartLeft = 0;
+            let gestureStartTop = 0;
+            let isGesturing = false;
+
             // 处理触控开始
             el.addEventListener('touchstart', (e) => {
-                if (e.touches.length > 1) return; // 忽略多指
-                const touch = e.touches[0];
                 activeOutpaintingImg = el;
-
+                
                 // 选中逻辑
                 document.querySelectorAll('.outpainting-item').forEach(item => item.classList.remove('active'));
                 el.classList.add('active');
 
-                if (e.target.classList.contains('op-handle')) {
-                    const hType = e.target.dataset.handle;
-                    if (hType === 'rot') {
-                        // 开始旋转
-                        isRotatingOutpainting = true;
-                        const rect = el.getBoundingClientRect();
-                        outpaintingCenterX = rect.left + rect.width / 2;
-                        outpaintingCenterY = rect.top + rect.height / 2;
-                        outpaintingStartAngle = Math.atan2(touch.clientY - outpaintingCenterY, touch.clientX - outpaintingCenterX);
-                        outpaintingInitialRotation = parseFloat(el.dataset.rotation || 0);
-                    } else {
-                        // 开始缩放
-                        isResizingOutpainting = true;
-                        outpaintingResizeHandle = hType;
-                        outpaintingInitialRect = {
-                            left: parseFloat(el.style.left),
-                            top: parseFloat(el.style.top),
-                            width: parseFloat(el.style.width),
-                            height: parseFloat(el.style.height),
-                            startX: touch.clientX,
-                            startY: touch.clientY,
-                            ratio: parseFloat(el.style.width) / parseFloat(el.style.height),
-                            rotation: (parseFloat(el.dataset.rotation || 0) * Math.PI) / 180
-                        };
-                    }
-                } else {
-                    isDraggingOutpainting = true;
-                    dragOutpaintingStartX = touch.clientX;
-                    dragOutpaintingStartY = touch.clientY;
-                    imgOutpaintingStartX = parseFloat(el.style.left);
-                    imgOutpaintingStartY = parseFloat(el.style.top);
+                // 双指手势：缩放和旋转
+                if (e.touches.length === 2 && !e.target.classList.contains('op-handle')) {
+                    isGesturing = true;
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    
+                    // 记录初始距离（用于缩放）
+                    const dx = touch2.clientX - touch1.clientX;
+                    const dy = touch2.clientY - touch1.clientY;
+                    gestureStartDist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // 记录初始角度（用于旋转）
+                    gestureStartAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+                    
+                    // 记录初始尺寸和旋转
+                    gestureStartWidth = parseFloat(el.style.width);
+                    gestureStartHeight = parseFloat(el.style.height);
+                    gestureStartRotation = parseFloat(el.dataset.rotation || 0);
+                    gestureStartLeft = parseFloat(el.style.left);
+                    gestureStartTop = parseFloat(el.style.top);
+                    
+                    if (e.cancelable) e.preventDefault();
+                    e.stopPropagation();
+                    return;
                 }
-                if (e.cancelable) e.preventDefault();
-                e.stopPropagation();
+
+                // 单指操作
+                if (e.touches.length === 1) {
+                    const touch = e.touches[0];
+
+                    if (e.target.classList.contains('op-handle')) {
+                        const hType = e.target.dataset.handle;
+                        if (hType === 'rot') {
+                            // 开始旋转
+                            isRotatingOutpainting = true;
+                            const rect = el.getBoundingClientRect();
+                            outpaintingCenterX = rect.left + rect.width / 2;
+                            outpaintingCenterY = rect.top + rect.height / 2;
+                            outpaintingStartAngle = Math.atan2(touch.clientY - outpaintingCenterY, touch.clientX - outpaintingCenterX);
+                            outpaintingInitialRotation = parseFloat(el.dataset.rotation || 0);
+                        } else {
+                            // 开始缩放
+                            isResizingOutpainting = true;
+                            outpaintingResizeHandle = hType;
+                            outpaintingInitialRect = {
+                                left: parseFloat(el.style.left),
+                                top: parseFloat(el.style.top),
+                                width: parseFloat(el.style.width),
+                                height: parseFloat(el.style.height),
+                                startX: touch.clientX,
+                                startY: touch.clientY,
+                                ratio: parseFloat(el.style.width) / parseFloat(el.style.height),
+                                rotation: (parseFloat(el.dataset.rotation || 0) * Math.PI) / 180
+                            };
+                        }
+                    } else {
+                        isDraggingOutpainting = true;
+                        dragOutpaintingStartX = touch.clientX;
+                        dragOutpaintingStartY = touch.clientY;
+                        imgOutpaintingStartX = parseFloat(el.style.left);
+                        imgOutpaintingStartY = parseFloat(el.style.top);
+                    }
+                    if (e.cancelable) e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, { passive: false });
+
+            // 处理触控移动 - 双指手势
+            el.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && isGesturing) {
+                    const touch1 = e.touches[0];
+                    const touch2 = e.touches[1];
+                    
+                    // 计算当前距离和角度
+                    const dx = touch2.clientX - touch1.clientX;
+                    const dy = touch2.clientY - touch1.clientY;
+                    const currentDist = Math.sqrt(dx * dx + dy * dy);
+                    const currentAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+                    
+                    // 计算缩放比例
+                    const scale = currentDist / gestureStartDist;
+                    const newWidth = gestureStartWidth * scale;
+                    const newHeight = gestureStartHeight * scale;
+                    
+                    // 计算旋转角度变化
+                    let angleDelta = currentAngle - gestureStartAngle;
+                    const newRotation = gestureStartRotation + angleDelta;
+                    
+                    // 应用变换
+                    el.style.width = `${newWidth}px`;
+                    el.style.height = `${newHeight}px`;
+                    el.dataset.rotation = newRotation;
+                    el.style.transform = `rotate(${newRotation}deg)`;
+                    
+                    // 保持中心点位置
+                    const centerX = gestureStartLeft + gestureStartWidth / 2;
+                    const centerY = gestureStartTop + gestureStartHeight / 2;
+                    el.style.left = `${centerX - newWidth / 2}px`;
+                    el.style.top = `${centerY - newHeight / 2}px`;
+                    
+                    // 更新手柄光标方向
+                    updateOutpaintingCursors(el);
+                    
+                    if (e.cancelable) e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, { passive: false });
+
+            // 处理触控结束
+            el.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) {
+                    isGesturing = false;
+                }
             }, { passive: false });
         }
 
