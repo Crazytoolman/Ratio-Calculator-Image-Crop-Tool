@@ -6043,6 +6043,13 @@
                         return;
                     }
 
+                    // 显示友好提示（仅首次）
+                    const hasShownTip = localStorage.getItem('outpaintingPasteTipShown');
+                    if (!hasShownTip && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
+                        showToast(currentLang === 'zh' ? '💡 首次使用需要授权访问剪切板' : '💡 First time: clipboard permission needed');
+                        localStorage.setItem('outpaintingPasteTipShown', 'true');
+                    }
+
                     // 读取剪切板内容
                     const clipboardItems = await navigator.clipboard.read();
                     
@@ -6063,7 +6070,9 @@
                 } catch (err) {
                     console.error('读取剪切板失败:', err);
                     if (err.name === 'NotAllowedError') {
-                        showToast(currentLang === 'zh' ? '⚠️ 请允许访问剪切板' : '⚠️ Clipboard permission denied');
+                        showToast(currentLang === 'zh' ? 
+                            '⚠️ 需要授权：请在弹窗中点击"允许"或"粘贴"' : 
+                            '⚠️ Permission needed: tap "Allow" or "Paste" in popup');
                     } else {
                         showToast(currentLang === 'zh' ? '❌ 读取剪切板失败' : '❌ Failed to read clipboard');
                     }
