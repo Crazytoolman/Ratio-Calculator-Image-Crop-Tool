@@ -2656,7 +2656,7 @@
 
                 <!-- 上传区域 -->
                 <div class="upload-area" id="uploadArea">
-                    <input type="file" id="imageInput" accept="image/*" multiple style="display: none;">
+                    <input type="file" id="imageInput" accept="image/*,.tiff,.tif" multiple style="display: none;">
                     <div class="upload-placeholder" id="uploadPlaceholder">
                         <div class="upload-icon">
                             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -2667,7 +2667,7 @@
                             </svg>
                         </div>
                         <div class="upload-text" data-i18n="imageCrop.uploadText">点击上传、拖拽或粘贴图片到这里</div>
-                        <div class="upload-hint" data-i18n="imageCrop.uploadHint">支持 JPG、PNG、GIF 等格式（可粘贴多张）</div>
+                        <div class="upload-hint" data-i18n="imageCrop.uploadHint">支持 JPG、PNG、GIF、TIFF 等格式（可粘贴多张）</div>
                         <button class="upload-btn" id="uploadBtn" data-i18n="imageCrop.uploadBtn">选择图片</button>
                     </div>
 
@@ -2826,7 +2826,8 @@
                             <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
                                     style="margin-right: 6px;">
-                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2">
+                                    </path>
                                     <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                                 </svg></span>
                             <span data-i18n="outpainting.pasteBtn">粘贴图片</span>
@@ -2889,7 +2890,7 @@
                             <span data-i18n="outpainting.resetBtn">重置画布</span>
                         </button>
                     </div>
-                    <input type="file" id="outpaintingInput" accept="image/*" style="display: none;">
+                    <input type="file" id="outpaintingInput" accept="image/*,.tiff,.tif" style="display: none;">
                 </div>
 
                 <!-- 裁切区域 -->
@@ -3362,7 +3363,101 @@
         </footer>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
     <script>
+        // ========== TIFF 格式支持 ==========
+        // 检测文件是否为 TIFF 格式
+        function isTiffFile(file) {
+            if (!file) return false;
+            const type = (file.type || '').toLowerCase();
+            const name = (file.name || '').toLowerCase();
+            return type === 'image/tiff' || type === 'image/tif' ||
+                name.endsWith('.tiff') || name.endsWith('.tif');
+        }
+
+        // 检测文件是否为图片（包含 TIFF）
+        function isImageFile(file) {
+            if (!file) return false;
+            if (file.type && file.type.startsWith('image/')) return true;
+            const name = (file.name || '').toLowerCase();
+            return name.endsWith('.tiff') || name.endsWith('.tif') ||
+                name.endsWith('.jpg') || name.endsWith('.jpeg') ||
+                name.endsWith('.png') || name.endsWith('.gif') ||
+                name.endsWith('.webp') || name.endsWith('.bmp') ||
+                name.endsWith('.svg');
+        }
+
+        // 使用 UTIF.js 将 TIFF 文件转换为 PNG File 对象
+        function convertTiffToFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const arrayBuffer = e.target.result;
+                        // 使用 UTIF.js 解码 TIFF
+                        const ifds = UTIF.decode(arrayBuffer);
+                        if (!ifds || ifds.length === 0) {
+                            reject(new Error('无法解码 TIFF 文件'));
+                            return;
+                        }
+                        // 解码第一个页面/帧
+                        UTIF.decodeImage(arrayBuffer, ifds[0]);
+                        const firstPage = ifds[0];
+                        const rgba = UTIF.toRGBA8(firstPage);
+                        const width = firstPage.width;
+                        const height = firstPage.height;
+
+                        // 通过 Canvas 转换为 PNG
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        const imageData = ctx.createImageData(width, height);
+                        imageData.data.set(new Uint8Array(rgba));
+                        ctx.putImageData(imageData, 0, 0);
+
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                const baseName = (file.name || 'image').replace(/\.(tiff?|tif)$/i, '');
+                                const convertedFile = new File([blob], baseName + '.png', { type: 'image/png' });
+                                resolve(convertedFile);
+                            } else {
+                                reject(new Error('Canvas 转换 PNG 失败'));
+                            }
+                        }, 'image/png');
+                    } catch (err) {
+                        console.error('TIFF 解码失败:', err);
+                        reject(err);
+                    }
+                };
+                reader.onerror = () => reject(new Error('读取文件失败'));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        // 批量处理文件，自动将 TIFF 转换为 PNG
+        async function processFiles(files) {
+            const processed = [];
+            for (const file of files) {
+                if (isTiffFile(file)) {
+                    try {
+                        const converted = await convertTiffToFile(file);
+                        processed.push(converted);
+                    } catch (err) {
+                        console.error('TIFF 转换失败，跳过此文件:', file.name, err);
+                        if (typeof showToast === 'function') {
+                            showToast(currentLang === 'zh' ?
+                                `❌ TIFF 文件 "${file.name}" 转换失败` :
+                                `❌ Failed to convert TIFF file "${file.name}"`);
+                        }
+                    }
+                } else {
+                    processed.push(file);
+                }
+            }
+            return processed;
+        }
+
         const toolLabels = {
             'image-tool': { zh: '裁切与拼接管理', en: 'Crop & Stitch Manager' },
             outpainting: { zh: '扩图底板创作', en: 'Outpainting Creator' }
@@ -3386,7 +3481,7 @@
                 imageCrop: {
                     title: '图像裁切与拼接工具',
                     uploadText: '点击上传、拖拽或粘贴图片到这里',
-                    uploadHint: '支持 JPG、PNG、GIF 等格式（可粘贴多张）',
+                    uploadHint: '支持 JPG、PNG、GIF、TIFF 等格式（可粘贴多张）',
                     uploadBtn: '选择图片',
                     uploadTextSmall: '继续添加图片',
                     cropBtn: '裁切图片',
@@ -3511,7 +3606,7 @@
                 imageCrop: {
                     title: 'Image Crop & Stitch',
                     uploadText: 'Click to upload, drag and drop, or paste an image here',
-                    uploadHint: 'Supports JPG, PNG, GIF and more (can paste multiple)',
+                    uploadHint: 'Supports JPG, PNG, GIF, TIFF and more (can paste multiple)',
                     uploadBtn: 'Select Image',
                     uploadTextSmall: 'Continue adding images',
                     cropBtn: 'Crop Image',
@@ -4323,6 +4418,25 @@
 
         // 统一处理多文件或单文件进入逻辑
         function handleMultipleFiles(files) {
+            if (files.length === 0) return;
+
+            // TIFF 预处理：检测是否有 TIFF 文件，有则先转换为 PNG 再走原有逻辑
+            const hasTiff = files.some(f => isTiffFile(f));
+            if (hasTiff) {
+                processFiles(files).then(convertedFiles => {
+                    if (convertedFiles.length > 0) {
+                        _handleMultipleFilesCore(convertedFiles);
+                    }
+                });
+                return;
+            }
+
+            // 非 TIFF 文件：直接走原有逻辑（完全不变）
+            _handleMultipleFilesCore(files);
+        }
+
+        // 原始的文件处理核心逻辑（从 handleMultipleFiles 提取，逻辑完全不变）
+        function _handleMultipleFilesCore(files) {
             if (files.length === 0) return;
 
             // 如果当前已经是裁切状态且拖入新图，应当提示或切换回拼接
@@ -6063,7 +6177,7 @@
 
                     // 读取剪切板内容
                     const clipboardItems = await navigator.clipboard.read();
-                    
+
                     for (const clipboardItem of clipboardItems) {
                         for (const type of clipboardItem.types) {
                             if (type.startsWith('image/')) {
@@ -6075,14 +6189,14 @@
                             }
                         }
                     }
-                    
+
                     // 没有找到图片
                     showToast(currentLang === 'zh' ? '⚠️ 剪切板中没有图片' : '⚠️ No image in clipboard');
                 } catch (err) {
                     console.error('读取剪切板失败:', err);
                     if (err.name === 'NotAllowedError') {
-                        showToast(currentLang === 'zh' ? 
-                            '⚠️ 需要授权：请在弹窗中点击"允许"或"粘贴"' : 
+                        showToast(currentLang === 'zh' ?
+                            '⚠️ 需要授权：请在弹窗中点击"允许"或"粘贴"' :
                             '⚠️ Permission needed: tap "Allow" or "Paste" in popup');
                     } else {
                         showToast(currentLang === 'zh' ? '❌ 读取剪切板失败' : '❌ Failed to read clipboard');
@@ -6171,6 +6285,22 @@
         // 移除重复声明部分
 
         function addOutpaintingImage(file) {
+            // TIFF 预处理：如果是 TIFF 文件，先转换为 PNG 再走原有逻辑
+            if (isTiffFile(file)) {
+                convertTiffToFile(file).then(convertedFile => {
+                    _addOutpaintingImageCore(convertedFile);
+                }).catch(err => {
+                    console.error('TIFF 转换失败:', err);
+                    showToast(currentLang === 'zh' ? '❌ TIFF 图片转换失败' : '❌ Failed to convert TIFF image');
+                });
+                return;
+            }
+            // 非 TIFF 文件：直接走原有逻辑
+            _addOutpaintingImageCore(file);
+        }
+
+        // 原始的扩图图片添加核心逻辑（逻辑完全不变）
+        function _addOutpaintingImageCore(file) {
             const img = new Image();
             img.src = URL.createObjectURL(file);
             img.onload = () => {
@@ -6310,7 +6440,7 @@
             // 处理触控开始
             el.addEventListener('touchstart', (e) => {
                 activeOutpaintingImg = el;
-                
+
                 // 选中逻辑
                 document.querySelectorAll('.outpainting-item').forEach(item => item.classList.remove('active'));
                 el.classList.add('active');
@@ -6320,22 +6450,22 @@
                     isGesturing = true;
                     const touch1 = e.touches[0];
                     const touch2 = e.touches[1];
-                    
+
                     // 记录初始距离（用于缩放）
                     const dx = touch2.clientX - touch1.clientX;
                     const dy = touch2.clientY - touch1.clientY;
                     gestureStartDist = Math.sqrt(dx * dx + dy * dy);
-                    
+
                     // 记录初始角度（用于旋转）
                     gestureStartAngle = Math.atan2(dy, dx) * 180 / Math.PI;
-                    
+
                     // 记录初始尺寸和旋转
                     gestureStartWidth = parseFloat(el.style.width);
                     gestureStartHeight = parseFloat(el.style.height);
                     gestureStartRotation = parseFloat(el.dataset.rotation || 0);
                     gestureStartLeft = parseFloat(el.style.left);
                     gestureStartTop = parseFloat(el.style.top);
-                    
+
                     if (e.cancelable) e.preventDefault();
                     e.stopPropagation();
                     return;
@@ -6387,37 +6517,37 @@
                 if (e.touches.length === 2 && isGesturing) {
                     const touch1 = e.touches[0];
                     const touch2 = e.touches[1];
-                    
+
                     // 计算当前距离和角度
                     const dx = touch2.clientX - touch1.clientX;
                     const dy = touch2.clientY - touch1.clientY;
                     const currentDist = Math.sqrt(dx * dx + dy * dy);
                     const currentAngle = Math.atan2(dy, dx) * 180 / Math.PI;
-                    
+
                     // 计算缩放比例
                     const scale = currentDist / gestureStartDist;
                     const newWidth = gestureStartWidth * scale;
                     const newHeight = gestureStartHeight * scale;
-                    
+
                     // 计算旋转角度变化
                     let angleDelta = currentAngle - gestureStartAngle;
                     const newRotation = gestureStartRotation + angleDelta;
-                    
+
                     // 应用变换
                     el.style.width = `${newWidth}px`;
                     el.style.height = `${newHeight}px`;
                     el.dataset.rotation = newRotation;
                     el.style.transform = `rotate(${newRotation}deg)`;
-                    
+
                     // 保持中心点位置
                     const centerX = gestureStartLeft + gestureStartWidth / 2;
                     const centerY = gestureStartTop + gestureStartHeight / 2;
                     el.style.left = `${centerX - newWidth / 2}px`;
                     el.style.top = `${centerY - newHeight / 2}px`;
-                    
+
                     // 更新手柄光标方向
                     updateOutpaintingCursors(el);
-                    
+
                     if (e.cancelable) e.preventDefault();
                     e.stopPropagation();
                 }
