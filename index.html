@@ -3765,6 +3765,7 @@
                     namePlaceholder: '输入配置名称（如：人像裁剪）',
                     selectPlaceholder: '— 选择已保存的配置 —',
                     saveSuccess: '配置「{name}」已保存！',
+                    saveUpdate: '配置「{name}」已更新',
                     saveNameEmpty: '请输入配置名称',
                     saveNameDuplicate: '配置「{name}」已存在，是否覆盖？',
                     restoreSuccess: '已还原配置「{name}」',
@@ -3904,6 +3905,7 @@
                     namePlaceholder: 'Enter config name (e.g. Portrait Crop)',
                     selectPlaceholder: '— Select a saved config —',
                     saveSuccess: 'Config "{name}" saved!',
+                    saveUpdate: 'Config "{name}" updated',
                     saveNameEmpty: 'Please enter a config name',
                     saveNameDuplicate: 'Config "{name}" already exists. Overwrite?',
                     restoreSuccess: 'Config "{name}" restored!',
@@ -4054,6 +4056,11 @@
                 if (titleElem && toolLabels[tool]) {
                     titleElem.textContent = toolLabels[tool][lang];
                 }
+            }
+
+            // ⚠️ 关键：同步刷新配置下拉列表中的动态文本（如【扩图】标签）
+            if (typeof refreshConfigDropdown === 'function') {
+                refreshConfigDropdown();
             }
         }
 
@@ -5501,12 +5508,17 @@
             const configs = await getAllNamedConfigs();
             const names = Object.keys(configs);
             const t = translations[currentLang].config;
-            // 保留第一个占位选项
-            dropdown.innerHTML = `<option value="">${t.selectPlaceholder}</option>`;
+
+            // 备份当前选中值
+            const currentValue = dropdown.value;
+
+            // 重建下拉列表，并保留占位符的 i18n 属性
+            dropdown.innerHTML = `<option value="" data-i18n="config.selectPlaceholder">${t.selectPlaceholder}</option>`;
+
             names.forEach(name => {
                 const opt = document.createElement('option');
                 opt.value = name;
-                // 显示模式标签
+                // 显示模式标签（支持国际化）
                 const cfg = configs[name];
                 const modeTag = cfg.activeMode === 'outpainting'
                     ? (currentLang === 'zh' ? '【扩图】' : '[Outpaint]')
@@ -5514,6 +5526,11 @@
                 opt.textContent = `${name}  ${modeTag}`;
                 dropdown.appendChild(opt);
             });
+
+            // 恢复选中值
+            if (currentValue && names.includes(currentValue)) {
+                dropdown.value = currentValue;
+            }
         }
 
         // 采集当前裁剪图片的 dataURL（若有）
@@ -5805,7 +5822,8 @@
             await saveAllNamedConfigs(allConfigs);
 
             const isUpdate = isExisting && name === currentSelectedName;
-            showToast('✅ ' + (isUpdate ? (currentLang === 'zh' ? `配置「${name}」已更新` : `Config "${name}" updated`) : t.saveSuccess.replace('{name}', name)));
+            const successMsg = isUpdate ? t.saveUpdate : t.saveSuccess;
+            showToast('✅ ' + successMsg.replace('{name}', name));
 
             await refreshConfigDropdown();
             if (dropdown) dropdown.value = name;
