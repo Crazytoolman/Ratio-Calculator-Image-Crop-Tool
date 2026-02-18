@@ -5531,33 +5531,47 @@
             }
         }
 
-        // 采集扩图底板上所有图层的数据
+        // 将图片 URL 转换为 base64 DataURL 的辅助函数（同步尝试，通过 canvas）
+        function ensureDataURL(imgOrSrc) {
+            if (!imgOrSrc) return null;
+            // 如果已经是 dataURL，直接返回
+            const src = typeof imgOrSrc === 'string' ? imgOrSrc : imgOrSrc.src;
+            if (src && src.startsWith('data:')) return src;
+
+            try {
+                const tmpC = document.createElement('canvas');
+                // 如果传入的是 HTMLImageElement，直接取尺寸
+                if (typeof imgOrSrc !== 'string') {
+                    tmpC.width = imgOrSrc.naturalWidth || imgOrSrc.width || 100;
+                    tmpC.height = imgOrSrc.naturalHeight || imgOrSrc.height || 100;
+                    tmpC.getContext('2d').drawImage(imgOrSrc, 0, 0);
+                } else {
+                    // 如果是字符串路径，且正好是当前上传的主图
+                    if (uploadedImage && src === uploadedImage.src) {
+                        tmpC.width = uploadedImage.naturalWidth || uploadedImage.width;
+                        tmpC.height = uploadedImage.naturalHeight || uploadedImage.height;
+                        tmpC.getContext('2d').drawImage(uploadedImage, 0, 0);
+                    } else {
+                        return src; // 无法同步转换，返回原路径
+                    }
+                }
+                return tmpC.toDataURL('image/png');
+            } catch (e) {
+                return src;
+            }
+        }
+
+        // 采集扩图底板上所有图层的数据 (彻底转为 DataURL)
         function getOutpaintingLayersData() {
             const items = document.querySelectorAll('#outpaintingOverlay .outpainting-item');
             const layers = [];
             items.forEach(item => {
                 const imgEl = item.querySelector('img');
                 if (!imgEl) return;
-                // 尝试把图片转为 dataURL（同源图片）
-                let dataURL = null;
-                try {
-                    const tmpC = document.createElement('canvas');
-                    const tmpImg = new Image();
-                    tmpImg.crossOrigin = 'anonymous';
-                    tmpImg.src = imgEl.src;
-                    // 若已加载完毕直接绘制
-                    if (tmpImg.complete) {
-                        tmpC.width = tmpImg.naturalWidth || 100;
-                        tmpC.height = tmpImg.naturalHeight || 100;
-                        tmpC.getContext('2d').drawImage(tmpImg, 0, 0);
-                        dataURL = tmpC.toDataURL('image/png');
-                    } else {
-                        // blob URL 直接保存 src（还原时重新创建）
-                        dataURL = imgEl.src;
-                    }
-                } catch (e) {
-                    dataURL = imgEl.src;
-                }
+
+                // 必须转为 DataURL，否则 blob: 链接刷新后会失效
+                let dataURL = ensureDataURL(imgEl);
+
                 layers.push({
                     dataURL,
                     left: item.style.left,
@@ -5570,10 +5584,18 @@
             return layers;
         }
 
-        // 构建当前完整配置快照 (全量备份所有 Tab 数据)
+        // 构建当前完整配置快照 (全量备份并持久化)
         function buildConfigSnapshot() {
             const activeToolBtn = document.querySelector('.tool-icon-btn.active');
             const activeMode = activeToolBtn ? activeToolBtn.dataset.tool : 'image-tool';
+
+            // 转换拼接列表中的图片
+            const persistedStitchImages = stitchImages.map(img => {
+                return {
+                    ...img,
+                    src: ensureDataURL(img.src) || img.src
+                };
+            });
 
             return {
                 activeMode,
@@ -5591,10 +5613,10 @@
                 customWidth: customWidthInput.value,
                 customHeight: customHeightInput.value,
                 cropData: { ...cropData },
-                cropImageDataURL: getCropImageDataURL(), // 强制跨模式保存图片
+                cropImageDataURL: getCropImageDataURL(), // 内部已使用 canvas 转换
                 // 拼接模式数据
                 stitchMode: document.querySelector('input[name="stitchMode"]:checked')?.value || 'horizontal',
-                stitchImages: [...stitchImages],
+                stitchImages: persistedStitchImages,
                 // 扩图模式全量数据
                 opCurrentRatio,
                 opInputWidth: opInputWidth ? opInputWidth.value : '',
@@ -5603,7 +5625,7 @@
                 opCalcHeight: opCalcHeight ? opCalcHeight.value : '',
                 opCustomWidth: opCustomWidthInput ? opCustomWidthInput.value : '',
                 opCustomHeight: opCustomHeightInput ? opCustomHeightInput.value : '',
-                outpaintingLayers: getOutpaintingLayersData() // 强制备份所有图层
+                outpaintingLayers: getOutpaintingLayersData()
             };
         }
 
