@@ -704,7 +704,173 @@
             font-weight: 500;
         }
 
-        /* 动画 */
+        /* 配置管理区域样式 */
+        .config-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 18px;
+            background: var(--preview-bg);
+            border-radius: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .config-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .config-row:hover {
+            border-color: var(--border-glow);
+        }
+
+        .config-row-danger {
+            border-color: rgba(255, 59, 48, 0.2);
+        }
+
+        .config-row-danger:hover {
+            border-color: rgba(255, 59, 48, 0.4);
+        }
+
+        .config-row-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 90px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+        }
+
+        .config-row-label svg {
+            flex-shrink: 0;
+            opacity: 0.7;
+        }
+
+        .config-row-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+
+        .config-name-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 10px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        .config-name-input::placeholder {
+            color: var(--text-light);
+        }
+
+        .config-name-input:focus {
+            outline: none;
+            border-color: var(--border-glow);
+            background: var(--input-focus-bg);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .config-select-dropdown {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', -apple-system, sans-serif;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        .config-select-dropdown:focus {
+            outline: none;
+            border-color: var(--border-glow);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .config-action-btn {
+            padding: 10px 18px !important;
+            font-size: 13px !important;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .config-clear-all-btn {
+            min-width: 180px;
+        }
+
+        /* 动画 (保持原有) */
+
+        /* 移动端响应式适配 */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+
+            .persistence-section {
+                grid-column: span 1 !important;
+            }
+
+            .config-row {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px;
+                gap: 12px;
+            }
+
+            .config-row-label {
+                min-width: unset;
+                margin-bottom: 4px;
+            }
+
+            .config-row-controls {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+
+            .config-name-input,
+            .config-select-dropdown {
+                width: 100%;
+                min-width: unset;
+            }
+
+            .config-action-btn {
+                width: 100%;
+                justify-content: center;
+                padding: 12px !important;
+            }
+
+            .config-clear-all-btn {
+                width: 100%;
+            }
+        }
+
         @keyframes gradientFlow {
 
             0%,
@@ -3346,13 +3512,82 @@
             <!-- 配置管理 -->
             <div class="card persistence-section" style="grid-column: span 2;">
                 <h2 class="card-title" data-i18n="config.title">配置管理</h2>
-                <div class="stitch-actions" style="margin-top: 10px;"> <!-- 复用居中样式 -->
-                    <button class="crop-action-btn crop-btn-primary" id="saveConfigBtn">
-                        <span data-i18n="config.saveBtn">保存当前配置</span>
-                    </button>
-                    <button class="crop-action-btn crop-btn-danger" id="clearConfigBtn">
-                        <span data-i18n="config.clearBtn">清除所有配置并重置</span>
-                    </button>
+                <!-- 保存配置行 -->
+                <div class="config-row" id="configSaveRow">
+                    <div class="config-row-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                            <polyline points="17 21 17 13 7 13 7 21" />
+                            <polyline points="7 3 7 8 15 8" />
+                        </svg>
+                        <span data-i18n="config.saveLabel">保存配置</span>
+                    </div>
+                    <div class="config-row-controls">
+                        <input type="text" id="configNameInput" class="config-name-input" placeholder="输入配置名称（如：人像裁剪）"
+                            data-i18n-placeholder="config.namePlaceholder" maxlength="30">
+                        <button class="crop-action-btn crop-btn-primary config-action-btn" id="saveConfigBtn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                <polyline points="17 21 17 13 7 13 7 21" />
+                                <polyline points="7 3 7 8 15 8" />
+                            </svg>
+                            <span data-i18n="config.saveBtn">保存</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- 还原配置行 -->
+                <div class="config-row" id="configRestoreRow">
+                    <div class="config-row-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="1 4 1 10 7 10" />
+                            <path d="M3.51 15a9 9 0 1 0 .49-3.5" />
+                        </svg>
+                        <span data-i18n="config.restoreLabel">还原配置</span>
+                    </div>
+                    <div class="config-row-controls">
+                        <select id="configSelectDropdown" class="config-select-dropdown">
+                            <option value="" data-i18n="config.selectPlaceholder">— 选择已保存的配置 —</option>
+                        </select>
+                        <button class="crop-action-btn crop-btn-primary config-action-btn" id="restoreConfigBtn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="1 4 1 10 7 10" />
+                                <path d="M3.51 15a9 9 0 1 0 .49-3.5" />
+                            </svg>
+                            <span data-i18n="config.restoreBtn">还原</span>
+                        </button>
+                        <button class="crop-action-btn crop-btn-danger config-action-btn" id="deleteConfigBtn"
+                            title="删除选中配置">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path
+                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                            </svg>
+                            <span data-i18n="config.deleteBtn">删除</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- 清除所有 -->
+                <div class="config-row config-row-danger">
+                    <div class="config-row-label">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="15" y1="9" x2="9" y2="15" />
+                            <line x1="9" y1="9" x2="15" y2="15" />
+                        </svg>
+                        <span data-i18n="config.clearLabel">清除所有</span>
+                    </div>
+                    <div class="config-row-controls">
+                        <button class="crop-action-btn crop-btn-danger config-action-btn config-clear-all-btn"
+                            id="clearConfigBtn">
+                            <span data-i18n="config.clearBtn">清除所有配置并重置</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3520,10 +3755,24 @@
                 },
                 config: {
                     title: '配置管理',
-                    saveBtn: '保存当前配置',
+                    saveLabel: '保存配置',
+                    restoreLabel: '还原配置',
+                    clearLabel: '清除所有',
+                    saveBtn: '保存',
+                    restoreBtn: '还原',
+                    deleteBtn: '删除',
                     clearBtn: '清除所有配置并重置',
-                    saveSuccess: '配置已成功保存到本地！',
-                    clearConfirm: '确定要清除所有配置并恢复原始状态吗？此操作不可撤销。'
+                    namePlaceholder: '输入配置名称（如：人像裁剪）',
+                    selectPlaceholder: '— 选择已保存的配置 —',
+                    saveSuccess: '配置「{name}」已保存！',
+                    saveNameEmpty: '请输入配置名称',
+                    saveNameDuplicate: '配置「{name}」已存在，是否覆盖？',
+                    restoreSuccess: '已还原配置「{name}」',
+                    restoreEmpty: '请先选择一个配置',
+                    deleteSuccess: '已删除配置「{name}」',
+                    deleteConfirm: '确定要删除配置「{name}」吗？',
+                    clearConfirm: '确定要清除所有配置并恢复原始状态吗？此操作不可撤销。',
+                    noConfigs: '暂无已保存的配置'
                 },
                 ratioSelect: {
                     title: '选择比例',
@@ -3644,11 +3893,25 @@
                     preview: 'images'
                 },
                 config: {
-                    title: 'Persistence',
-                    saveBtn: 'Save Settings',
-                    clearBtn: 'Clear & Reset All',
-                    saveSuccess: 'Configuration saved locally!',
-                    clearConfirm: 'Reset all settings and clear images? This cannot be undone.'
+                    title: 'Config Manager',
+                    saveLabel: 'Save Config',
+                    restoreLabel: 'Restore Config',
+                    clearLabel: 'Clear All',
+                    saveBtn: 'Save',
+                    restoreBtn: 'Restore',
+                    deleteBtn: 'Delete',
+                    clearBtn: 'Clear All & Reset',
+                    namePlaceholder: 'Enter config name (e.g. Portrait Crop)',
+                    selectPlaceholder: '— Select a saved config —',
+                    saveSuccess: 'Config "{name}" saved!',
+                    saveNameEmpty: 'Please enter a config name',
+                    saveNameDuplicate: 'Config "{name}" already exists. Overwrite?',
+                    restoreSuccess: 'Config "{name}" restored!',
+                    restoreEmpty: 'Please select a config first',
+                    deleteSuccess: 'Config "{name}" deleted!',
+                    deleteConfirm: 'Delete config "{name}"?',
+                    clearConfirm: 'Reset all settings and clear images? This cannot be undone.',
+                    noConfigs: 'No saved configs yet'
                 },
                 ratioSelect: {
                     title: 'Select Ratio',
@@ -3915,8 +4178,7 @@
         const downloadStitchBtn = document.getElementById('downloadStitchBtn');
         const copyStitchBtn = document.getElementById('copyStitchBtn');
         const cancelStitchBtn = document.getElementById('cancelStitchBtn');
-        const saveConfigBtn = document.getElementById('saveConfigBtn');
-        const clearConfigBtn = document.getElementById('clearConfigBtn');
+        // saveConfigBtn / clearConfigBtn / restoreConfigBtn / deleteConfigBtn 在持久化存储模块统一声明
 
         // 裁切控制 DOM
         const rotateBtn = document.getElementById('rotateBtn');
@@ -5171,6 +5433,7 @@
         // ========== 持久化存储 (IndexedDB) ==========
         const DB_NAME = 'ImageCropToolDB';
         const STORE_NAME = 'appConfig';
+        // 所有命名配置存储在 DB key = 'namedConfigs'，格式为 { [name]: configObject }
 
         function initDB() {
             return new Promise((resolve, reject) => {
@@ -5218,9 +5481,108 @@
             });
         }
 
-        // 保存配置
-        async function saveConfig() {
-            const config = {
+        // ---- 多配置管理辅助函数 ----
+
+        // 获取所有命名配置 { name: configObj, ... }
+        async function getAllNamedConfigs() {
+            const data = await getFromDB('namedConfigs');
+            return data || {};
+        }
+
+        // 保存所有命名配置
+        async function saveAllNamedConfigs(configs) {
+            await saveToDB('namedConfigs', configs);
+        }
+
+        // 刷新下拉菜单选项
+        async function refreshConfigDropdown() {
+            const dropdown = document.getElementById('configSelectDropdown');
+            if (!dropdown) return;
+            const configs = await getAllNamedConfigs();
+            const names = Object.keys(configs);
+            const t = translations[currentLang].config;
+            // 保留第一个占位选项
+            dropdown.innerHTML = `<option value="">${t.selectPlaceholder}</option>`;
+            names.forEach(name => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                // 显示模式标签
+                const cfg = configs[name];
+                const modeTag = cfg.activeMode === 'outpainting'
+                    ? (currentLang === 'zh' ? '【扩图】' : '[Outpaint]')
+                    : (currentLang === 'zh' ? '【裁剪】' : '[Crop]');
+                opt.textContent = `${name}  ${modeTag}`;
+                dropdown.appendChild(opt);
+            });
+        }
+
+        // 采集当前裁剪图片的 dataURL（若有）
+        function getCropImageDataURL() {
+            if (!uploadedImage) return null;
+            try {
+                const tmpCanvas = document.createElement('canvas');
+                tmpCanvas.width = uploadedImage.naturalWidth || uploadedImage.width;
+                tmpCanvas.height = uploadedImage.naturalHeight || uploadedImage.height;
+                const ctx = tmpCanvas.getContext('2d');
+                ctx.drawImage(uploadedImage, 0, 0);
+                return tmpCanvas.toDataURL('image/png');
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // 采集扩图底板上所有图层的数据
+        function getOutpaintingLayersData() {
+            const items = document.querySelectorAll('#outpaintingOverlay .outpainting-item');
+            const layers = [];
+            items.forEach(item => {
+                const imgEl = item.querySelector('img');
+                if (!imgEl) return;
+                // 尝试把图片转为 dataURL（同源图片）
+                let dataURL = null;
+                try {
+                    const tmpC = document.createElement('canvas');
+                    const tmpImg = new Image();
+                    tmpImg.crossOrigin = 'anonymous';
+                    tmpImg.src = imgEl.src;
+                    // 若已加载完毕直接绘制
+                    if (tmpImg.complete) {
+                        tmpC.width = tmpImg.naturalWidth || 100;
+                        tmpC.height = tmpImg.naturalHeight || 100;
+                        tmpC.getContext('2d').drawImage(tmpImg, 0, 0);
+                        dataURL = tmpC.toDataURL('image/png');
+                    } else {
+                        // blob URL 直接保存 src（还原时重新创建）
+                        dataURL = imgEl.src;
+                    }
+                } catch (e) {
+                    dataURL = imgEl.src;
+                }
+                layers.push({
+                    dataURL,
+                    left: item.style.left,
+                    top: item.style.top,
+                    width: item.style.width,
+                    height: item.style.height,
+                    rotation: item.dataset.rotation || '0'
+                });
+            });
+            return layers;
+        }
+
+        // 构建当前完整配置快照 (全量备份所有 Tab 数据)
+        function buildConfigSnapshot() {
+            const activeToolBtn = document.querySelector('.tool-icon-btn.active');
+            const activeMode = activeToolBtn ? activeToolBtn.dataset.tool : 'image-tool';
+
+            return {
+                activeMode,
+                savedAt: new Date().toISOString(),
+                // 核心控制参数
+                currentRotation,
+                currentZoom,
+                borderRadius: borderRadiusSlider.value,
+                // 裁剪模式全量数据
                 currentRatio,
                 inputWidth: inputWidth.value,
                 inputHeight: inputHeight.value,
@@ -5228,90 +5590,277 @@
                 calcHeight: calcHeight.value,
                 customWidth: customWidthInput.value,
                 customHeight: customHeightInput.value,
-                stitchMode: document.querySelector('input[name="stitchMode"]:checked').value,
-                stitchImages: stitchImages // 包含图片数据
+                cropData: { ...cropData },
+                cropImageDataURL: getCropImageDataURL(), // 强制跨模式保存图片
+                // 拼接模式数据
+                stitchMode: document.querySelector('input[name="stitchMode"]:checked')?.value || 'horizontal',
+                stitchImages: [...stitchImages],
+                // 扩图模式全量数据
+                opCurrentRatio,
+                opInputWidth: opInputWidth ? opInputWidth.value : '',
+                opInputHeight: opInputHeight ? opInputHeight.value : '',
+                opCalcWidth: opCalcWidth ? opCalcWidth.value : '',
+                opCalcHeight: opCalcHeight ? opCalcHeight.value : '',
+                opCustomWidth: opCustomWidthInput ? opCustomWidthInput.value : '',
+                opCustomHeight: opCustomHeightInput ? opCustomHeightInput.value : '',
+                outpaintingLayers: getOutpaintingLayersData() // 强制备份所有图层
             };
-
-            await saveToDB('userConfig', config);
-            alert(translations[currentLang].config.saveSuccess);
         }
 
-        // 加载配置
-        async function loadConfig() {
-            const config = await getFromDB('userConfig');
+        // 原子化应用配置快照
+        async function applyConfigSnapshot(config) {
             if (!config) return;
 
-            // 恢复属性
+            // ⚠️ 关键步骤 1：先切换 Tab 并彻底等待其自带的初始化逻辑执行完毕
+            const targetTool = config.activeMode || 'image-tool';
+            const targetBtn = document.querySelector(`[data-tool="${targetTool}"]`);
+            if (targetBtn && !targetBtn.classList.contains('active')) {
+                targetBtn.click();
+                await new Promise(r => setTimeout(r, 450)); // 增加等待时间确保完全静止
+            }
+
+            // ⚠️ 关键步骤 2：同步注入所有输入框数值，并手动触发计算引擎
+
+            // 恢复核心参数
+            if (config.currentRotation !== undefined) currentRotation = config.currentRotation;
+            if (config.currentZoom !== undefined) currentZoom = config.currentZoom;
+            if (config.borderRadius !== undefined) {
+                borderRadiusSlider.value = config.borderRadius;
+                borderRadiusInput.value = config.borderRadius;
+                cropBox.style.borderRadius = config.borderRadius + 'px';
+            }
+            if (config.cropData) cropData = { ...config.cropData };
+
+            // 恢复裁剪侧参数
+            if (inputWidth) inputWidth.value = config.inputWidth || '';
+            if (inputHeight) inputHeight.value = config.inputHeight || '';
+            if (calcWidth) calcWidth.value = config.calcWidth || '';
+            if (calcHeight) calcHeight.value = config.calcHeight || '';
+            if (customWidthInput) customWidthInput.value = config.customWidth || '';
+            if (customHeightInput) customHeightInput.value = config.customHeight || '';
+
             if (config.currentRatio) {
                 currentRatio = config.currentRatio;
-                // 找到对应的比例按钮并激活，或者设置自定义比例
-                let foundRatio = false;
                 ratioButtons.forEach(btn => {
                     const [w, h] = btn.dataset.ratio.split(':').map(Number);
-                    if (w === currentRatio.width && h === currentRatio.height) {
-                        btn.classList.add('active');
-                        foundRatio = true;
-                    } else {
-                        btn.classList.remove('active');
-                    }
+                    if (w === currentRatio.width && h === currentRatio.height) btn.classList.add('active');
+                    else btn.classList.remove('active');
                 });
-                if (!foundRatio) {
-                    customWidthInput.value = currentRatio.width;
-                    customHeightInput.value = currentRatio.height;
-                }
                 updateRatio(currentRatio.width, currentRatio.height);
-                // 同步更新扩图按钮状态
+            }
+
+            // 恢复扩图侧参数 (这是您提到的问题的核心)
+            if (opInputWidth) opInputWidth.value = config.opInputWidth || '';
+            if (opInputHeight) opInputHeight.value = config.opInputHeight || '';
+            if (opCalcWidth) opCalcWidth.value = config.opCalcWidth || '';
+            if (opCalcHeight) opCalcHeight.value = config.opCalcHeight || '';
+            if (opCustomWidthInput) opCustomWidthInput.value = config.opCustomWidth || '';
+            if (opCustomHeightInput) opCustomHeightInput.value = config.opCustomHeight || '';
+
+            if (config.opCurrentRatio) {
+                opCurrentRatio = config.opCurrentRatio;
                 if (typeof opRatioButtons !== 'undefined') {
                     opRatioButtons.forEach(btn => {
                         const [w, h] = btn.dataset.ratio.split(':').map(Number);
-                        if (w === currentRatio.width && h === currentRatio.height) {
-                            btn.classList.add('active');
-                        } else {
-                            btn.classList.remove('active');
-                        }
+                        if (w === opCurrentRatio.width && h === opCurrentRatio.height) btn.classList.add('active');
+                        else btn.classList.remove('active');
                     });
                 }
+                if (typeof updateOpRatio === 'function') updateOpRatio(opCurrentRatio.width, opCurrentRatio.height);
             }
 
-            inputWidth.value = config.inputWidth || '';
-            inputHeight.value = config.inputHeight || '';
-            calcWidth.value = config.calcWidth || '';
-            calcHeight.value = config.calcHeight || '';
-            customWidthInput.value = config.customWidth || '';
-            customHeightInput.value = config.customHeight || '';
+            // ⚠️ 核心触发：手动调用计算函数，确保 1344x576 这种数值在后台生效
+            if (typeof recalculate === 'function') recalculate();
+            if (typeof opRecalculate === 'function') opRecalculate();
 
-            if (config.stitchMode) {
-                const stitchModeRadio = document.querySelector(`input[name="stitchMode"][value="${config.stitchMode}"]`);
-                if (stitchModeRadio) {
-                    stitchModeRadio.checked = true;
+            // 恢复拼接列表
+            if (config.stitchImages && config.stitchImages.length > 0) {
+                stitchImages = config.stitchImages;
+                if (typeof showStitchUI === 'function') {
+                    showStitchUI();
+                    renderStitchImageList();
+                    updateStitchPreview();
                 }
             }
 
-            if (config.stitchImages && config.stitchImages.length > 0) {
-                stitchImages = config.stitchImages;
-                showStitchUI();
-                renderStitchImageList();
-                updateStitchPreview();
+            // ⚠️ 关键步骤 3：还原图片和画布底板
+
+            // 1. 还原裁剪图
+            if (config.cropImageDataURL) {
+                await new Promise(resolve => {
+                    const img = new Image();
+                    img.onload = () => {
+                        uploadedImage = img;
+                        uploadPlaceholder.style.display = 'none';
+                        cropContainer.style.display = 'block';
+                        updateMaxZoom();
+                        updateZoomUI();
+                        drawCanvas();
+                        if (typeof updateCropBox === 'function') updateCropBox();
+                        resolve();
+                    };
+                    img.onerror = resolve;
+                    img.src = config.cropImageDataURL;
+                });
             }
 
-            recalculate();
+            // 2. 还原扩图底板与图层
+            const overlay = document.getElementById('outpaintingOverlay');
+            if (overlay) {
+                overlay.querySelectorAll('.outpainting-item').forEach(el => el.remove());
+
+                // 先根据恢复的 1344x576 等数值初始化底板尺寸
+                if (typeof initOutpaintingBase === 'function') {
+                    initOutpaintingBase();
+                }
+
+                if (config.outpaintingLayers && config.outpaintingLayers.length > 0) {
+                    for (const layer of config.outpaintingLayers) {
+                        await new Promise(resolve => {
+                            const img = new Image();
+                            img.onload = () => {
+                                const itemWrapper = document.createElement('div');
+                                itemWrapper.className = 'outpainting-item-wrapper outpainting-item';
+                                itemWrapper.style.width = layer.width;
+                                itemWrapper.style.height = layer.height;
+                                itemWrapper.style.left = layer.left;
+                                itemWrapper.style.top = layer.top;
+                                itemWrapper.dataset.rotation = layer.rotation;
+                                itemWrapper.style.transform = `rotate(${layer.rotation}deg)`;
+
+                                const imgEl = document.createElement('img');
+                                imgEl.src = img.src;
+                                itemWrapper.appendChild(imgEl);
+
+                                ['nw', 'ne', 'sw', 'se', 'rot'].forEach(h => {
+                                    const b = document.createElement('div');
+                                    b.className = `op-handle op-handle-${h}`;
+                                    b.dataset.handle = h;
+                                    itemWrapper.appendChild(b);
+                                });
+
+                                if (typeof updateOutpaintingCursors === 'function') updateOutpaintingCursors(itemWrapper);
+                                if (typeof bindOutpaintingInteraction === 'function') bindOutpaintingInteraction(itemWrapper);
+                                overlay.appendChild(itemWrapper);
+                                resolve();
+                            };
+                            img.onerror = resolve;
+                            img.src = layer.dataURL;
+                        });
+                    }
+                    const ph = document.getElementById('outpaintingPlaceholder');
+                    if (ph) ph.style.display = 'none';
+                }
+            }
+
+            if (typeof updateCropInfo === 'function') updateCropInfo();
         }
 
-        // 清除配置
+        // ---- 保存配置 ----
+        async function saveConfig() {
+            const nameInput = document.getElementById('configNameInput');
+            const name = nameInput ? nameInput.value.trim() : '';
+            const dropdown = document.getElementById('configSelectDropdown');
+            const currentSelectedName = dropdown ? dropdown.value : '';
+            const t = translations[currentLang].config;
+
+            if (!name) {
+                showToast('⚠️ ' + t.saveNameEmpty);
+                if (nameInput) nameInput.focus();
+                return;
+            }
+
+            const allConfigs = await getAllNamedConfigs();
+            const isExisting = !!allConfigs[name];
+
+            // 只有当名字存在且“不是”当前还原出来的那个名字时，才弹窗询问（防止打扰更新）
+            if (isExisting && name !== currentSelectedName) {
+                if (!confirm(t.saveNameDuplicate.replace('{name}', name))) return;
+            }
+
+            const snapshot = buildConfigSnapshot();
+            allConfigs[name] = snapshot;
+            await saveAllNamedConfigs(allConfigs);
+
+            const isUpdate = isExisting && name === currentSelectedName;
+            showToast('✅ ' + (isUpdate ? (currentLang === 'zh' ? `配置「${name}」已更新` : `Config "${name}" updated`) : t.saveSuccess.replace('{name}', name)));
+
+            await refreshConfigDropdown();
+            if (dropdown) dropdown.value = name;
+        }
+
+        // ---- 还原配置 ----
+        async function restoreConfig() {
+            const dropdown = document.getElementById('configSelectDropdown');
+            const nameInput = document.getElementById('configNameInput');
+            const name = dropdown ? dropdown.value : '';
+            const t = translations[currentLang].config;
+
+            if (!name) {
+                showToast('⚠️ ' + t.restoreEmpty);
+                return;
+            }
+
+            const allConfigs = await getAllNamedConfigs();
+            const config = allConfigs[name];
+            if (!config) {
+                showToast('⚠️ ' + t.restoreEmpty);
+                return;
+            }
+
+            if (nameInput) nameInput.value = name;
+            await applyConfigSnapshot(config);
+            showToast('✅ ' + t.restoreSuccess.replace('{name}', name));
+        }
+
+        // ---- 删除单个配置 ----
+        async function deleteConfig() {
+            const dropdown = document.getElementById('configSelectDropdown');
+            const nameInput = document.getElementById('configNameInput');
+            const name = dropdown ? dropdown.value : '';
+            const t = translations[currentLang].config;
+
+            if (!name) {
+                showToast('⚠️ ' + t.restoreEmpty);
+                return;
+            }
+
+            if (!confirm(t.deleteConfirm.replace('{name}', name))) return;
+
+            const allConfigs = await getAllNamedConfigs();
+            delete allConfigs[name];
+            await saveAllNamedConfigs(allConfigs);
+
+            if (nameInput && nameInput.value === name) nameInput.value = '';
+            showToast('🗑️ ' + t.deleteSuccess.replace('{name}', name));
+            await refreshConfigDropdown();
+        }
+
+        // ---- 清除所有配置 ----
         async function clearConfig() {
             if (!confirm(translations[currentLang].config.clearConfirm)) return;
-
             await clearDB();
             localStorage.removeItem('theme');
-            localStorage.removeItem('language'); // 也清除语言设置
-            location.reload(); // 刷新以恢复原始状态
+            localStorage.removeItem('language');
+            location.reload();
         }
 
-        saveConfigBtn.addEventListener('click', saveConfig);
-        clearConfigBtn.addEventListener('click', clearConfig);
+        // ---- 绑定按钮事件 ----
+        const saveConfigBtn = document.getElementById('saveConfigBtn');
+        const clearConfigBtn = document.getElementById('clearConfigBtn');
+        const restoreConfigBtn = document.getElementById('restoreConfigBtn');
+        const deleteConfigBtn = document.getElementById('deleteConfigBtn');
+        const configNameInput = document.getElementById('configNameInput');
+        const configSelectDropdown = document.getElementById('configSelectDropdown');
 
-        // 页面加完毕后加载配置
-        window.addEventListener('load', loadConfig);
+        if (saveConfigBtn) saveConfigBtn.addEventListener('click', saveConfig);
+        if (clearConfigBtn) clearConfigBtn.addEventListener('click', clearConfig);
+        if (restoreConfigBtn) restoreConfigBtn.addEventListener('click', restoreConfig);
+        if (deleteConfigBtn) deleteConfigBtn.addEventListener('click', deleteConfig);
+
+        window.addEventListener('load', async () => {
+            await refreshConfigDropdown();
+        });
         // ========== 原有图片加载功能 ==========
         function loadImage(file) {
             const reader = new FileReader();
