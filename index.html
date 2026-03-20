@@ -2835,8 +2835,18 @@
                         <div class="upload-text" data-i18n="imageCrop.uploadText">点击上传、拖拽或粘贴图片到这里</div>
                         <div class="upload-hint" data-i18n="imageCrop.uploadHint">支持 JPG、PNG、GIF、TIFF 等格式（可粘贴多张）</div>
                         <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
-                            <button class="upload-btn" id="uploadBtn" data-i18n="imageCrop.uploadBtn">选择图片</button>
-                            <button class="upload-btn" id="cropPasteBtn" style="background: var(--text-primary); color: var(--bg-gradient-1); box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+                            <button class="upload-btn" id="uploadBtn">
+                                <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <span data-i18n="imageCrop.uploadBtn">选择图片</span>
+                                </span>
+                            </button>
+                            <button class="upload-btn" id="cropPasteBtn">
                                 <span style="display: inline-flex; align-items: center; gap: 6px;">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
