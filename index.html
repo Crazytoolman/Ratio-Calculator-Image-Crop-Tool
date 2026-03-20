@@ -2834,7 +2834,19 @@
                         </div>
                         <div class="upload-text" data-i18n="imageCrop.uploadText">点击上传、拖拽或粘贴图片到这里</div>
                         <div class="upload-hint" data-i18n="imageCrop.uploadHint">支持 JPG、PNG、GIF、TIFF 等格式（可粘贴多张）</div>
-                        <button class="upload-btn" id="uploadBtn" data-i18n="imageCrop.uploadBtn">选择图片</button>
+                        <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+                            <button class="upload-btn" id="uploadBtn" data-i18n="imageCrop.uploadBtn">选择图片</button>
+                            <button class="upload-btn" id="cropPasteBtn" style="background: var(--text-primary); color: var(--bg-gradient-1); box-shadow: 0 4px 16px rgba(0,0,0,0.15);">
+                                <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                                    </svg>
+                                    <span data-i18n="imageCrop.pasteBtn">粘贴图片</span>
+                                </span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- 图片拼接区域 -->
@@ -3718,6 +3730,7 @@
                     uploadText: '点击上传、拖拽或粘贴图片到这里',
                     uploadHint: '支持 JPG、PNG、GIF、TIFF 等格式（可粘贴多张）',
                     uploadBtn: '选择图片',
+                    pasteBtn: '粘贴图片',
                     uploadTextSmall: '继续添加图片',
                     cropBtn: '裁切图片',
                     rotate90Btn: '旋转 90°',
@@ -3858,6 +3871,7 @@
                     uploadText: 'Click to upload, drag and drop, or paste an image here',
                     uploadHint: 'Supports JPG, PNG, GIF, TIFF and more (can paste multiple)',
                     uploadBtn: 'Select Image',
+                    pasteBtn: 'Paste Image',
                     uploadTextSmall: 'Continue adding images',
                     cropBtn: 'Crop Image',
                     rotate90Btn: 'Rotate 90°',
@@ -4636,6 +4650,106 @@
             imageInput.click();
         });
 
+        // 裁切模块粘贴按钮点击
+        const cropPasteBtn = document.getElementById('cropPasteBtn');
+        if (cropPasteBtn) {
+            cropPasteBtn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+
+                // 方案1: 尝试 Clipboard API
+                if (navigator.clipboard && navigator.clipboard.read) {
+                    try {
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error('timeout')), 3000)
+                        );
+                        const clipboardItems = await Promise.race([
+                            navigator.clipboard.read(),
+                            timeoutPromise
+                        ]);
+
+                        for (const clipboardItem of clipboardItems) {
+                            console.log('[cropPaste] 剪切板类型:', clipboardItem.types);
+                            for (const type of clipboardItem.types) {
+                                if (type.startsWith('image/')) {
+                                    const blob = await clipboardItem.getType(type);
+                                    const file = new File([blob], 'pasted-image.png', { type: blob.type });
+                                    handleMultipleFiles([file]);
+                                    showToast(currentLang === 'zh' ? '✅ 图片已粘贴' : '✅ Image pasted');
+                                    return;
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.warn('[cropPaste] Clipboard API 失败，尝试 fallback:', err.message);
+                        if (err.message === 'timeout') {
+                            showToast(currentLang === 'zh' ?
+                                '⚠️ 读取超时，请先在浏览器中允许剪切板权限' :
+                                '⚠️ Timeout: please allow clipboard permission in browser');
+                            return;
+                        }
+                        if (err.name === 'NotAllowedError') {
+                            showToast(currentLang === 'zh' ?
+                                '⚠️ 需要授权：请在弹窗中点击"允许"或"粘贴"' :
+                                '⚠️ Permission needed: tap "Allow" or "Paste" in popup');
+                            return;
+                        }
+                    }
+                }
+
+                // 方案2: Fallback — 通过隐藏 contenteditable 触发原生 paste 事件
+                try {
+                    const pasteTarget = document.createElement('div');
+                    pasteTarget.contentEditable = true;
+                    pasteTarget.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
+                    document.body.appendChild(pasteTarget);
+                    pasteTarget.focus();
+
+                    const pasted = await new Promise((resolve) => {
+                        const handler = (ev) => {
+                            pasteTarget.removeEventListener('paste', handler);
+                            const items = ev.clipboardData?.items;
+                            if (!items) { resolve(false); return; }
+                            for (let i = 0; i < items.length; i++) {
+                                if (items[i].type.indexOf('image') !== -1) {
+                                    const file = items[i].getAsFile();
+                                    if (file) {
+                                        handleMultipleFiles([file]);
+                                        showToast(currentLang === 'zh' ? '✅ 图片已粘贴' : '✅ Image pasted');
+                                        resolve(true);
+                                        return;
+                                    }
+                                }
+                            }
+                            resolve(false);
+                        };
+                        pasteTarget.addEventListener('paste', handler);
+
+                        // 触发原生粘贴命令
+                        const result = document.execCommand('paste');
+                        if (!result) {
+                            pasteTarget.removeEventListener('paste', handler);
+                            resolve(false);
+                        }
+
+                        // 超时保险
+                        setTimeout(() => {
+                            pasteTarget.removeEventListener('paste', handler);
+                            resolve(false);
+                        }, 1000);
+                    });
+
+                    document.body.removeChild(pasteTarget);
+
+                    if (!pasted) {
+                        showToast(currentLang === 'zh' ? '⚠️ 剪切板中没有图片' : '⚠️ No image in clipboard');
+                    }
+                } catch (err2) {
+                    console.error('[cropPaste] Fallback 也失败:', err2);
+                    showToast(currentLang === 'zh' ? '❌ 读取剪切板失败' : '❌ Failed to read clipboard');
+                }
+            });
+        }
+
         // 小上传按钮点击
         uploadBtnSmall.addEventListener('click', () => {
             imageInput.click();
@@ -4648,9 +4762,9 @@
             }
         });
 
-        // 上传区域点击
+        // 上传区域点击（排除按钮及其内部子元素的点击）
         uploadPlaceholder.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'BUTTON') {
+            if (!e.target.closest('button')) {
                 imageInput.click();
             }
         });
