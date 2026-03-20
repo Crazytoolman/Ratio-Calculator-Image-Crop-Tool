@@ -4653,100 +4653,9 @@
         // 裁切模块粘贴按钮点击
         const cropPasteBtn = document.getElementById('cropPasteBtn');
         if (cropPasteBtn) {
-            cropPasteBtn.addEventListener('click', async (e) => {
+            cropPasteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-
-                // 方案1: 尝试 Clipboard API
-                if (navigator.clipboard && navigator.clipboard.read) {
-                    try {
-                        const timeoutPromise = new Promise((_, reject) =>
-                            setTimeout(() => reject(new Error('timeout')), 3000)
-                        );
-                        const clipboardItems = await Promise.race([
-                            navigator.clipboard.read(),
-                            timeoutPromise
-                        ]);
-
-                        for (const clipboardItem of clipboardItems) {
-                            console.log('[cropPaste] 剪切板类型:', clipboardItem.types);
-                            for (const type of clipboardItem.types) {
-                                if (type.startsWith('image/')) {
-                                    const blob = await clipboardItem.getType(type);
-                                    const file = new File([blob], 'pasted-image.png', { type: blob.type });
-                                    handleMultipleFiles([file]);
-                                    showToast(currentLang === 'zh' ? '✅ 图片已粘贴' : '✅ Image pasted');
-                                    return;
-                                }
-                            }
-                        }
-                    } catch (err) {
-                        console.warn('[cropPaste] Clipboard API 失败，尝试 fallback:', err.message);
-                        if (err.message === 'timeout') {
-                            showToast(currentLang === 'zh' ?
-                                '⚠️ 读取超时，请先在浏览器中允许剪切板权限' :
-                                '⚠️ Timeout: please allow clipboard permission in browser');
-                            return;
-                        }
-                        if (err.name === 'NotAllowedError') {
-                            showToast(currentLang === 'zh' ?
-                                '⚠️ 需要授权：请在弹窗中点击"允许"或"粘贴"' :
-                                '⚠️ Permission needed: tap "Allow" or "Paste" in popup');
-                            return;
-                        }
-                    }
-                }
-
-                // 方案2: Fallback — 通过隐藏 contenteditable 触发原生 paste 事件
-                try {
-                    const pasteTarget = document.createElement('div');
-                    pasteTarget.contentEditable = true;
-                    pasteTarget.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;';
-                    document.body.appendChild(pasteTarget);
-                    pasteTarget.focus();
-
-                    const pasted = await new Promise((resolve) => {
-                        const handler = (ev) => {
-                            pasteTarget.removeEventListener('paste', handler);
-                            const items = ev.clipboardData?.items;
-                            if (!items) { resolve(false); return; }
-                            for (let i = 0; i < items.length; i++) {
-                                if (items[i].type.indexOf('image') !== -1) {
-                                    const file = items[i].getAsFile();
-                                    if (file) {
-                                        handleMultipleFiles([file]);
-                                        showToast(currentLang === 'zh' ? '✅ 图片已粘贴' : '✅ Image pasted');
-                                        resolve(true);
-                                        return;
-                                    }
-                                }
-                            }
-                            resolve(false);
-                        };
-                        pasteTarget.addEventListener('paste', handler);
-
-                        // 触发原生粘贴命令
-                        const result = document.execCommand('paste');
-                        if (!result) {
-                            pasteTarget.removeEventListener('paste', handler);
-                            resolve(false);
-                        }
-
-                        // 超时保险
-                        setTimeout(() => {
-                            pasteTarget.removeEventListener('paste', handler);
-                            resolve(false);
-                        }, 1000);
-                    });
-
-                    document.body.removeChild(pasteTarget);
-
-                    if (!pasted) {
-                        showToast(currentLang === 'zh' ? '⚠️ 剪切板中没有图片' : '⚠️ No image in clipboard');
-                    }
-                } catch (err2) {
-                    console.error('[cropPaste] Fallback 也失败:', err2);
-                    showToast(currentLang === 'zh' ? '❌ 读取剪切板失败' : '❌ Failed to read clipboard');
-                }
+                smartPasteImage((file) => handleMultipleFiles([file]));
             });
         }
 
@@ -6382,6 +6291,127 @@
             setTimeout(() => toastEl.classList.remove('show'), 2000);
         }
 
+        /**
+         * 通用智能粘贴函数 — PC/手机自适应
+         * @param {Function} onImageFile - 获取到图片 File 后的回调，例如 (file) => handleMultipleFiles([file])
+         */
+        async function smartPasteImage(onImageFile) {
+            // 方案1: 尝试 Clipboard API（手机端直接弹出授权，PC端也先试一次）
+            if (navigator.clipboard && navigator.clipboard.read) {
+                try {
+                    const timeoutPromise = new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error('timeout')), 3000)
+                    );
+                    const clipboardItems = await Promise.race([
+                        navigator.clipboard.read(),
+                        timeoutPromise
+                    ]);
+
+                    for (const clipboardItem of clipboardItems) {
+                        for (const type of clipboardItem.types) {
+                            if (type.startsWith('image/')) {
+                                const blob = await clipboardItem.getType(type);
+                                const file = new File([blob], 'pasted-image.png', { type: blob.type });
+                                onImageFile(file);
+                                showToast(currentLang === 'zh' ? '✅ 图片已粘贴' : '✅ Image pasted');
+                                return;
+                            }
+                        }
+                    }
+                    // Clipboard API 成功读取但没找到图片类型 → 进入 fallback
+                } catch (err) {
+                    console.warn('[smartPaste] Clipboard API 失败:', err.message);
+                    if (err.message === 'timeout') {
+                        showToast(currentLang === 'zh' ?
+                            '⚠️ 读取超时，请先在浏览器中允许剪切板权限' :
+                            '⚠️ Timeout: please allow clipboard permission in browser');
+                        return;
+                    }
+                    if (err.name === 'NotAllowedError') {
+                        showToast(currentLang === 'zh' ?
+                            '⚠️ 需要授权：请在弹窗中点击"允许"或"粘贴"' :
+                            '⚠️ Permission needed: tap "Allow" or "Paste" in popup');
+                        return;
+                    }
+                    // 其他错误，进入 fallback
+                }
+            }
+
+            // 方案2: PC Fallback — 弹出粘贴浮层，让用户按 Ctrl+V / Cmd+V
+            const isMac = /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent);
+            const shortcut = isMac ? '⌘V' : 'Ctrl+V';
+            const overlay = document.createElement('div');
+            overlay.id = 'pasteOverlay';
+            overlay.style.cssText = `
+                position: fixed; inset: 0; z-index: 99999;
+                display: flex; align-items: center; justify-content: center;
+                background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+            `;
+            overlay.innerHTML = `
+                <div style="
+                    background: var(--card-bg, #fff); border-radius: 20px; padding: 40px 48px;
+                    text-align: center; max-width: 400px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                ">
+                    <div style="font-size: 48px; margin-bottom: 16px;">📋</div>
+                    <div style="font-size: 18px; font-weight: 700; color: var(--text-primary, #1d1d1f); margin-bottom: 8px;">
+                        ${currentLang === 'zh' ? '请按键盘粘贴' : 'Press to Paste'}
+                    </div>
+                    <div style="font-size: 15px; color: var(--text-secondary, #6e6e73); margin-bottom: 20px;">
+                        ${currentLang === 'zh' ? `按 <b>${shortcut}</b> 粘贴剪切板中的图片` : `Press <b>${shortcut}</b> to paste the image`}
+                    </div>
+                    <div style="font-size: 13px; color: var(--text-light, #86868b);">
+                        ${currentLang === 'zh' ? '点击空白处取消' : 'Click outside to cancel'}
+                    </div>
+                </div>
+            `;
+
+            let resolved = false;
+            const cleanup = () => {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+                document.removeEventListener('paste', pasteHandler);
+            };
+
+            const pasteHandler = (ev) => {
+                ev.preventDefault();
+                const items = ev.clipboardData?.items;
+                if (!items) return;
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.indexOf('image') !== -1) {
+                        const file = items[i].getAsFile();
+                        if (file) {
+                            resolved = true;
+                            cleanup();
+                            onImageFile(file);
+                            showToast(currentLang === 'zh' ? '✅ 图片已粘贴' : '✅ Image pasted');
+                            return;
+                        }
+                    }
+                }
+                // 粘贴了但没有图片
+                cleanup();
+                showToast(currentLang === 'zh' ? '⚠️ 剪切板中没有图片' : '⚠️ No image in clipboard');
+            };
+
+            // 点击遮罩层关闭
+            overlay.addEventListener('click', (ev) => {
+                if (ev.target === overlay) {
+                    cleanup();
+                }
+            });
+
+            // ESC 关闭
+            const escHandler = (ev) => {
+                if (ev.key === 'Escape') {
+                    cleanup();
+                    document.removeEventListener('keydown', escHandler);
+                }
+            };
+            document.addEventListener('keydown', escHandler);
+
+            document.body.appendChild(overlay);
+            document.addEventListener('paste', pasteHandler);
+        }
+
         cropBtn.addEventListener('click', performCrop);
         applyPreCropBtn.addEventListener('click', performCrop); // 裁切前的应用按钮，直接执行裁切
 
@@ -6862,49 +6892,9 @@
         // 粘贴按钮点击事件
         const outpaintingPasteBtn = document.getElementById('outpaintingPasteBtn');
         if (outpaintingPasteBtn) {
-            outpaintingPasteBtn.addEventListener('click', async (e) => {
+            outpaintingPasteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                try {
-                    // 检查浏览器是否支持剪切板API
-                    if (!navigator.clipboard || !navigator.clipboard.read) {
-                        showToast(currentLang === 'zh' ? '⚠️ 您的浏览器不支持剪切板功能' : '⚠️ Clipboard not supported');
-                        return;
-                    }
-
-                    // 显示友好提示（仅首次）
-                    const hasShownTip = localStorage.getItem('outpaintingPasteTipShown');
-                    if (!hasShownTip && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
-                        showToast(currentLang === 'zh' ? '💡 首次使用需要授权访问剪切板' : '💡 First time: clipboard permission needed');
-                        localStorage.setItem('outpaintingPasteTipShown', 'true');
-                    }
-
-                    // 读取剪切板内容
-                    const clipboardItems = await navigator.clipboard.read();
-
-                    for (const clipboardItem of clipboardItems) {
-                        for (const type of clipboardItem.types) {
-                            if (type.startsWith('image/')) {
-                                const blob = await clipboardItem.getType(type);
-                                const file = new File([blob], 'pasted-image.png', { type: blob.type });
-                                addOutpaintingImage(file);
-                                showToast(currentLang === 'zh' ? '✅ 图片已粘贴' : '✅ Image pasted');
-                                return;
-                            }
-                        }
-                    }
-
-                    // 没有找到图片
-                    showToast(currentLang === 'zh' ? '⚠️ 剪切板中没有图片' : '⚠️ No image in clipboard');
-                } catch (err) {
-                    console.error('读取剪切板失败:', err);
-                    if (err.name === 'NotAllowedError') {
-                        showToast(currentLang === 'zh' ?
-                            '⚠️ 需要授权：请在弹窗中点击"允许"或"粘贴"' :
-                            '⚠️ Permission needed: tap "Allow" or "Paste" in popup');
-                    } else {
-                        showToast(currentLang === 'zh' ? '❌ 读取剪切板失败' : '❌ Failed to read clipboard');
-                    }
-                }
+                smartPasteImage((file) => addOutpaintingImage(file));
             });
         }
 
