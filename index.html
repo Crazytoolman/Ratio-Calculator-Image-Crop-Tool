@@ -2442,6 +2442,28 @@
             .card {
                 padding: 24px 20px;
                 /* 调整卡片内边距 */
+                border-radius: 22px;
+            }
+
+            .card::after {
+                border-radius: 21px;
+            }
+
+            .preview-container,
+            .upload-placeholder,
+            .stitch-preview-container,
+            .upload-placeholder-small,
+            .custom-ratio,
+            .current-ratio {
+                border-radius: 16px;
+            }
+
+            .preview-box {
+                border-radius: 14px;
+            }
+
+            .crop-canvas-wrapper {
+                border-radius: 18px;
             }
 
             /* 输入框组优化 */
@@ -4825,7 +4847,7 @@
 
         // 初始化切换按钮状态
         const savedTheme = localStorage.getItem('theme');
-        applyTheme(savedTheme === 'dark' ? 'dark' : 'light');
+        applyTheme(savedTheme === 'light' ? 'light' : 'dark');
         updateLanguage(currentLang);
 
         // ========== 裁切工具比例逻辑 ==========
