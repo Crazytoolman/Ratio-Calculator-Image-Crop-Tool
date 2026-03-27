@@ -2964,6 +2964,380 @@
             opacity: 0.8;
             line-height: 1.5;
         }
+
+        /* ========== 批量裁切样式 ========== */
+        .batch-crop-container {
+            animation: fadeIn 0.4s ease;
+        }
+
+        .batch-crop-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 20px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--preview-bg);
+            position: relative;
+        }
+
+        .batch-crop-upload-area:hover {
+            border-color: #00C853;
+            background: rgba(0, 200, 83, 0.04);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 200, 83, 0.1);
+        }
+
+        .batch-crop-upload-area.dragover {
+            border-color: #00C853;
+            background: rgba(0, 200, 83, 0.08);
+            box-shadow: 0 0 0 4px rgba(0, 200, 83, 0.15);
+        }
+
+        .batch-crop-upload-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .batch-crop-controls {
+            margin-top: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .batch-crop-settings {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .batch-crop-ratio-section,
+        .batch-crop-align-section {
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+        }
+
+        .batch-crop-section-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-light);
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .batch-crop-ratio-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 6px;
+            border-radius: 14px;
+        }
+
+        .dark-theme .batch-crop-ratio-tabs {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .batch-ratio-tab {
+            padding: 6px 14px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .batch-ratio-tab:hover {
+            background: rgba(0, 200, 83, 0.08);
+            color: var(--text-primary);
+        }
+
+        .batch-ratio-tab.active {
+            background: linear-gradient(135deg, #00C853, #00BFA5);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 200, 83, 0.3);
+            border-color: transparent;
+        }
+
+        .batch-crop-align-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            width: 100px;
+            margin: 0 auto;
+        }
+
+        .batch-align-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            background: rgba(0, 0, 0, 0.04);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+        }
+
+        .dark-theme .batch-align-btn {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .batch-align-btn:hover {
+            background: rgba(0, 200, 83, 0.1);
+            border-color: rgba(0, 200, 83, 0.3);
+        }
+
+        .batch-align-btn.active {
+            background: linear-gradient(135deg, #00C853, #00BFA5);
+            border-color: transparent;
+            box-shadow: 0 2px 8px rgba(0, 200, 83, 0.3);
+        }
+
+        .batch-crop-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .batch-crop-card {
+            background: var(--card-bg-gradient);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .batch-crop-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+            border-color: rgba(0, 200, 83, 0.3);
+        }
+
+        .batch-crop-card-image {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            overflow: hidden;
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .dark-theme .batch-crop-card-image {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .batch-crop-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .batch-crop-overlay {
+            position: absolute;
+            border: 2px dashed rgba(0, 200, 83, 0.7);
+            background: rgba(0, 200, 83, 0.08);
+            pointer-events: none;
+            box-shadow: 0 0 16px rgba(0, 200, 83, 0.15);
+            transition: all 0.3s ease;
+            z-index: 2;
+        }
+
+        .batch-crop-card-name {
+            padding: 8px 12px;
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        .batch-crop-card-remove {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.5);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            z-index: 3;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .batch-crop-card:hover .batch-crop-card-remove {
+            opacity: 1;
+        }
+
+        .batch-crop-card-remove:hover {
+            background: rgba(211, 76, 92, 0.8);
+        }
+
+        .batch-crop-card.cropped .batch-crop-overlay {
+            border-color: rgba(0, 200, 83, 0.9);
+            background: rgba(0, 200, 83, 0.15);
+        }
+
+        .batch-crop-card-badge {
+            position: absolute;
+            bottom: 38px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #00C853, #00BFA5);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 10px;
+            border-radius: 10px;
+            z-index: 3;
+            display: none;
+            white-space: nowrap;
+        }
+
+        .batch-crop-card.cropped .batch-crop-card-badge {
+            display: block;
+        }
+
+        .batch-crop-actions {
+            margin-top: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            padding: 16px 0;
+        }
+
+        .batch-crop-actions .crop-action-btn {
+            flex: 0 1 auto;
+            min-width: 140px;
+        }
+
+        /* 对齐模式切换 */
+        .batch-align-mode-toggle {
+            display: flex;
+            gap: 4px;
+            background: rgba(0, 0, 0, 0.04);
+            padding: 3px;
+            border-radius: 10px;
+            margin: 0 auto 10px;
+            width: fit-content;
+        }
+
+        .dark-theme .batch-align-mode-toggle {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .batch-align-mode-btn {
+            padding: 5px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+        }
+
+        .batch-align-mode-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .batch-align-mode-btn.active {
+            background: linear-gradient(135deg, #00C853, #00BFA5);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 200, 83, 0.25);
+        }
+
+        /* 手动模式遮罩 */
+        .batch-crop-overlay.manual-mode {
+            pointer-events: auto;
+            cursor: move;
+            border-style: solid;
+            border-width: 2px;
+        }
+
+        .batch-crop-overlay.manual-mode:hover {
+            box-shadow: 0 0 24px rgba(0, 200, 83, 0.3);
+        }
+
+        .batch-crop-overlay .drag-handle-dot {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 12px;
+            height: 12px;
+            background: #00C853;
+            border-radius: 50%;
+            cursor: nwse-resize;
+            border: 2px solid white;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .batch-unified-drag-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .batch-unified-preview-box {
+            width: 140px;
+            height: 140px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+        }
+
+        .dark-theme .batch-unified-preview-box {
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .batch-unified-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -3039,7 +3413,8 @@
                         xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                         <circle class="lang-switch-globe" cx="12" cy="12" r="8.2" />
                         <path class="lang-switch-globe" d="M7.8 8.6C9 9.3 10.4 9.7 12 9.7C13.6 9.7 15 9.3 16.2 8.6" />
-                        <path class="lang-switch-globe" d="M7.8 15.4C9 14.7 10.4 14.3 12 14.3C13.6 14.3 15 14.7 16.2 15.4" />
+                        <path class="lang-switch-globe"
+                            d="M7.8 15.4C9 14.7 10.4 14.3 12 14.3C13.6 14.3 15 14.7 16.2 15.4" />
                         <path class="lang-switch-globe" d="M12 3.8C10.7 5.8 10 8.7 10 12C10 15.3 10.7 18.2 12 20.2" />
                         <path class="lang-switch-globe" d="M12 3.8C13.3 5.8 14 8.7 14 12C14 15.3 13.3 18.2 12 20.2" />
                         <text x="12" y="12.6" text-anchor="middle" fill="currentColor">CN</text>
@@ -3101,17 +3476,15 @@
                             </linearGradient>
                         </defs>
                         <!-- 照片外框（被裁切的原始图像，半透明） -->
-                        <rect x="5" y="7" width="38" height="34" rx="5"
-                            fill="url(#icon-fill-merged)" stroke="url(#icon-grad-merged)"
-                            stroke-width="1.5" opacity="0.5" />
+                        <rect x="5" y="7" width="38" height="34" rx="5" fill="url(#icon-fill-merged)"
+                            stroke="url(#icon-grad-merged)" stroke-width="1.5" opacity="0.5" />
                         <!-- 简化山景剪影（表达这是一张照片） -->
-                        <path d="M5 34 L13 24 L19 29 L27 19 L43 34"
-                            fill="url(#icon-fill-merged)" stroke="url(#icon-grad-merged)"
-                            stroke-width="1" stroke-linecap="round" stroke-linejoin="round" opacity="0.35" />
+                        <path d="M5 34 L13 24 L19 29 L27 19 L43 34" fill="url(#icon-fill-merged)"
+                            stroke="url(#icon-grad-merged)" stroke-width="1" stroke-linecap="round"
+                            stroke-linejoin="round" opacity="0.35" />
                         <!-- 裁切选区（虚线框） -->
-                        <rect x="10" y="12" width="28" height="24" rx="2"
-                            stroke="url(#icon-grad-merged)" stroke-width="1.5"
-                            stroke-dasharray="3 2" fill="none" />
+                        <rect x="10" y="12" width="28" height="24" rx="2" stroke="url(#icon-grad-merged)"
+                            stroke-width="1.5" stroke-dasharray="3 2" fill="none" />
                         <!-- 裁切把手 - 左上 -->
                         <path d="M10 19 L10 12 L17 12" stroke="url(#icon-grad-merged)" stroke-width="3"
                             stroke-linecap="round" stroke-linejoin="round" />
@@ -3152,6 +3525,56 @@
                             stroke-linejoin="round" />
                     </svg>
                     <div class="tool-label" data-i18n="nav.outpainting">扩图底板</div>
+                </div>
+
+                <!-- 批量裁切模式 (绿色) -->
+                <div class="tool-icon-btn" data-tool="batch-crop" title="批量裁切" data-i18n-title="nav.batchCrop">
+                    <svg class="header-svg" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="icon-grad-batch" x1="7" y1="7" x2="41" y2="41"
+                                gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#00E676" />
+                                <stop offset="55%" stop-color="#00D85E" />
+                                <stop offset="100%" stop-color="#00BFA5" />
+                            </linearGradient>
+                            <linearGradient id="icon-fill-batch" x1="9" y1="8" x2="38" y2="31"
+                                gradientUnits="userSpaceOnUse">
+                                <stop offset="0%" stop-color="#00E676" stop-opacity="0.12" />
+                                <stop offset="100%" stop-color="#00BFA5" stop-opacity="0.04" />
+                            </linearGradient>
+                        </defs>
+
+                        <!-- 一叠纸 -->
+                        <rect x="10" y="8" width="18" height="22" rx="3.8" fill="url(#icon-fill-batch)"
+                            stroke="url(#icon-grad-batch)" stroke-width="1.5" opacity="0.28" />
+                        <rect x="14" y="11" width="18" height="22" rx="3.8" fill="url(#icon-fill-batch)"
+                            stroke="url(#icon-grad-batch)" stroke-width="1.7" opacity="0.48" />
+                        <rect x="18" y="14" width="18" height="22" rx="3.8" fill="url(#icon-fill-batch)"
+                            stroke="url(#icon-grad-batch)" stroke-width="2.1" />
+
+                        <!-- 顶层纸张的裁切角 -->
+                        <path d="M22.5 21V17H26.5" stroke="url(#icon-grad-batch)" stroke-width="2.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+
+                        <!-- 从下方剪上来的一把剪刀 -->
+                        <g transform="translate(30.5, 31.5) rotate(-18)">
+                            <path d="M0 0L-9 -2.1" stroke="url(#icon-grad-batch)" stroke-width="2.15"
+                                stroke-linecap="round" />
+                            <path d="M0 0L-5.8 -8.2" stroke="url(#icon-grad-batch)" stroke-width="2.15"
+                                stroke-linecap="round" />
+                            <path d="M0.2 0.2L7.5 3.3" stroke="url(#icon-grad-batch)" stroke-width="2.15"
+                                stroke-linecap="round" />
+                            <path d="M-0.2 0.2L1.8 8.5" stroke="url(#icon-grad-batch)" stroke-width="2.15"
+                                stroke-linecap="round" />
+                            <circle cx="0" cy="0" r="1.45" fill="#111817" stroke="url(#icon-grad-batch)"
+                                stroke-width="1" />
+                            <circle cx="10.2" cy="4.6" r="2.9" stroke="url(#icon-grad-batch)" stroke-width="2.1"
+                                fill="none" />
+                            <circle cx="2.8" cy="11.1" r="2.9" stroke="url(#icon-grad-batch)" stroke-width="2.1"
+                                fill="none" />
+                        </g>
+                    </svg>
+                    <div class="tool-label" data-i18n="nav.batchCrop">批量裁切</div>
                 </div>
             </div>
             <h1 data-i18n="header.title">全能比例工具箱：计算 · 裁切 · 拼接 · 扩图</h1>
@@ -3194,7 +3617,9 @@
                                 <span style="display: inline-flex; align-items: center; gap: 6px;">
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                         stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                        <path
+                                            d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2">
+                                        </path>
                                         <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
                                     </svg>
                                     <span data-i18n="imageCrop.pasteBtn">粘贴图片</span>
@@ -3423,6 +3848,166 @@
                         </button>
                     </div>
                     <input type="file" id="outpaintingInput" accept="image/*,.tiff,.tif" style="display: none;">
+                </div>
+
+                <!-- 批量裁切区域 -->
+                <div class="batch-crop-container" id="batchCropContainer" style="display: none;">
+                    <!-- 上传区域 -->
+                    <div class="batch-crop-upload-area" id="batchCropUploadArea">
+                        <input type="file" id="batchCropInput" accept="image/*,.tiff,.tif" multiple
+                            style="display: none;">
+                        <div class="batch-crop-upload-placeholder" id="batchCropPlaceholder">
+                            <div
+                                style="width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, rgba(0,200,83,0.12), rgba(0,191,165,0.08)); display: flex; align-items: center; justify-content: center; margin-bottom: 14px;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+                                    stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                            </div>
+                            <div class="placeholder-text" data-i18n="batchCrop.uploadText"
+                                style="font-size: 17px; font-weight: 700; color: var(--text-primary); margin-bottom: 6px;">
+                                点击上传或拖拽多张图片到这里</div>
+                            <div class="placeholder-hint" data-i18n="batchCrop.uploadHint"
+                                style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; font-weight: 500;">
+                                支持 JPG、PNG、GIF 等格式，可一次上传多张</div>
+                        </div>
+                    </div>
+
+                    <!-- 控制面板 -->
+                    <div class="batch-crop-controls" id="batchCropControls" style="display: none;">
+                        <!-- 比例与对齐选项 -->
+                        <div class="batch-crop-settings">
+                            <!-- 比例选择 -->
+                            <div class="batch-crop-ratio-section">
+                                <div class="batch-crop-section-title" data-i18n="batchCrop.ratio">裁切比例</div>
+                                <div class="batch-crop-ratio-tabs" id="batchCropRatioTabs">
+                                    <button class="batch-ratio-tab active" data-ratio="1:1">1:1</button>
+                                    <button class="batch-ratio-tab" data-ratio="4:3">4:3</button>
+                                    <button class="batch-ratio-tab" data-ratio="3:4">3:4</button>
+                                    <button class="batch-ratio-tab" data-ratio="16:9">16:9</button>
+                                    <button class="batch-ratio-tab" data-ratio="9:16">9:16</button>
+                                    <button class="batch-ratio-tab" data-ratio="2:3">2:3</button>
+                                    <button class="batch-ratio-tab" data-ratio="3:2">3:2</button>
+                                    <button class="batch-ratio-tab" data-ratio="5:4">5:4</button>
+                                    <button class="batch-ratio-tab" data-ratio="4:5">4:5</button>
+                                    <button class="batch-ratio-tab" data-ratio="2.35:1">2.35:1</button>
+                                    <button class="batch-ratio-tab" data-ratio="custom"
+                                        data-i18n="ratioSelect.custom">自定义</button>
+                                </div>
+                                <!-- 自定义比例输入区 -->
+                                <div class="custom-ratio" id="batchCustomRatioWrap"
+                                    style="display: none; margin-top: 12px;">
+                                    <div class="custom-input-group" style="justify-content: center;">
+                                        <input type="number" id="batchCustomWidth"
+                                            data-i18n-placeholder="ratioSelect.customWidth" placeholder="宽" min="1"
+                                            style="max-width: 80px; text-align: center;">
+                                        <span class="separator">:</span>
+                                        <input type="number" id="batchCustomHeight"
+                                            data-i18n-placeholder="ratioSelect.customHeight" placeholder="高" min="1"
+                                            style="max-width: 80px; text-align: center;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 对齐方式 -->
+                            <div class="batch-crop-align-section">
+                                <div class="batch-crop-section-title" data-i18n="batchCrop.alignLabel">对齐方式</div>
+                                <!-- 模式切换 -->
+                                <div class="batch-align-mode-toggle" id="batchAlignModeToggle">
+                                    <button class="batch-align-mode-btn active" data-mode="quick"
+                                        data-i18n="batchCrop.quickAlign">快捷定位</button>
+                                    <button class="batch-align-mode-btn" data-mode="manual"
+                                        data-i18n="batchCrop.manualAlign">手动拖拽</button>
+                                </div>
+                                <!-- 九宫格快捷模式 -->
+                                <div class="batch-crop-align-grid" id="batchCropAlignGrid">
+                                    <button class="batch-align-btn" data-align="top-left" title="左上"></button>
+                                    <button class="batch-align-btn" data-align="top" title="上"></button>
+                                    <button class="batch-align-btn" data-align="top-right" title="右上"></button>
+                                    <button class="batch-align-btn" data-align="left" title="左"></button>
+                                    <button class="batch-align-btn active" data-align="center" title="居中"></button>
+                                    <button class="batch-align-btn" data-align="right" title="右"></button>
+                                    <button class="batch-align-btn" data-align="bottom-left" title="左下"></button>
+                                    <button class="batch-align-btn" data-align="bottom" title="下"></button>
+                                    <button class="batch-align-btn" data-align="bottom-right" title="右下"></button>
+                                </div>
+
+                                <!-- 手动模式统一控制 -->
+                                <div class="batch-unified-drag-container" id="batchUnifiedDragContainer"
+                                    style="display: none;">
+                                    <div class="batch-unified-preview-box" id="batchUnifiedPreviewBox">
+                                        <img id="batchUnifiedPreviewImg" src="" alt="preview">
+                                        <div class="batch-crop-overlay manual-mode" id="batchUnifiedOverlay">
+                                            <div class="drag-handle-dot"></div>
+                                        </div>
+                                    </div>
+                                    <div class="batch-manual-hint" id="batchManualHint"
+                                        style="text-align: center; font-size: 12px; color: var(--text-light); padding: 8px; background: rgba(0,200,83,0.06); border-radius: 10px; margin-top: 10px;">
+                                        <span data-i18n="batchCrop.manualHint">🖱️ 拖拽此框可统一调整所有图片，也可单独拖拽下方单图</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 拖拽提示 -->
+                        <div class="batch-crop-drag-hint" data-i18n="batchCrop.dragHint"
+                            style="text-align: center; font-size: 12px; color: var(--text-light); margin-top: 8px; font-weight: 500;">
+                            拖动裁切框或使用对齐按钮定位
+                        </div>
+
+                        <!-- 图片计数 -->
+                        <div class="batch-crop-count" id="batchCropCount"
+                            style="text-align: center; font-size: 14px; color: var(--text-secondary); margin-top: 10px; font-weight: 600;">
+                        </div>
+                    </div>
+
+                    <!-- 图片网格 -->
+                    <div class="batch-crop-gallery" id="batchCropGallery"></div>
+
+                    <!-- 操作按钮 -->
+                    <div class="batch-crop-actions" id="batchCropActions" style="display: none;">
+                        <button class="crop-action-btn crop-btn-primary" id="batchCropAddMore">
+                            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    style="margin-right: 6px;">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg></span>
+                            <span data-i18n="batchCrop.uploadBtn">选择图片</span>
+                        </button>
+                        <button class="crop-action-btn crop-btn-success" id="batchCropExecuteBtn">
+                            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    style="margin-right: 6px;">
+                                    <polyline points="13 17 18 12 13 7"></polyline>
+                                    <polyline points="6 17 11 12 6 7"></polyline>
+                                </svg></span>
+                            <span data-i18n="batchCrop.executeBtn">执行批量裁切</span>
+                        </button>
+                        <button class="crop-action-btn crop-btn-primary" id="batchCropDownloadAll"
+                            style="display: none;">
+                            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    style="margin-right: 6px;">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg></span>
+                            <span data-i18n="batchCrop.downloadAll">批量下载全部</span>
+                        </button>
+                        <button class="crop-action-btn crop-btn-danger" id="batchCropClearBtn">
+                            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    style="margin-right: 6px;">
+                                    <path d="M3 6h18"></path>
+                                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                    <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                </svg></span>
+                            <span data-i18n="batchCrop.clearBtn">清空图片</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- 裁切区域 -->
@@ -4062,7 +4647,8 @@
 
         const toolLabels = {
             'image-tool': { zh: '裁切与拼接管理', en: 'Crop & Stitch Manager' },
-            outpainting: { zh: '扩图底板创作', en: 'Outpainting Creator' }
+            outpainting: { zh: '扩图底板创作', en: 'Outpainting Creator' },
+            'batch-crop': { zh: '批量裁切工具', en: 'Batch Crop Tool' }
         };
 
         // ========== 国际化系统 ==========
@@ -4070,7 +4656,8 @@
             zh: {
                 nav: {
                     cropStitch: '图像裁切/拼接',
-                    outpainting: '扩图底板'
+                    outpainting: '扩图底板',
+                    batchCrop: '批量裁切'
                 },
                 theme: {
                     light: '浅色',
@@ -4206,12 +4793,31 @@
                     copied: '已复制到剪贴板！',
                     pasteBtn: '粘贴图片',
                     resetRotationBtn: '恢复水平'
+                },
+                batchCrop: {
+                    uploadText: '点击上传或拖拽多张图片到这里',
+                    uploadHint: '支持 JPG、PNG、GIF 等格式，可一次上传多张',
+                    uploadBtn: '选择图片',
+                    alignLabel: '对齐方式',
+                    executeBtn: '执行批量裁切',
+                    executing: '处理中...',
+                    downloadAll: '批量下载全部',
+                    clearBtn: '清空图片',
+                    imgCount: '共 {count} 张图片',
+                    noImages: '暂无图片',
+                    cropDone: '已裁切 {count} 张图片',
+                    ratio: '裁切比例',
+                    dragHint: '可统一操作，也可直接在图片上拖拽并放大缩小裁切框',
+                    quickAlign: '快捷定位',
+                    manualAlign: '手动拖拽',
+                    manualHint: '🖱️ 可统一调整全部图片，也可直接在单张图片上拖拽和缩放裁切框'
                 }
             },
             en: {
                 nav: {
                     cropStitch: 'Crop & Stitch',
-                    outpainting: 'Outpainting'
+                    outpainting: 'Outpainting',
+                    batchCrop: 'Batch Crop'
                 },
                 theme: {
                     light: 'Light',
@@ -4347,6 +4953,24 @@
                     copied: 'Copied to clipboard!',
                     pasteBtn: 'Paste Image',
                     resetRotationBtn: 'Reset Rotation'
+                },
+                batchCrop: {
+                    uploadText: 'Click to upload or drag multiple images here',
+                    uploadHint: 'Supports JPG, PNG, GIF, etc. Upload multiple at once',
+                    uploadBtn: 'Select Images',
+                    alignLabel: 'Alignment',
+                    executeBtn: 'Execute Batch Crop',
+                    executing: 'Processing...',
+                    downloadAll: 'Download All',
+                    clearBtn: 'Clear Images',
+                    imgCount: '{count} images total',
+                    noImages: 'No images yet',
+                    cropDone: '{count} images cropped',
+                    ratio: 'Crop Ratio',
+                    dragHint: 'Adjust all images together, or drag and resize the crop box on each image',
+                    quickAlign: 'Quick Align',
+                    manualAlign: 'Manual Drag',
+                    manualHint: '🖱️ Adjust all images together, or drag and resize the crop box on each image'
                 }
             }
         };
@@ -4428,7 +5052,7 @@
             }
 
             // ⚠️ 关键：同步刷新配置下拉列表中的动态文本（如【扩图】标签）
-            if (typeof refreshConfigDropdown === 'function') {
+            if (window.__configDbReady && typeof refreshConfigDropdown === 'function') {
                 refreshConfigDropdown();
             }
 
@@ -5856,8 +6480,10 @@
         copyStitchBtn.addEventListener('click', copyStitchResult);
 
         // ========== 持久化存储 (IndexedDB) ==========
+        window.__configDbReady = false;
         const DB_NAME = 'ImageCropToolDB';
         const STORE_NAME = 'appConfig';
+        window.__configDbReady = true;
         // 所有命名配置存储在 DB key = 'namedConfigs'，格式为 { [name]: configObject }
 
         function initDB() {
@@ -5996,6 +6622,23 @@
             }
         }
 
+        async function asyncBlobToDataUrl(url) {
+            return new Promise((resolve) => {
+                if (!url) return resolve(null);
+                if (url.startsWith('data:')) return resolve(url);
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    canvas.getContext('2d').drawImage(img, 0, 0);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                img.onerror = () => resolve(url);
+                img.src = url;
+            });
+        }
+
         // 采集扩图底板上所有图层的数据 (彻底转为 DataURL)
         function getOutpaintingLayersData() {
             const items = document.querySelectorAll('#outpaintingOverlay .outpainting-item');
@@ -6020,7 +6663,7 @@
         }
 
         // 构建当前完整配置快照 (全量备份并持久化)
-        function buildConfigSnapshot() {
+        async function buildConfigSnapshot() {
             const activeToolBtn = document.querySelector('.tool-icon-btn.active');
             const activeMode = activeToolBtn ? activeToolBtn.dataset.tool : 'image-tool';
 
@@ -6031,6 +6674,9 @@
                     src: ensureDataURL(img.src) || img.src
                 };
             });
+
+            const batchCropApi = window.batchCropConfigBridge;
+            const batchSnapshot = batchCropApi ? await batchCropApi.serialize() : null;
 
             return {
                 activeMode,
@@ -6060,7 +6706,8 @@
                 opCalcHeight: opCalcHeight ? opCalcHeight.value : '',
                 opCustomWidth: opCustomWidthInput ? opCustomWidthInput.value : '',
                 opCustomHeight: opCustomHeightInput ? opCustomHeightInput.value : '',
-                outpaintingLayers: getOutpaintingLayersData()
+                outpaintingLayers: getOutpaintingLayersData(),
+                batchState: batchSnapshot
             };
         }
 
@@ -6210,6 +6857,14 @@
                 }
             }
 
+            // 3. 还原批量裁切
+            if (config.batchState && config.batchState.images) {
+                const batchCropApi = window.batchCropConfigBridge;
+                if (batchCropApi) {
+                    await batchCropApi.restore(config.batchState);
+                }
+            }
+
             if (typeof updateCropInfo === 'function') updateCropInfo();
         }
 
@@ -6235,7 +6890,7 @@
                 if (!confirm(t.saveNameDuplicate.replace('{name}', name))) return;
             }
 
-            const snapshot = buildConfigSnapshot();
+            const snapshot = await buildConfigSnapshot();
             allConfigs[name] = snapshot;
             await saveAllNamedConfigs(allConfigs);
 
@@ -7036,6 +7691,8 @@
                 if (stitchContainer) stitchContainer.style.display = 'none';
                 if (outpaintingContainer) outpaintingContainer.style.display = 'none';
                 if (cropResult) cropResult.style.display = 'none';
+                const batchCropCon = document.getElementById('batchCropContainer');
+                if (batchCropCon) batchCropCon.style.display = 'none';
 
                 // 4. 彻底物理隔离：显示/隐藏各自的比例配置组
                 const cropRatioGroup = document.getElementById('cropRatioGroup');
@@ -7117,6 +7774,11 @@
                     if (cancelOutpaintingBtn && cancelOutpaintingBtn.style.display !== 'none') {
                         renderMergedOutpainting();
                     }
+                } else if (tool === 'batch-crop') {
+                    if (cropRatioGroup) cropRatioGroup.style.display = 'none';
+                    if (opRatioGroup) opRatioGroup.style.display = 'none';
+                    const bc = document.getElementById('batchCropContainer');
+                    if (bc) bc.style.display = 'block';
                 }
             });
         });
@@ -7847,6 +8509,849 @@
                 initOutpaintingBase();
             });
         }
+
+        // ========== 批量裁切模块 ==========
+        (function initBatchCrop() {
+            const batchState = {
+                ratio: '1:1',
+                alignment: 'center',
+                alignMode: 'quick',  // 'quick' | 'manual'
+                images: [],       // { file, name, url, naturalW, naturalH, croppedUrl, manualOffset: {x, y} }
+                isCropped: false
+            };
+
+            const batchCropContainer = document.getElementById('batchCropContainer');
+            const batchCropUploadArea = document.getElementById('batchCropUploadArea');
+            const batchCropInput = document.getElementById('batchCropInput');
+            const batchCropPlaceholder = document.getElementById('batchCropPlaceholder');
+            const batchCropControls = document.getElementById('batchCropControls');
+            const batchCropGallery = document.getElementById('batchCropGallery');
+            const batchCropActions = document.getElementById('batchCropActions');
+            const batchCropCount = document.getElementById('batchCropCount');
+            const batchCropRatioTabs = document.getElementById('batchCropRatioTabs');
+            const batchCropAlignGrid = document.getElementById('batchCropAlignGrid');
+            const batchCropExecuteBtn = document.getElementById('batchCropExecuteBtn');
+            const batchCropDownloadAll = document.getElementById('batchCropDownloadAll');
+            const batchCropClearBtn = document.getElementById('batchCropClearBtn');
+            const batchCropAddMore = document.getElementById('batchCropAddMore');
+            const batchAlignModeToggle = document.getElementById('batchAlignModeToggle');
+            const batchUnifiedDragContainer = document.getElementById('batchUnifiedDragContainer');
+            const batchUnifiedPreviewBox = document.getElementById('batchUnifiedPreviewBox');
+            const batchUnifiedPreviewImg = document.getElementById('batchUnifiedPreviewImg');
+            const batchUnifiedOverlay = document.getElementById('batchUnifiedOverlay');
+
+            const batchCustomRatioWrap = document.getElementById('batchCustomRatioWrap');
+            const batchCustomWidth = document.getElementById('batchCustomWidth');
+            const batchCustomHeight = document.getElementById('batchCustomHeight');
+
+            if (!batchCropContainer) return;
+
+            // === 上传逻辑 ===
+            batchCropUploadArea.addEventListener('click', () => batchCropInput.click());
+            batchCropAddMore.addEventListener('click', () => batchCropInput.click());
+
+            batchCropUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                batchCropUploadArea.classList.add('dragover');
+            });
+            batchCropUploadArea.addEventListener('dragleave', () => {
+                batchCropUploadArea.classList.remove('dragover');
+            });
+            batchCropUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                batchCropUploadArea.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    addBatchImages(e.dataTransfer.files);
+                }
+            });
+
+            batchCropInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    addBatchImages(e.target.files);
+                    batchCropInput.value = '';
+                }
+            });
+
+            // 监听粘贴事件
+            document.addEventListener('paste', (e) => {
+                const isBatchCropActive = document.querySelector('[data-tool="batch-crop"]')?.classList.contains('active');
+                if (!isBatchCropActive) return;
+
+                const items = e.clipboardData?.items;
+                if (!items) return;
+                const files = [];
+                for (let i = 0; i < items.length; i++) {
+                    if (items[i].type.startsWith('image/')) {
+                        const file = items[i].getAsFile();
+                        if (file) files.push(file);
+                    }
+                }
+                if (files.length > 0) {
+                    addBatchImages(files);
+                }
+            });
+
+            function addBatchImages(files) {
+                const imageFiles = Array.from(files).filter(f =>
+                    f.type.startsWith('image/') || /\.(jpe?g|png|gif|bmp|webp|tiff?)$/i.test(f.name)
+                );
+
+                let loaded = 0;
+                imageFiles.forEach(file => {
+                    const url = URL.createObjectURL(file);
+                    const img = new Image();
+                    img.onload = () => {
+	                        batchState.images.push({
+	                            file,
+	                            name: file.name,
+	                            url,
+	                            naturalW: img.naturalWidth,
+	                            naturalH: img.naturalHeight,
+	                            croppedUrl: null,
+	                            manualOffset: null,  // { x: %, y: % } — 每张图独立的偏移
+	                            manualScale: 1
+	                        });
+                        loaded++;
+                        if (loaded === imageFiles.length) {
+                            batchState.isCropped = false;
+                            renderBatchUI();
+                        }
+                    };
+                    img.src = url;
+                });
+            }
+
+            const MIN_BATCH_MANUAL_SCALE = 0.35;
+            const MAX_BATCH_MANUAL_SCALE = 1;
+
+            function clearBatchCropResults() {
+                batchState.isCropped = false;
+                batchState.images.forEach(img => {
+                    img.croppedUrl = null;
+                });
+                batchCropDownloadAll.style.display = 'none';
+            }
+
+            function getMaxCropSize(imgData) {
+                const [rw, rh] = batchState.ratio.split(':').map(Number);
+                const targetRatio = rw / rh;
+                const bounds = getImgBounds(imgData);
+                const imgRatio = imgData.naturalW / imgData.naturalH;
+                let width;
+                let height;
+
+                if (imgRatio > targetRatio) {
+                    height = bounds.h;
+                    width = bounds.h * targetRatio;
+                } else {
+                    width = bounds.w;
+                    height = bounds.w / targetRatio;
+                }
+
+                return { bounds, width, height };
+            }
+
+            function getManualCropRect(imgData) {
+                const { bounds, width: maxWidth, height: maxHeight } = getMaxCropSize(imgData);
+                const scale = Math.max(MIN_BATCH_MANUAL_SCALE, Math.min(MAX_BATCH_MANUAL_SCALE, imgData.manualScale || 1));
+                const width = maxWidth * scale;
+                const height = maxHeight * scale;
+                const fallbackX = bounds.offsetX + (bounds.w - width) / 2;
+                const fallbackY = bounds.offsetY + (bounds.h - height) / 2;
+                const currentX = imgData.manualOffset ? imgData.manualOffset.x : fallbackX;
+                const currentY = imgData.manualOffset ? imgData.manualOffset.y : fallbackY;
+                const x = Math.max(bounds.offsetX, Math.min(currentX, bounds.offsetX + bounds.w - width));
+                const y = Math.max(bounds.offsetY, Math.min(currentY, bounds.offsetY + bounds.h - height));
+
+                return { bounds, width, height, x, y, scale };
+            }
+
+            function ensureManualCropRect(imgData, preserveCenter = false) {
+                const previous = preserveCenter ? getManualCropRect(imgData) : null;
+                imgData.manualScale = Math.max(MIN_BATCH_MANUAL_SCALE, Math.min(MAX_BATCH_MANUAL_SCALE, imgData.manualScale || 1));
+                let next = getManualCropRect(imgData);
+
+                if (preserveCenter && previous) {
+                    const centerX = previous.x + previous.width / 2;
+                    const centerY = previous.y + previous.height / 2;
+                    imgData.manualOffset = {
+                        x: centerX - next.width / 2,
+                        y: centerY - next.height / 2
+                    };
+                    next = getManualCropRect(imgData);
+                }
+
+                imgData.manualOffset = { x: next.x, y: next.y };
+                return next;
+            }
+
+            function syncBatchManualOverlays() {
+                if (batchState.alignMode !== 'manual') return;
+
+                if (batchState.images.length > 0) {
+                    batchUnifiedPreviewImg.src = batchState.images[0].url;
+                    batchUnifiedOverlay.style.cssText = getManualOverlayStyle(batchState.images[0]);
+                }
+
+                batchCropGallery.querySelectorAll('.batch-crop-overlay.manual-mode').forEach((overlay, idx) => {
+                    const img = batchState.images[idx];
+                    if (img) {
+                        overlay.style.cssText = getManualOverlayStyle(img);
+                    }
+                });
+            }
+
+            function renderBatchUI() {
+                const hasImages = batchState.images.length > 0;
+
+                if (hasImages) {
+                    batchCropPlaceholder.style.display = 'none';
+                    batchCropUploadArea.style.padding = '16px';
+                    batchCropUploadArea.style.display = 'none';
+                } else {
+                    batchCropPlaceholder.style.display = 'flex';
+                    batchCropUploadArea.style.padding = '48px 24px';
+                    batchCropUploadArea.style.display = 'block';
+                }
+
+                batchCropControls.style.display = hasImages ? 'block' : 'none';
+                batchCropActions.style.display = hasImages ? 'flex' : 'none';
+                batchCropDownloadAll.style.display = batchState.isCropped ? 'inline-flex' : 'none';
+
+                const t = translations[currentLang]?.batchCrop || translations.zh.batchCrop;
+                batchCropCount.textContent = hasImages
+                    ? t.imgCount.replace('{count}', batchState.images.length)
+                    : t.noImages;
+
+                renderBatchGallery();
+            }
+
+            async function serializeBatchState() {
+                return {
+                    ratio: batchState.ratio,
+                    alignMode: batchState.alignMode,
+                    alignment: batchState.alignment,
+                    images: await Promise.all(batchState.images.map(async img => ({
+                        name: img.name,
+                        url: await asyncBlobToDataUrl(img.url),
+                        naturalW: img.naturalW,
+                        naturalH: img.naturalH,
+                        manualOffset: img.manualOffset,
+                        manualScale: img.manualScale,
+                        croppedUrl: await asyncBlobToDataUrl(img.croppedUrl)
+                    })))
+                };
+            }
+
+            async function restoreBatchState(snapshot) {
+                batchState.images.forEach(img => {
+                    if (img.url && img.url.startsWith('blob:')) URL.revokeObjectURL(img.url);
+                    if (img.croppedUrl && img.croppedUrl.startsWith('blob:')) URL.revokeObjectURL(img.croppedUrl);
+                });
+
+                batchState.ratio = snapshot?.ratio || '1:1';
+                batchState.alignMode = snapshot?.alignMode || 'quick';
+                batchState.alignment = snapshot?.alignment || 'center';
+                batchState.images = [];
+
+                for (const img of (snapshot?.images || [])) {
+                    let objUrl = img.url;
+                    if (img.url && img.url.startsWith('data:')) {
+                        const blob = await (await fetch(img.url)).blob();
+                        objUrl = URL.createObjectURL(blob);
+                    }
+
+                    let croppedObjUrl = img.croppedUrl;
+                    if (img.croppedUrl && img.croppedUrl.startsWith('data:')) {
+                        const blob = await (await fetch(img.croppedUrl)).blob();
+                        croppedObjUrl = URL.createObjectURL(blob);
+                    }
+
+                    batchState.images.push({
+                        name: img.name,
+                        url: objUrl,
+                        naturalW: img.naturalW,
+                        naturalH: img.naturalH,
+                        manualOffset: img.manualOffset,
+                        manualScale: img.manualScale,
+                        croppedUrl: croppedObjUrl
+                    });
+                }
+
+                batchState.images.forEach(img => {
+                    if (typeof img.manualScale !== 'number') img.manualScale = 1;
+                    if (batchState.alignMode === 'manual') ensureManualCropRect(img);
+                });
+
+                batchState.isCropped = batchState.images.some(img => img.croppedUrl);
+
+                const ratioTabs = document.getElementById('batchCropRatioTabs');
+                if (ratioTabs) {
+                    ratioTabs.querySelectorAll('.batch-ratio-tab').forEach(tab => tab.classList.remove('active'));
+                    const matchedTab = ratioTabs.querySelector(`[data-ratio="${batchState.ratio}"]`);
+                    if (matchedTab) {
+                        matchedTab.classList.add('active');
+                        batchCustomRatioWrap.style.display = 'none';
+                    } else if (batchState.ratio.includes(':')) {
+                        const customTab = ratioTabs.querySelector('[data-ratio="custom"]');
+                        if (customTab) customTab.classList.add('active');
+                        const [w, h] = batchState.ratio.split(':');
+                        batchCustomWidth.value = w;
+                        batchCustomHeight.value = h;
+                        batchCustomRatioWrap.style.display = 'block';
+                    }
+                }
+
+                const modeTabs = document.getElementById('batchAlignModeToggle');
+                if (modeTabs) {
+                    modeTabs.querySelectorAll('.batch-align-mode-btn').forEach(btn => btn.classList.remove('active'));
+                    const matchedMode = modeTabs.querySelector(`[data-mode="${batchState.alignMode}"]`);
+                    if (matchedMode) matchedMode.classList.add('active');
+                }
+
+                batchCropAlignGrid.style.display = batchState.alignMode === 'quick' ? 'grid' : 'none';
+                batchUnifiedDragContainer.style.display = batchState.alignMode === 'manual' ? 'flex' : 'none';
+
+                const alignGrid = document.getElementById('batchCropAlignGrid');
+                if (alignGrid) {
+                    alignGrid.querySelectorAll('.batch-align-btn').forEach(btn => btn.classList.remove('active'));
+                    const matchedAlign = alignGrid.querySelector(`[data-align="${batchState.alignment}"]`);
+                    if (matchedAlign) matchedAlign.classList.add('active');
+                }
+
+                renderBatchUI();
+            }
+
+            window.batchCropConfigBridge = {
+                serialize: serializeBatchState,
+                restore: restoreBatchState
+            };
+
+            // === 模式切换 ===
+            batchAlignModeToggle.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-mode]');
+                if (!btn) return;
+                const mode = btn.dataset.mode;
+                batchState.alignMode = mode;
+                batchAlignModeToggle.querySelectorAll('.batch-align-mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // 切换九宫格/手动提示的显示
+	                if (mode === 'quick') {
+	                    batchCropAlignGrid.style.display = 'grid';
+	                    batchUnifiedDragContainer.style.display = 'none';
+	                    // 切回快捷模式：清除手动偏移
+	                    batchState.images.forEach(img => {
+	                        img.manualOffset = null;
+	                        img.manualScale = 1;
+	                    });
+	                } else {
+	                    batchCropAlignGrid.style.display = 'none';
+	                    batchUnifiedDragContainer.style.display = 'flex';
+	                    // 切到手动模式：初始化手动偏移为当前对齐值
+	                    batchState.images.forEach(img => {
+	                        if (!img.manualOffset) {
+	                            const offset = calcAlignOffset(img);
+	                            img.manualOffset = { x: offset.left, y: offset.top };
+	                        }
+	                        if (typeof img.manualScale !== 'number') img.manualScale = 1;
+	                        ensureManualCropRect(img);
+	                    });
+	                }
+
+	                clearBatchCropResults();
+	                renderBatchGallery();
+	            });
+
+            function renderBatchGallery() {
+                const isManual = batchState.alignMode === 'manual';
+
+                if (isManual && batchState.images.length > 0) {
+                    batchState.images.forEach(img => ensureManualCropRect(img));
+                    batchUnifiedPreviewImg.src = batchState.images[0].url;
+                    batchUnifiedOverlay.style.cssText = getManualOverlayStyle(batchState.images[0]);
+                }
+
+                batchCropGallery.innerHTML = batchState.images.map((imgData, idx) => {
+                    const overlayStyle = isManual && imgData.manualOffset
+                        ? getManualOverlayStyle(imgData)
+                        : getBatchOverlayStyle(imgData);
+                    return `
+                    <div class="batch-crop-card ${imgData.croppedUrl ? 'cropped' : ''}" data-idx="${idx}">
+                        <button class="batch-crop-card-remove" data-idx="${idx}">&times;</button>
+                        <div class="batch-crop-card-image">
+                            <img src="${imgData.croppedUrl || imgData.url}" alt="${imgData.name}">
+                            ${!imgData.croppedUrl ? `<div class="batch-crop-overlay ${isManual ? 'manual-mode' : ''}" data-idx="${idx}" style="${overlayStyle}">${isManual ? '<div class="drag-handle-dot"></div>' : ''}</div>` : ''}
+                        </div>
+                        <div class="batch-crop-card-badge">✓ Cropped</div>
+                        <div class="batch-crop-card-name">${imgData.name}</div>
+                    </div>`;
+                }).join('');
+
+                // 绑定删除按钮
+                batchCropGallery.querySelectorAll('.batch-crop-card-remove').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const idx = parseInt(btn.dataset.idx);
+                        URL.revokeObjectURL(batchState.images[idx].url);
+                        if (batchState.images[idx].croppedUrl) {
+                            URL.revokeObjectURL(batchState.images[idx].croppedUrl);
+                        }
+                        batchState.images.splice(idx, 1);
+                        renderBatchUI();
+                    });
+                });
+
+                // 手动模式：绑定拖拽
+                if (isManual) {
+                    batchCropGallery.querySelectorAll('.batch-crop-overlay.manual-mode').forEach(overlay => {
+                        bindOverlayDrag(overlay);
+                    });
+                }
+            }
+
+            // === 统一拖拽控制区交互 ===
+            function bindUnifiedDrag() {
+                let interaction = null;
+
+                const startInteraction = (clientX, clientY, mode) => {
+                    if (batchState.images.length === 0) return;
+                    interaction = {
+                        mode,
+                        startX: clientX,
+                        startY: clientY,
+                        rect: batchUnifiedPreviewBox.getBoundingClientRect(),
+                        items: batchState.images.map(img => {
+                            const box = ensureManualCropRect(img);
+                            return {
+                                img,
+                                x: box.x,
+                                y: box.y,
+                                width: box.width,
+                                height: box.height,
+                                scale: box.scale
+                            };
+                        })
+                    };
+                };
+
+                const moveInteraction = (clientX, clientY) => {
+                    if (!interaction) return;
+                    clearBatchCropResults();
+
+                    const dx = (clientX - interaction.startX) / interaction.rect.width * 100;
+                    const dy = (clientY - interaction.startY) / interaction.rect.height * 100;
+                    const delta = Math.max(dx, dy);
+
+                    interaction.items.forEach(item => {
+                        if (interaction.mode === 'resize') {
+                            const nextScale = item.scale + delta / Math.max(item.width, item.height, 1);
+                            item.img.manualScale = Math.max(MIN_BATCH_MANUAL_SCALE, Math.min(MAX_BATCH_MANUAL_SCALE, nextScale));
+                            item.img.manualOffset = {
+                                x: item.x + (item.width - getMaxCropSize(item.img).width * item.img.manualScale) / 2,
+                                y: item.y + (item.height - getMaxCropSize(item.img).height * item.img.manualScale) / 2
+                            };
+                        } else {
+                            item.img.manualOffset = { x: item.x + dx, y: item.y + dy };
+                        }
+                        ensureManualCropRect(item.img, interaction.mode === 'resize');
+                    });
+
+                    syncBatchManualOverlays();
+                };
+
+                const endInteraction = () => {
+                    interaction = null;
+                };
+
+                batchUnifiedOverlay.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    const mode = e.target.closest('.drag-handle-dot') ? 'resize' : 'move';
+                    startInteraction(e.clientX, e.clientY, mode);
+
+                    const onMove = (evt) => moveInteraction(evt.clientX, evt.clientY);
+                    const onUp = () => {
+                        endInteraction();
+                        document.removeEventListener('mousemove', onMove);
+                        document.removeEventListener('mouseup', onUp);
+                    };
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onUp);
+                });
+
+                batchUnifiedOverlay.addEventListener('touchstart', (e) => {
+                    e.stopPropagation();
+                    const touch = e.touches[0];
+                    const mode = e.target.closest('.drag-handle-dot') ? 'resize' : 'move';
+                    startInteraction(touch.clientX, touch.clientY, mode);
+
+                    const onMove = (evt) => {
+                        evt.preventDefault();
+                        const nextTouch = evt.touches[0];
+                        moveInteraction(nextTouch.clientX, nextTouch.clientY);
+                    };
+                    const onUp = () => {
+                        endInteraction();
+                        document.removeEventListener('touchmove', onMove);
+                        document.removeEventListener('touchend', onUp);
+                    };
+                    document.addEventListener('touchmove', onMove, { passive: false });
+                    document.addEventListener('touchend', onUp);
+                }, { passive: false });
+            }
+            bindUnifiedDrag();
+
+            // === 拖拽交互 ===
+            function bindOverlayDrag(overlay) {
+                const idx = parseInt(overlay.dataset.idx);
+                const imgData = batchState.images[idx];
+                if (!imgData) return;
+
+                const container = overlay.closest('.batch-crop-card-image');
+                let interaction = null;
+
+                const startInteraction = (clientX, clientY, mode) => {
+                    const box = ensureManualCropRect(imgData);
+                    interaction = {
+                        mode,
+                        startX: clientX,
+                        startY: clientY,
+                        rect: container.getBoundingClientRect(),
+                        x: box.x,
+                        y: box.y,
+                        width: box.width,
+                        height: box.height,
+                        scale: box.scale
+                    };
+                };
+
+                const moveInteraction = (clientX, clientY) => {
+                    if (!interaction) return;
+                    clearBatchCropResults();
+
+                    const dx = (clientX - interaction.startX) / interaction.rect.width * 100;
+                    const dy = (clientY - interaction.startY) / interaction.rect.height * 100;
+
+                    if (interaction.mode === 'resize') {
+                        const delta = Math.max(dx, dy);
+                        imgData.manualScale = Math.max(
+                            MIN_BATCH_MANUAL_SCALE,
+                            Math.min(MAX_BATCH_MANUAL_SCALE, interaction.scale + delta / Math.max(interaction.width, interaction.height, 1))
+                        );
+                        imgData.manualOffset = {
+                            x: interaction.x + (interaction.width - getMaxCropSize(imgData).width * imgData.manualScale) / 2,
+                            y: interaction.y + (interaction.height - getMaxCropSize(imgData).height * imgData.manualScale) / 2
+                        };
+                    } else {
+                        imgData.manualOffset = { x: interaction.x + dx, y: interaction.y + dy };
+                    }
+
+                    ensureManualCropRect(imgData, interaction.mode === 'resize');
+                    overlay.style.cssText = getManualOverlayStyle(imgData);
+
+                    if (idx === 0) {
+                        batchUnifiedOverlay.style.cssText = getManualOverlayStyle(imgData);
+                    }
+                };
+
+                const endInteraction = () => {
+                    interaction = null;
+                };
+
+                overlay.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const mode = e.target.closest('.drag-handle-dot') ? 'resize' : 'move';
+                    startInteraction(e.clientX, e.clientY, mode);
+
+                    const onMove = (evt) => moveInteraction(evt.clientX, evt.clientY);
+                    const onUp = () => {
+                        endInteraction();
+                        document.removeEventListener('mousemove', onMove);
+                        document.removeEventListener('mouseup', onUp);
+                    };
+
+                    document.addEventListener('mousemove', onMove);
+                    document.addEventListener('mouseup', onUp);
+                });
+
+                overlay.addEventListener('touchstart', (e) => {
+                    e.stopPropagation();
+                    const touch = e.touches[0];
+                    const mode = e.target.closest('.drag-handle-dot') ? 'resize' : 'move';
+                    startInteraction(touch.clientX, touch.clientY, mode);
+
+                    const onMove = (evt) => {
+                        evt.preventDefault();
+                        const nextTouch = evt.touches[0];
+                        moveInteraction(nextTouch.clientX, nextTouch.clientY);
+                    };
+
+                    const onUp = () => {
+                        endInteraction();
+                        document.removeEventListener('touchmove', onMove);
+                        document.removeEventListener('touchend', onUp);
+                    };
+
+                    document.addEventListener('touchmove', onMove, { passive: false });
+                    document.addEventListener('touchend', onUp);
+                }, { passive: false });
+            }
+
+            function getImgBounds(imgData) {
+                const imgRatio = imgData.naturalW / imgData.naturalH;
+                let w, h, offsetX, offsetY;
+                if (imgRatio > 1) {
+                    w = 100;
+                    h = 100 / imgRatio;
+                    offsetX = 0;
+                    offsetY = (100 - h) / 2;
+                } else {
+                    h = 100;
+                    w = 100 * imgRatio;
+                    offsetX = (100 - w) / 2;
+                    offsetY = 0;
+                }
+                return { w, h, offsetX, offsetY };
+            }
+
+            // === Overlay 样式计算 ===
+            function calcAlignOffset(imgData) {
+                const [rw, rh] = batchState.ratio.split(':').map(Number);
+                const targetRatio = rw / rh;
+                const bounds = getImgBounds(imgData);
+
+                let cropW, cropH;
+                const imgRatio = imgData.naturalW / imgData.naturalH;
+                if (imgRatio > targetRatio) {
+                    cropH = bounds.h;
+                    cropW = bounds.h * targetRatio;
+                } else {
+                    cropW = bounds.w;
+                    cropH = bounds.w / targetRatio;
+                }
+
+                let top, left;
+                const align = batchState.alignment;
+
+                if (align.includes('top')) {
+                    top = bounds.offsetY;
+                } else if (align.includes('bottom')) {
+                    top = bounds.offsetY + bounds.h - cropH;
+                } else {
+                    top = bounds.offsetY + (bounds.h - cropH) / 2;
+                }
+
+                if (align.includes('left')) {
+                    left = bounds.offsetX;
+                } else if (align.includes('right')) {
+                    left = bounds.offsetX + bounds.w - cropW;
+                } else {
+                    left = bounds.offsetX + (bounds.w - cropW) / 2;
+                }
+
+                return { top, left, width: cropW, height: cropH };
+            }
+
+            function getBatchOverlayStyle(imgData) {
+                const { top, left, width, height } = calcAlignOffset(imgData);
+                return `top: ${top}%; left: ${left}%; width: ${width}%; height: ${height}%;`;
+            }
+
+            function getManualOverlayStyle(imgData) {
+                const rect = ensureManualCropRect(imgData);
+                return `top: ${rect.y}%; left: ${rect.x}%; width: ${rect.width}%; height: ${rect.height}%;`;
+            }
+
+            // === 比例选择 ===
+            batchCropRatioTabs.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-ratio]');
+                if (!btn) return;
+
+                batchCropRatioTabs.querySelectorAll('.batch-ratio-tab').forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+
+                const ratioVal = btn.dataset.ratio;
+                if (ratioVal === 'custom') {
+                    batchCustomRatioWrap.style.display = 'block';
+                    // 尝试读取当前自定义输入，如没有则暂不更新
+                    updateBatchCustomRatio();
+                } else {
+                    batchCustomRatioWrap.style.display = 'none';
+                    batchState.ratio = ratioVal;
+                    refreshBatchCropState();
+                }
+            });
+
+            function updateBatchCustomRatio() {
+                const w = parseFloat(batchCustomWidth.value);
+                const h = parseFloat(batchCustomHeight.value);
+                if (w > 0 && h > 0) {
+                    batchState.ratio = `${w}:${h}`;
+                    refreshBatchCropState();
+                }
+            }
+
+            [batchCustomWidth, batchCustomHeight].forEach(input => {
+                input.addEventListener('input', () => {
+                    if (batchCropRatioTabs.querySelector('[data-ratio="custom"]').classList.contains('active')) {
+                        updateBatchCustomRatio();
+                    }
+                });
+            });
+
+            function refreshBatchCropState() {
+                clearBatchCropResults();
+                batchState.images.forEach(img => {
+                    img.manualOffset = null;
+                    img.manualScale = 1;
+                });
+                renderBatchGallery();
+            }
+
+            // === 对齐选择（快捷模式） ===
+            batchCropAlignGrid.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-align]');
+                if (!btn) return;
+                batchCropAlignGrid.querySelectorAll('.batch-align-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                batchState.alignment = btn.dataset.align;
+                clearBatchCropResults();
+                batchState.images.forEach(img => {
+                    img.manualOffset = null;
+                    img.manualScale = 1;
+                });
+                renderBatchGallery();
+            });
+
+            // === 执行批量裁切 ===
+            batchCropExecuteBtn.addEventListener('click', async () => {
+                if (batchState.images.length === 0) return;
+
+                const originalHTML = batchCropExecuteBtn.innerHTML;
+                const t = translations[currentLang]?.batchCrop || translations.zh.batchCrop;
+                batchCropExecuteBtn.innerHTML = `<span class="spinner" style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite;margin-right:6px;display:inline-block;"></span><span>${t.executing}</span>`;
+                batchCropExecuteBtn.disabled = true;
+
+                const [rw, rh] = batchState.ratio.split(':').map(Number);
+                const targetRatio = rw / rh;
+
+                for (let i = 0; i < batchState.images.length; i++) {
+                    const imgData = batchState.images[i];
+                    try {
+                        const croppedUrl = await cropSingleImage(imgData, targetRatio);
+                        imgData.croppedUrl = croppedUrl;
+                    } catch (err) {
+                        console.error(`Failed to crop ${imgData.name}:`, err);
+                    }
+                }
+
+                batchState.isCropped = true;
+                batchCropExecuteBtn.innerHTML = originalHTML;
+                batchCropExecuteBtn.disabled = false;
+
+                const successCount = batchState.images.filter(img => img.croppedUrl).length;
+                if (typeof showToast === 'function') {
+                    showToast(t.cropDone.replace('{count}', successCount));
+                }
+
+                renderBatchUI();
+            });
+
+            function cropSingleImage(imgData, targetRatio) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const w = img.naturalWidth;
+                        const h = img.naturalHeight;
+
+                        let targetW, targetH;
+                        if (w / h > targetRatio) {
+                            targetH = h;
+                            targetW = Math.round(h * targetRatio);
+                        } else {
+                            targetW = w;
+                            targetH = Math.round(w / targetRatio);
+                        }
+
+                        let offsetX, offsetY;
+
+                        if (batchState.alignMode === 'manual' && imgData.manualOffset) {
+                            const manualRect = ensureManualCropRect(imgData);
+                            const relX = (manualRect.x - manualRect.bounds.offsetX) / manualRect.bounds.w;
+                            const relY = (manualRect.y - manualRect.bounds.offsetY) / manualRect.bounds.h;
+                            const relW = manualRect.width / manualRect.bounds.w;
+                            const relH = manualRect.height / manualRect.bounds.h;
+
+                            targetW = Math.max(1, Math.round(relW * w));
+                            targetH = Math.max(1, Math.round(relH * h));
+                            offsetX = Math.round(relX * w);
+                            offsetY = Math.round(relY * h);
+                        } else {
+                            const align = batchState.alignment;
+                            if (align.includes('left')) {
+                                offsetX = 0;
+                            } else if (align.includes('right')) {
+                                offsetX = w - targetW;
+                            } else {
+                                offsetX = Math.round((w - targetW) / 2);
+                            }
+                            if (align.includes('top')) {
+                                offsetY = 0;
+                            } else if (align.includes('bottom')) {
+                                offsetY = h - targetH;
+                            } else {
+                                offsetY = Math.round((h - targetH) / 2);
+                            }
+                        }
+
+                        // 安全约束
+                        offsetX = Math.max(0, Math.min(offsetX, w - targetW));
+                        offsetY = Math.max(0, Math.min(offsetY, h - targetH));
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = targetW;
+                        canvas.height = targetH;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, offsetX, offsetY, targetW, targetH, 0, 0, targetW, targetH);
+
+                        canvas.toBlob(blob => {
+                            if (blob) {
+                                resolve(URL.createObjectURL(blob));
+                            } else {
+                                reject(new Error('Canvas toBlob failed'));
+                            }
+                        }, 'image/png');
+                    };
+                    img.onerror = reject;
+                    img.src = imgData.url;
+                });
+            }
+
+            // === 批量下载 ===
+            batchCropDownloadAll.addEventListener('click', () => {
+                batchState.images.forEach((imgData, i) => {
+                    if (!imgData.croppedUrl) return;
+                    const a = document.createElement('a');
+                    const baseName = imgData.name.replace(/\.[^.]+$/, '');
+                    a.download = `${baseName}_cropped.png`;
+                    a.href = imgData.croppedUrl;
+                    setTimeout(() => a.click(), i * 200);
+                });
+            });
+
+            // === 清空 ===
+            batchCropClearBtn.addEventListener('click', () => {
+                batchState.images.forEach(img => {
+                    URL.revokeObjectURL(img.url);
+                    if (img.croppedUrl) URL.revokeObjectURL(img.croppedUrl);
+                });
+                batchState.images = [];
+                batchState.isCropped = false;
+                renderBatchUI();
+            });
+
+        })();
     </script>
 
     <script defer src="https://cloud.umami.is/script.js"
