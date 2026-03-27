@@ -9328,16 +9328,78 @@
                 });
             }
 
+            function getBatchDownloadFolderName() {
+                const now = new Date();
+                const pad = (n) => String(n).padStart(2, '0');
+                return `batch-crop-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+            }
+
+            function sanitizeBatchFileName(name, index) {
+                const baseName = (name || `image-${index + 1}`)
+                    .replace(/\.[^.]+$/, '')
+                    .replace(/[\\/:*?"<>|]/g, '_')
+                    .trim() || `image-${index + 1}`;
+                return `${baseName}_cropped.png`;
+            }
+
+            async function downloadBatchAsFolder() {
+                const croppedImages = batchState.images.filter(img => img.croppedUrl);
+                if (croppedImages.length === 0) return;
+
+                const folderName = getBatchDownloadFolderName();
+                const parentHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                const folderHandle = await parentHandle.getDirectoryHandle(folderName, { create: true });
+
+                for (let i = 0; i < croppedImages.length; i++) {
+                    const imgData = croppedImages[i];
+                    const response = await fetch(imgData.croppedUrl);
+                    const blob = await response.blob();
+                    const fileHandle = await folderHandle.getFileHandle(sanitizeBatchFileName(imgData.name, i), { create: true });
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(blob);
+                    await writable.close();
+                }
+
+                showToast(currentLang === 'zh'
+                    ? `✅ 已保存到文件夹：${folderName}`
+                    : `✅ Saved to folder: ${folderName}`);
+            }
+
             // === 批量下载 ===
-            batchCropDownloadAll.addEventListener('click', () => {
-                batchState.images.forEach((imgData, i) => {
-                    if (!imgData.croppedUrl) return;
-                    const a = document.createElement('a');
-                    const baseName = imgData.name.replace(/\.[^.]+$/, '');
-                    a.download = `${baseName}_cropped.png`;
-                    a.href = imgData.croppedUrl;
-                    setTimeout(() => a.click(), i * 200);
-                });
+            batchCropDownloadAll.addEventListener('click', async () => {
+                const originalHTML = batchCropDownloadAll.innerHTML;
+                const t = translations[currentLang]?.batchCrop || translations.zh.batchCrop;
+
+                try {
+                    if (typeof window.showDirectoryPicker === 'function') {
+                        batchCropDownloadAll.disabled = true;
+                        batchCropDownloadAll.innerHTML = `<span class="spinner" style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 1s linear infinite;margin-right:6px;display:inline-block;"></span><span>${t.executing}</span>`;
+                        await downloadBatchAsFolder();
+                        return;
+                    }
+
+                    batchState.images.forEach((imgData, i) => {
+                        if (!imgData.croppedUrl) return;
+                        const a = document.createElement('a');
+                        a.download = sanitizeBatchFileName(imgData.name, i);
+                        a.href = imgData.croppedUrl;
+                        setTimeout(() => a.click(), i * 200);
+                    });
+
+                    showToast(currentLang === 'zh'
+                        ? '⚠️ 当前浏览器不支持文件夹写入，已回退为逐张下载'
+                        : '⚠️ Folder save is not supported in this browser, falling back to individual downloads');
+                } catch (error) {
+                    if (error?.name !== 'AbortError') {
+                        console.error('Batch download failed:', error);
+                        showToast(currentLang === 'zh'
+                            ? '❌ 批量下载失败，请重试'
+                            : '❌ Batch download failed, please try again');
+                    }
+                } finally {
+                    batchCropDownloadAll.disabled = false;
+                    batchCropDownloadAll.innerHTML = originalHTML;
+                }
             });
 
             // === 清空 ===
