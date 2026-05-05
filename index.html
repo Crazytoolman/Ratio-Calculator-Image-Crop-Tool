@@ -632,13 +632,74 @@
             box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
 
-        .custom-input-group .separator {
-            font-size: 28px;
+        .custom-ratio-swap {
+            flex: 0 0 auto;
+            width: 46px;
+            height: 46px;
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--input-bg);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .custom-ratio-swap:hover {
+            border-color: var(--border-glow);
+            background: rgba(21, 87, 95, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .custom-ratio-swap:active {
+            transform: translateY(0) scale(0.96);
+        }
+
+        .custom-ratio-swap svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.5;
+        }
+
+        .custom-crop-mode {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 14px;
+            padding: 5px;
+            border-radius: 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .custom-crop-mode-btn {
+            border: 0;
+            border-radius: 10px;
+            padding: 9px 10px;
+            font: inherit;
+            font-size: 13px;
             font-weight: 800;
-            background: var(--primary-gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--text-secondary);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .custom-crop-mode-btn:hover {
+            color: var(--text-primary);
+            background: rgba(21, 87, 95, 0.12);
+        }
+
+        .custom-crop-mode-btn.active {
+            color: #ffffff;
+            background: rgba(21, 87, 95, 0.86);
+            box-shadow: 0 10px 22px rgba(21, 87, 95, 0.18);
+        }
+
+        .dark-theme .custom-crop-mode-btn.active {
+            box-shadow: 0 12px 26px rgba(21, 87, 95, 0.32);
         }
 
         /* 预览区域 */
@@ -2462,6 +2523,16 @@
                 border-radius: 14px;
             }
 
+            .custom-input-group {
+                gap: 8px;
+            }
+
+            .custom-ratio-swap {
+                width: 42px;
+                height: 42px;
+                border-radius: 12px;
+            }
+
             .crop-canvas-wrapper {
                 border-radius: 18px;
             }
@@ -4245,9 +4316,24 @@
                         <div class="custom-input-group">
                             <input type="number" id="customWidth" data-i18n-placeholder="ratioSelect.customWidth"
                                 placeholder="宽" min="1">
-                            <span class="separator">:</span>
+                            <button type="button" class="custom-ratio-swap" id="customRatioSwapBtn"
+                                data-i18n-title="ratioSelect.swap" title="交换宽高" aria-label="交换宽高">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M7 7h10l-3-3"></path>
+                                    <path d="M17 17H7l3 3"></path>
+                                    <path d="M17 7v10"></path>
+                                    <path d="M7 17V7"></path>
+                                </svg>
+                            </button>
                             <input type="number" id="customHeight" data-i18n-placeholder="ratioSelect.customHeight"
                                 placeholder="高" min="1">
+                        </div>
+                        <div class="custom-crop-mode" id="customCropMode" role="group" aria-label="自定义裁切模式">
+                            <button type="button" class="custom-crop-mode-btn active" data-crop-mode="fixed"
+                                data-i18n="ratioSelect.fixedSize">固定尺寸</button>
+                            <button type="button" class="custom-crop-mode-btn" data-crop-mode="ratio"
+                                data-i18n="ratioSelect.ratioCrop">比例裁切</button>
                         </div>
                     </div>
                 </div>
@@ -4372,7 +4458,16 @@
                         <div class="custom-input-group">
                             <input type="number" id="opCustomWidth" data-i18n-placeholder="ratioSelect.customWidth"
                                 placeholder="宽" min="1">
-                            <span class="separator">:</span>
+                            <button type="button" class="custom-ratio-swap" id="opCustomRatioSwapBtn"
+                                data-i18n-title="ratioSelect.swap" title="交换宽高" aria-label="交换宽高">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M7 7h10l-3-3"></path>
+                                    <path d="M17 17H7l3 3"></path>
+                                    <path d="M17 7v10"></path>
+                                    <path d="M7 17V7"></path>
+                                </svg>
+                            </button>
                             <input type="number" id="opCustomHeight" data-i18n-placeholder="ratioSelect.customHeight"
                                 placeholder="高" min="1">
                         </div>
@@ -4746,7 +4841,10 @@
                     wechatCover: '微信封面',
                     custom: '自定义比例',
                     customWidth: '宽',
-                    customHeight: '高'
+                    customHeight: '高',
+                    fixedSize: '固定尺寸',
+                    ratioCrop: '比例裁切',
+                    swap: '交换宽高'
                 },
                 preview: {
                     title: '比例预览',
@@ -4906,7 +5004,10 @@
                     wechatCover: 'WeChat Cover',
                     custom: 'Custom Ratio',
                     customWidth: 'Width',
-                    customHeight: 'Height'
+                    customHeight: 'Height',
+                    fixedSize: 'Fixed Size',
+                    ratioCrop: 'Ratio Crop',
+                    swap: 'Swap width and height'
                 },
                 preview: {
                     title: 'Ratio Preview',
@@ -5100,6 +5201,7 @@
 
         // ========== 全局变量与 DOM 元素 ==========
         let currentRatio = { width: 4, height: 3 }; // 默认设为 4:3，与 UI 保持一致
+        let customCropMode = 'fixed';
         let currentUnit = 'cm'; // 默认单位为厘米
         let uploadedImage = null;
         let stitchImages = [];
@@ -5127,6 +5229,8 @@
         const ratioButtons = document.querySelectorAll('#cropRatioGroup .ratio-btn');
         const customWidthInput = document.getElementById('customWidth');
         const customHeightInput = document.getElementById('customHeight');
+        const customRatioSwapBtn = document.getElementById('customRatioSwapBtn');
+        const customCropModeButtons = document.querySelectorAll('#customCropMode [data-crop-mode]');
         const inputWidth = document.getElementById('inputWidth');
         const inputHeight = document.getElementById('inputHeight');
         const calcHeight = document.getElementById('calcHeight');
@@ -5144,6 +5248,7 @@
         const opRatioButtons = document.querySelectorAll('#opRatioGroup .ratio-btn');
         const opCustomWidthInput = document.getElementById('opCustomWidth');
         const opCustomHeightInput = document.getElementById('opCustomHeight');
+        const opCustomRatioSwapBtn = document.getElementById('opCustomRatioSwapBtn');
         const opInputWidth = document.getElementById('opInputWidth');
         const opInputHeight = document.getElementById('opInputHeight');
         const opCalcHeight = document.getElementById('opCalcHeight');
@@ -5483,6 +5588,27 @@
 
             updatePreviewBox();
             recalculate();
+            if (uploadedImage && cropContainer.style.display !== 'none') {
+                resetCropArea();
+            }
+        }
+
+        function getFixedCropTarget() {
+            if (customCropMode !== 'fixed') return null;
+            const width = Math.round(parseFloat(customWidthInput.value));
+            const height = Math.round(parseFloat(customHeightInput.value));
+            if (width > 0 && height > 0) {
+                return { width, height };
+            }
+            return null;
+        }
+
+        function getCropOutputSize(actualWidth, actualHeight) {
+            const fixedTarget = getFixedCropTarget();
+            if (fixedTarget) {
+                return fixedTarget;
+            }
+            return { width: actualWidth, height: actualHeight };
         }
 
         function updatePreviewBox() {
@@ -5511,6 +5637,38 @@
                 updateRatio(width, height);
             });
         });
+
+        function setCustomCropMode(mode, shouldResetCrop = true) {
+            customCropMode = mode === 'ratio' ? 'ratio' : 'fixed';
+            customCropModeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.cropMode === customCropMode);
+            });
+            if (shouldResetCrop && uploadedImage && cropContainer.style.display !== 'none') {
+                resetCropArea();
+            }
+        }
+
+        customCropModeButtons.forEach(btn => {
+            btn.addEventListener('click', () => setCustomCropMode(btn.dataset.cropMode));
+        });
+
+        if (customRatioSwapBtn) {
+            customRatioSwapBtn.addEventListener('click', () => {
+                const width = customWidthInput.value;
+                const height = customHeightInput.value;
+                if (!width && !height) return;
+
+                customWidthInput.value = height;
+                customHeightInput.value = width;
+
+                const nextW = parseFloat(customWidthInput.value);
+                const nextH = parseFloat(customHeightInput.value);
+                if (nextW > 0 && nextH > 0) {
+                    ratioButtons.forEach(btn => btn.classList.remove('active'));
+                    updateRatio(nextW, nextH);
+                }
+            });
+        }
 
         [customWidthInput, customHeightInput].forEach(input => {
             input.addEventListener('input', () => {
@@ -5599,6 +5757,24 @@
                 opUpdateRatio(width, height);
             });
         });
+
+        if (opCustomRatioSwapBtn) {
+            opCustomRatioSwapBtn.addEventListener('click', () => {
+                const width = opCustomWidthInput.value;
+                const height = opCustomHeightInput.value;
+                if (!width && !height) return;
+
+                opCustomWidthInput.value = height;
+                opCustomHeightInput.value = width;
+
+                const nextW = parseFloat(opCustomWidthInput.value);
+                const nextH = parseFloat(opCustomHeightInput.value);
+                if (nextW > 0 && nextH > 0) {
+                    opRatioButtons.forEach(btn => btn.classList.remove('active'));
+                    opUpdateRatio(nextW, nextH);
+                }
+            });
+        }
 
         [opCustomWidthInput, opCustomHeightInput].forEach(input => {
             input.addEventListener('input', () => {
@@ -6693,6 +6869,7 @@
                 calcHeight: calcHeight.value,
                 customWidth: customWidthInput.value,
                 customHeight: customHeightInput.value,
+                customCropMode,
                 cropData: { ...cropData },
                 cropImageDataURL: getCropImageDataURL(), // 内部已使用 canvas 转换
                 // 拼接模式数据
@@ -6742,6 +6919,9 @@
             if (calcHeight) calcHeight.value = config.calcHeight || '';
             if (customWidthInput) customWidthInput.value = config.customWidth || '';
             if (customHeightInput) customHeightInput.value = config.customHeight || '';
+            if (typeof setCustomCropMode === 'function') {
+                setCustomCropMode(config.customCropMode || 'fixed', false);
+            }
 
             if (config.currentRatio) {
                 currentRatio = config.currentRatio;
@@ -6770,7 +6950,7 @@
                         else btn.classList.remove('active');
                     });
                 }
-                if (typeof updateOpRatio === 'function') updateOpRatio(opCurrentRatio.width, opCurrentRatio.height);
+                if (typeof opUpdateRatio === 'function') opUpdateRatio(opCurrentRatio.width, opCurrentRatio.height);
             }
 
             // ⚠️ 核心触发：手动调用计算函数，确保 1344x576 这种数值在后台生效
@@ -7139,9 +7319,19 @@
             const ratio = currentRatio.width / currentRatio.height;
             const canvasW = cropCanvas.width;
             const canvasH = cropCanvas.height;
+            const fixedTarget = getFixedCropTarget();
 
             let width, height;
-            if (canvasW / ratio <= canvasH) {
+            if (fixedTarget) {
+                width = fixedTarget.width * canvasScale;
+                height = fixedTarget.height * canvasScale;
+
+                if (width > canvasW || height > canvasH) {
+                    const fitScale = Math.min(canvasW / width, canvasH / height);
+                    width *= fitScale;
+                    height *= fitScale;
+                }
+            } else if (canvasW / ratio <= canvasH) {
                 width = canvasW;
                 height = width / ratio; // Use width to calculate height based on ratio
             } else {
@@ -7190,10 +7380,11 @@
         function updateCropInfo() {
             const actualWidth = Math.round(cropData.width / canvasScale);
             const actualHeight = Math.round(cropData.height / canvasScale);
-            cropSizeElem.textContent = `${actualWidth} × ${actualHeight}`;
-            const gcd = getGCD(actualWidth, actualHeight);
-            const ratioW = actualWidth / gcd;
-            const ratioH = actualHeight / gcd;
+            const outputSize = getCropOutputSize(actualWidth, actualHeight);
+            cropSizeElem.textContent = `${outputSize.width} × ${outputSize.height}`;
+            const gcd = getGCD(outputSize.width, outputSize.height);
+            const ratioW = outputSize.width / gcd;
+            const ratioH = outputSize.height / gcd;
             cropRatioElem.textContent = `${ratioW}:${ratioH}`;
         }
 
@@ -7249,6 +7440,7 @@
                 cropData.y = Math.max(0, Math.min(pt.y - dragStart.y, cropCanvas.height - cropData.height));
                 updateCropBox();
             } else if (isResizing && currentHandle) {
+                if (getFixedCropTarget()) return;
                 const dx = pt.x - dragStart.x;
                 const dy = pt.y - dragStart.y;
                 const ratio = currentRatio.width / currentRatio.height;
@@ -7488,27 +7680,27 @@
             const actualH = Math.round(cropData.height / canvasScale);
             const actualX = Math.round(cropData.x / canvasScale);
             const actualY = Math.round(cropData.y / canvasScale);
+            const outputSize = getCropOutputSize(actualW, actualH);
             const borderRadius = parseInt(borderRadiusSlider.value);
-            const actualRadius = borderRadius / canvasScale;
+            const actualRadius = actualW > 0 ? (borderRadius / canvasScale) * (outputSize.width / actualW) : 0;
 
-            resultCanvas.width = actualW;
-            resultCanvas.height = actualH;
+            resultCanvas.width = outputSize.width;
+            resultCanvas.height = outputSize.height;
             const resCtx = resultCanvas.getContext('2d');
-            resCtx.clearRect(0, 0, actualW, actualH);
+            resCtx.clearRect(0, 0, outputSize.width, outputSize.height);
 
             if (borderRadius > 0) {
                 resCtx.beginPath();
                 resCtx.moveTo(actualRadius, 0);
-                resCtx.arcTo(actualW, 0, actualW, actualH, actualRadius);
-                resCtx.arcTo(actualW, actualH, 0, actualH, actualRadius);
-                resCtx.arcTo(0, actualH, 0, 0, actualRadius);
-                resCtx.arcTo(0, 0, actualW, 0, actualRadius);
+                resCtx.arcTo(outputSize.width, 0, outputSize.width, outputSize.height, actualRadius);
+                resCtx.arcTo(outputSize.width, outputSize.height, 0, outputSize.height, actualRadius);
+                resCtx.arcTo(0, outputSize.height, 0, 0, actualRadius);
+                resCtx.arcTo(0, 0, outputSize.width, 0, actualRadius);
                 resCtx.closePath();
                 resCtx.clip();
             }
 
             resCtx.save();
-            resCtx.translate(-actualX, -actualY);
             const rotatedCanvas = document.createElement('canvas');
             const rad = currentRotation * Math.PI / 180;
             const absCos = Math.abs(Math.cos(rad));
@@ -7521,7 +7713,17 @@
             bctx.translate(bw / 2, bh / 2);
             bctx.rotate(rad);
             bctx.drawImage(uploadedImage, -uploadedImage.width / 2, -uploadedImage.height / 2);
-            resCtx.drawImage(rotatedCanvas, 0, 0);
+            resCtx.drawImage(
+                rotatedCanvas,
+                actualX,
+                actualY,
+                actualW,
+                actualH,
+                0,
+                0,
+                outputSize.width,
+                outputSize.height
+            );
             resCtx.restore();
 
             cropContainer.style.display = 'none';
