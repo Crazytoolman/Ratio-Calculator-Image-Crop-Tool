@@ -20,11 +20,16 @@ An elegant, modern online tool integrating **Aspect Ratio Calculation**, **Image
 ### 📐 Smart Ratio Calculator
 - **Common Presets**: One-click selection for 16:9, 4:3, 1:1, 9:16 (Portrait), and more.
 - **Custom Calculation**: Input width or height to automatically calculate the other, or input resolution to calculate the ratio.
+- **One-click Width/Height Swap**: Quickly swap custom dimensions, for example from `768 × 1024` to `1024 × 768`.
 - **Dynamic Preview**: Real-time visual preview box to intuitively feel the shape differences of various ratios.
 
 ### ✂️ Powerful Image Cropping
 - **Versatile Uploads**: Supports click-to-upload, drag-and-drop, and **Ctrl+V paste**.
 - **Smart Cropping**: LockAspectRatio cropping (supports 1:1, 16:9, etc.) or freeform adjustment.
+- **Custom Crop Modes**:
+  - **Fixed Size**: When entering a custom target such as `768 × 1024`, the crop info and exported PNG strictly preserve that exact output size.
+  - **Ratio Crop**: Treat custom input as an aspect ratio and freely resize the crop box while keeping the ratio locked.
+  - **Width/Height Swap**: Swap custom width and height with one click, syncing the preview, crop box, and export target.
 - **Border Radius Control**:
   - **Edge Dragging**: Intuitively adjust radius using arrow indicators on all four edges.
   - **Precise Control**: Supports slider adjustment and precise numeric input.
@@ -48,6 +53,7 @@ An elegant, modern online tool integrating **Aspect Ratio Calculation**, **Image
 
 ### 🖼️ Outpainting Base (New!)
 - **Smart Base Generation**: One-click generation of pure green (#00FF00) canvases in 4:3, 16:9, or custom ratios using the integrated calculator.
+- **Custom Ratio Swap**: The outpainting base panel also supports one-click width/height swapping, making it quick to switch between portrait and landscape bases.
 - **Multi-layer Interaction**: Add images via click, paste, or drag-and-drop to create custom layouts.
 - **Precision Controls**: Freely move, scale, and rotate floating images for professional layer management.
 - **Seamless Export**: Download or copy results directly, perfectly integrated with AI creators like Draw Things.
