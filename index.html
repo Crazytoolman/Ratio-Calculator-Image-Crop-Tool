@@ -3869,6 +3869,22 @@
                                 </svg></span>
                             <span data-i18n="outpainting.resetRotationBtn">恢复水平</span>
                         </button>
+                        <button class="crop-action-btn crop-btn-secondary" id="fillWidthBtn">
+                            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    style="margin-right: 6px;">
+                                    <path d="M2 12h20M5 3v18M19 3v18M2 12l3-3M2 12l3 3M22 12l-3-3M22 12l-3 3"></path>
+                                </svg></span>
+                            <span data-i18n="outpainting.fillWidthBtn">填充宽度</span>
+                        </button>
+                        <button class="crop-action-btn crop-btn-secondary" id="fillHeightBtn">
+                            <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                                    style="margin-right: 6px;">
+                                    <path d="M12 2v20M3 5h18M3 19h18M12 2l-3 3M12 2l3 3M12 22l-3-3M12 22l3 3"></path>
+                                </svg></span>
+                            <span data-i18n="outpainting.fillHeightBtn">填充高度</span>
+                        </button>
                         <button class="crop-action-btn crop-btn-success" id="confirmOutpaintingBtn">
                             <span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                     stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
@@ -4890,7 +4906,9 @@
                     cancelBtn: '取消合成',
                     copied: '已复制到剪贴板！',
                     pasteBtn: '粘贴图片',
-                    resetRotationBtn: '恢复水平'
+                    resetRotationBtn: '恢复水平',
+                    fillWidthBtn: '填充宽度',
+                    fillHeightBtn: '填充高度'
                 },
                 batchCrop: {
                     uploadText: '点击上传或拖拽多张图片到这里',
@@ -5053,7 +5071,9 @@
                     cancelBtn: 'Cancel Merge',
                     copied: 'Copied to clipboard!',
                     pasteBtn: 'Paste Image',
-                    resetRotationBtn: 'Reset Rotation'
+                    resetRotationBtn: 'Reset Rotation',
+                    fillWidthBtn: 'Fill Width',
+                    fillHeightBtn: 'Fill Height'
                 },
                 batchCrop: {
                     uploadText: 'Click to upload or drag multiple images here',
@@ -8148,6 +8168,80 @@
             });
         }
 
+        // 填充宽度按钮点击事件
+        const fillWidthBtn = document.getElementById('fillWidthBtn');
+        if (fillWidthBtn) {
+            fillWidthBtn.addEventListener('click', () => {
+                const activeItem = document.querySelector('.outpainting-item.active');
+                if (activeItem) {
+                    const imgEl = activeItem.querySelector('img');
+                    const wrapper = document.getElementById('outpaintingWrapper');
+                    if (imgEl && wrapper) {
+                        const wrapperW = parseFloat(wrapper.style.width);
+                        const wrapperH = parseFloat(wrapper.style.height);
+                        const imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
+                        
+                        const newW = wrapperW;
+                        const newH = newW / imgRatio;
+                        
+                        activeItem.style.width = `${newW}px`;
+                        activeItem.style.height = `${newH}px`;
+                        activeItem.style.left = '0px';
+                        activeItem.style.top = `${(wrapperH - newH) / 2}px`;
+                        
+                        // 设置锁定方向为 Y 轴 (允许上下拖动)
+                        activeItem.dataset.lockDir = 'y';
+                        
+                        // 重置旋转
+                        activeItem.dataset.rotation = 0;
+                        activeItem.style.transform = 'rotate(0deg)';
+                        updateOutpaintingCursors(activeItem);
+                        
+                        showToast(currentLang === 'zh' ? '✅ 已填充宽度，支持上下移动' : '✅ Filled width, supports vertical movement');
+                    }
+                } else {
+                    showToast(currentLang === 'zh' ? '⚠️ 请先选中一张图片' : '⚠️ Please select an image first');
+                }
+            });
+        }
+
+        // 填充高度按钮点击事件
+        const fillHeightBtn = document.getElementById('fillHeightBtn');
+        if (fillHeightBtn) {
+            fillHeightBtn.addEventListener('click', () => {
+                const activeItem = document.querySelector('.outpainting-item.active');
+                if (activeItem) {
+                    const imgEl = activeItem.querySelector('img');
+                    const wrapper = document.getElementById('outpaintingWrapper');
+                    if (imgEl && wrapper) {
+                        const wrapperW = parseFloat(wrapper.style.width);
+                        const wrapperH = parseFloat(wrapper.style.height);
+                        const imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
+                        
+                        const newH = wrapperH;
+                        const newW = newH * imgRatio;
+                        
+                        activeItem.style.width = `${newW}px`;
+                        activeItem.style.height = `${newH}px`;
+                        activeItem.style.left = `${(wrapperW - newW) / 2}px`;
+                        activeItem.style.top = '0px';
+                        
+                        // 设置锁定方向为 X 轴 (允许左右拖动)
+                        activeItem.dataset.lockDir = 'x';
+                        
+                        // 重置旋转
+                        activeItem.dataset.rotation = 0;
+                        activeItem.style.transform = 'rotate(0deg)';
+                        updateOutpaintingCursors(activeItem);
+                        
+                        showToast(currentLang === 'zh' ? '✅ 已填充高度，支持左右移动' : '✅ Filled height, supports horizontal movement');
+                    }
+                } else {
+                    showToast(currentLang === 'zh' ? '⚠️ 请先选中一张图片' : '⚠️ Please select an image first');
+                }
+            });
+        }
+
         if (outpaintingInput) {
             outpaintingInput.addEventListener('change', (e) => {
                 if (e.target.files && e.target.files[0]) {
@@ -8230,19 +8324,16 @@
             img.src = URL.createObjectURL(file);
             img.onload = () => {
                 const wrapper = document.getElementById('outpaintingWrapper');
-                // 初始大小：如果图片太大，缩放到 wrapper 的 80%
-                let displayW = img.width;
-                let displayH = img.height;
-
                 const wrapperW = parseFloat(wrapper.style.width);
                 const wrapperH = parseFloat(wrapper.style.height);
 
-                // 简单的自适应初始大小
-                if (displayW > wrapperW * 0.8) {
-                    const ratio = (wrapperW * 0.8) / displayW;
-                    displayW *= ratio;
-                    displayH *= ratio;
-                }
+                // 默认满屏对齐底板且保留完整比例 (contain)
+                const scaleX = wrapperW / img.width;
+                const scaleY = wrapperH / img.height;
+                const scale = Math.min(scaleX, scaleY);
+
+                let displayW = img.width * scale;
+                let displayH = img.height * scale;
 
                 // 创建包装容器
                 const itemWrapper = document.createElement('div');
@@ -8297,6 +8388,8 @@
 
                 if (e.target.classList.contains('op-handle')) {
                     const hType = e.target.dataset.handle;
+                    // 清除方向锁定
+                    delete el.dataset.lockDir;
                     if (hType === 'rot') {
                         // 开始旋转
                         isRotatingOutpainting = true;
@@ -8335,6 +8428,7 @@
             // 滚轮缩放同步适配 Wrapper 尺寸
             el.addEventListener('wheel', (e) => {
                 e.preventDefault();
+                delete el.dataset.lockDir; // 清除方向锁定
                 const scaleFactor = e.deltaY > 0 ? 0.95 : 1.05;
                 const currentW = parseFloat(el.style.width);
                 const currentH = parseFloat(el.style.height);
@@ -8373,6 +8467,7 @@
                 // 双指手势：缩放和旋转
                 if (e.touches.length === 2 && !e.target.classList.contains('op-handle')) {
                     isGesturing = true;
+                    delete el.dataset.lockDir; // 清除方向锁定
                     const touch1 = e.touches[0];
                     const touch2 = e.touches[1];
 
@@ -8402,6 +8497,7 @@
 
                     if (e.target.classList.contains('op-handle')) {
                         const hType = e.target.dataset.handle;
+                        delete el.dataset.lockDir; // 清除方向锁定
                         if (hType === 'rot') {
                             // 开始旋转
                             isRotatingOutpainting = true;
@@ -8541,8 +8637,18 @@
             if (isDraggingOutpainting && activeOutpaintingImg) {
                 const dx = clientX - dragOutpaintingStartX;
                 const dy = clientY - dragOutpaintingStartY;
-                activeOutpaintingImg.style.left = `${imgOutpaintingStartX + dx}px`;
-                activeOutpaintingImg.style.top = `${imgOutpaintingStartY + dy}px`;
+                
+                const lockDir = activeOutpaintingImg.dataset.lockDir;
+                if (lockDir === 'y') {
+                    activeOutpaintingImg.style.left = '0px';
+                    activeOutpaintingImg.style.top = `${imgOutpaintingStartY + dy}px`;
+                } else if (lockDir === 'x') {
+                    activeOutpaintingImg.style.left = `${imgOutpaintingStartX + dx}px`;
+                    activeOutpaintingImg.style.top = '0px';
+                } else {
+                    activeOutpaintingImg.style.left = `${imgOutpaintingStartX + dx}px`;
+                    activeOutpaintingImg.style.top = `${imgOutpaintingStartY + dy}px`;
+                }
                 // 拖动时实时调整旋转手柄位置
                 adjustRotationHandlePosition(activeOutpaintingImg);
             } else if (isRotatingOutpainting && activeOutpaintingImg) {
