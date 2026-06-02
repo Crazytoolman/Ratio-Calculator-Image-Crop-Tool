@@ -3451,6 +3451,90 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
         }
 
+        .outpainting-align-panel {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr);
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            margin-top: 18px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background: var(--preview-bg);
+        }
+
+        .outpainting-align-label {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .outpainting-align-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .outpainting-align-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-width: 0;
+            height: 42px;
+            padding: 0 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(44, 138, 135, 0.86) 0%, rgba(32, 110, 108, 0.86) 100%);
+            color: #fff;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            line-height: 1;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .outpainting-align-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(32, 110, 108, 0.2);
+            background: linear-gradient(135deg, rgba(49, 151, 148, 0.95) 0%, rgba(34, 124, 121, 0.95) 100%);
+        }
+
+        .outpainting-align-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .outpainting-align-btn svg {
+            width: 16px;
+            height: 16px;
+            flex: 0 0 auto;
+        }
+
+        @media (max-width: 640px) {
+            .outpainting-align-panel {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .outpainting-align-label {
+                text-align: center;
+            }
+
+            .outpainting-align-grid {
+                gap: 7px;
+            }
+
+            .outpainting-align-btn {
+                height: 40px;
+                padding: 0 6px;
+                gap: 4px;
+                font-size: 12px;
+            }
+        }
+
         /* 针对不同颜色主题按钮的微渐变背景 */
         .outpainting-actions-grid .crop-btn-primary {
             background: linear-gradient(135deg, rgba(20, 92, 102, 0.95) 0%, rgba(12, 68, 77, 0.95) 100%) !important;
@@ -3931,6 +4015,52 @@
                                     </svg>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="outpainting-align-panel" aria-label="扩图底板对齐工具">
+                        <div class="outpainting-align-label" data-i18n="outpainting.alignLabel">对齐边缘</div>
+                        <div class="outpainting-align-grid">
+                            <button class="outpainting-align-btn" type="button" data-outpainting-align="top"
+                                data-i18n-title="outpainting.alignTop">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 5h16"></path>
+                                    <path d="M12 20V9"></path>
+                                    <path d="M7 14l5-5 5 5"></path>
+                                </svg>
+                                <span data-i18n="outpainting.alignTop">顶部</span>
+                            </button>
+                            <button class="outpainting-align-btn" type="button" data-outpainting-align="bottom"
+                                data-i18n-title="outpainting.alignBottom">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M4 19h16"></path>
+                                    <path d="M12 4v11"></path>
+                                    <path d="M7 10l5 5 5-5"></path>
+                                </svg>
+                                <span data-i18n="outpainting.alignBottom">底部</span>
+                            </button>
+                            <button class="outpainting-align-btn" type="button" data-outpainting-align="left"
+                                data-i18n-title="outpainting.alignLeft">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 4v16"></path>
+                                    <path d="M20 12H9"></path>
+                                    <path d="M14 7l-5 5 5 5"></path>
+                                </svg>
+                                <span data-i18n="outpainting.alignLeft">左侧</span>
+                            </button>
+                            <button class="outpainting-align-btn" type="button" data-outpainting-align="right"
+                                data-i18n-title="outpainting.alignRight">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M19 4v16"></path>
+                                    <path d="M4 12h11"></path>
+                                    <path d="M10 7l5 5-5 5"></path>
+                                </svg>
+                                <span data-i18n="outpainting.alignRight">右侧</span>
+                            </button>
                         </div>
                     </div>
 
@@ -4993,7 +5123,12 @@
                     pasteBtn: '粘贴图片',
                     resetRotationBtn: '恢复水平',
                     fillWidthBtn: '填充宽度',
-                    fillHeightBtn: '填充高度'
+                    fillHeightBtn: '填充高度',
+                    alignLabel: '对齐边缘',
+                    alignTop: '顶部',
+                    alignBottom: '底部',
+                    alignLeft: '左侧',
+                    alignRight: '右侧'
                 },
                 batchCrop: {
                     uploadText: '点击上传或拖拽多张图片到这里',
@@ -5158,7 +5293,12 @@
                     pasteBtn: 'Paste Image',
                     resetRotationBtn: 'Reset Rotation',
                     fillWidthBtn: 'Fill Width',
-                    fillHeightBtn: 'Fill Height'
+                    fillHeightBtn: 'Fill Height',
+                    alignLabel: 'Align Edge',
+                    alignTop: 'Top',
+                    alignBottom: 'Bottom',
+                    alignLeft: 'Left',
+                    alignRight: 'Right'
                 },
                 batchCrop: {
                     uploadText: 'Click to upload or drag multiple images here',
@@ -8326,6 +8466,53 @@
                 }
             });
         }
+
+        function alignActiveOutpaintingItem(edge) {
+            const activeItem = document.querySelector('.outpainting-item.active');
+            const wrapper = document.getElementById('outpaintingWrapper');
+
+            if (!activeItem) {
+                showToast(currentLang === 'zh' ? '⚠️ 请先选中一张图片' : '⚠️ Please select an image first');
+                return;
+            }
+
+            if (!wrapper) return;
+
+            const wrapperW = parseFloat(wrapper.style.width);
+            const wrapperH = parseFloat(wrapper.style.height);
+            const itemW = parseFloat(activeItem.style.width);
+            const itemH = parseFloat(activeItem.style.height);
+
+            if (!Number.isFinite(wrapperW) || !Number.isFinite(wrapperH) || !Number.isFinite(itemW) || !Number.isFinite(itemH)) {
+                return;
+            }
+
+            if (edge === 'top') {
+                activeItem.style.top = '0px';
+            } else if (edge === 'bottom') {
+                activeItem.style.top = `${wrapperH - itemH}px`;
+            } else if (edge === 'left') {
+                activeItem.style.left = '0px';
+            } else if (edge === 'right') {
+                activeItem.style.left = `${wrapperW - itemW}px`;
+            }
+
+            adjustRotationHandlePosition(activeItem);
+
+            const labelMap = {
+                top: currentLang === 'zh' ? '顶部' : 'top',
+                bottom: currentLang === 'zh' ? '底部' : 'bottom',
+                left: currentLang === 'zh' ? '左侧' : 'left',
+                right: currentLang === 'zh' ? '右侧' : 'right'
+            };
+            showToast(currentLang === 'zh' ? `✅ 已对齐${labelMap[edge]}` : `✅ Aligned to ${labelMap[edge]}`);
+        }
+
+        document.querySelectorAll('[data-outpainting-align]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                alignActiveOutpaintingItem(btn.dataset.outpaintingAlign);
+            });
+        });
 
         if (outpaintingInput) {
             outpaintingInput.addEventListener('change', (e) => {
