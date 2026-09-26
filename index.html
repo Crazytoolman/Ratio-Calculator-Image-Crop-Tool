@@ -3446,9 +3446,191 @@
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25) !important;
         }
 
-        .outpainting-actions-grid .crop-action-btn:active {
-            transform: translateY(0) scale(0.98) !important;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15) !important;
+        .outpainting-controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 0 auto;
+        }
+
+        .outpainting-size-badge {
+            display: inline-flex;
+            align-items: center;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: var(--preview-bg);
+            padding: 7px 16px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            white-space: nowrap;
+        }
+
+        .outpainting-color-bar {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--preview-bg);
+            padding: 6px 14px;
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .outpainting-color-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .outpainting-color-presets {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .op-preset-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border-color);
+            background: var(--input-bg);
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            line-height: 1.2;
+        }
+
+        .op-preset-btn:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-1px);
+        }
+
+        .op-preset-btn.active {
+            border-color: #20b2aa;
+            background: rgba(32, 178, 170, 0.12);
+            color: #12807a;
+            font-weight: 700;
+            box-shadow: 0 0 0 1px #20b2aa;
+        }
+
+        .dark-theme .op-preset-btn.active {
+            border-color: #20b2aa;
+            background: rgba(32, 178, 170, 0.22);
+            color: #48d1cc;
+            box-shadow: 0 0 0 1px #20b2aa;
+        }
+
+        .op-preset-dot {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            flex-shrink: 0;
+        }
+
+        .outpainting-custom-color {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .op-color-picker-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            cursor: pointer;
+            border-radius: 50%;
+            padding: 0;
+            margin: 0;
+        }
+
+        .op-color-picker-btn input[type="color"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            border: none;
+            padding: 0;
+        }
+
+        .op-color-preview-circle {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1.5px var(--border-color), 0 2px 4px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            pointer-events: none;
+        }
+
+        .op-color-picker-btn:hover .op-color-preview-circle {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 2px var(--border-glow), 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .op-hex-field {
+            display: inline-flex;
+            align-items: center;
+            background: var(--input-bg);
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2px 6px;
+            transition: all 0.2s ease;
+        }
+
+        .op-hex-field:focus-within {
+            border-color: var(--border-glow);
+            box-shadow: 0 0 0 2px rgba(32, 178, 170, 0.15);
+        }
+
+        .op-hex-hash {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            user-select: none;
+            margin-right: 2px;
+        }
+
+        .op-hex-field input {
+            width: 62px;
+            border: none;
+            outline: none;
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 12px;
+            font-weight: 700;
+            font-family: monospace, ui-monospace, sans-serif;
+            text-transform: uppercase;
+            padding: 2px 0;
+        }
+
+        @media (max-width: 640px) {
+            .outpainting-controls-bar {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .outpainting-color-bar {
+                border-radius: 16px;
+                padding: 8px 12px;
+            }
         }
 
         .outpainting-align-panel {
@@ -3982,20 +4164,43 @@
                 <!-- 扩图底板区域 -->
                 <div class="outpainting-container" id="outpaintingContainer" style="display: none;">
                     <div class="outpainting-toolbar" style="margin-bottom: 20px; text-align: center;">
-                        <div class="outpainting-hint-top" style="margin-bottom: 12px; animation: fadeIn 0.8s ease;">
+                        <div class="outpainting-hint-top" style="margin-bottom: 14px; animation: fadeIn 0.8s ease;">
                             <div class="placeholder-text" data-i18n="outpainting.placeholderText"
                                 style="font-size: 19px; font-weight: 800; color: var(--text-primary); margin-bottom: 6px;">
                                 点击上传、粘贴或拖拽图片</div>
                             <div class="placeholder-hint" data-i18n="outpainting.placeholderHint"
                                 style="font-size: 13px; color: var(--text-secondary); line-height: 1.4; font-weight: 500;">
-                                图片将悬浮于绿色底板上，支持自由拖拽、缩放与多图层操作</div>
+                                图片将悬浮于底板背景上，支持自由拖拽、缩放与多图层操作</div>
                         </div>
-                        <span
-                            style="font-weight: 600; font-size: 14px; color: var(--text-secondary); background: var(--preview-bg); padding: 6px 16px; border-radius: 50px; border: 1px solid var(--border-color);">
-                            <span data-i18n="outpainting.sizeLabel">底板尺寸:</span>
-                            <span id="outpaintingSizeDisplay" style="color: var(--text-primary); margin-left: 4px;">-- x
-                                --</span>
-                        </span>
+                        <div class="outpainting-controls-bar">
+                            <div class="outpainting-size-badge">
+                                <span data-i18n="outpainting.sizeLabel">底板尺寸:</span>
+                                <span id="outpaintingSizeDisplay" style="color: var(--text-primary); margin-left: 4px; font-weight: 700;">-- x --</span>
+                            </div>
+                            <div class="outpainting-color-bar">
+                                <span class="outpainting-color-label" data-i18n="outpainting.colorLabel">底板颜色:</span>
+                                <div class="outpainting-color-presets">
+                                    <button type="button" class="op-preset-btn active" data-color="#00FF00" id="opPresetGreen" title="纯绿 #00FF00">
+                                        <span class="op-preset-dot" style="background-color: #00FF00;"></span>
+                                        <span data-i18n="outpainting.greenPreset">纯绿</span>
+                                    </button>
+                                    <button type="button" class="op-preset-btn" data-color="#808080" id="opPresetGray" title="Flat Gray #808080">
+                                        <span class="op-preset-dot" style="background-color: #808080;"></span>
+                                        <span data-i18n="outpainting.grayPreset">Flat Gray</span>
+                                    </button>
+                                </div>
+                                <div class="outpainting-custom-color">
+                                    <label class="op-color-picker-btn" title="选择自定义颜色" data-i18n-title="outpainting.pickerTooltip">
+                                        <input type="color" id="outpaintingColorPicker" value="#00FF00">
+                                        <span class="op-color-preview-circle" id="outpaintingColorPreview" style="background-color: #00FF00;"></span>
+                                    </label>
+                                    <div class="op-hex-field">
+                                        <span class="op-hex-hash">#</span>
+                                        <input type="text" id="outpaintingHexInput" value="00FF00" maxlength="7" spellcheck="false" autocomplete="off" placeholder="00FF00" aria-label="HEX color code">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="outpainting-canvas-wrapper" id="outpaintingWrapper"
@@ -5113,7 +5318,11 @@
                 outpainting: {
                     sizeLabel: '底板尺寸 (基于比例计算器):',
                     placeholderText: '点击上传、粘贴或拖拽图片',
-                    placeholderHint: '图片将悬浮于绿色底板上，支持自由拖拽、缩放与多图层操作',
+                    placeholderHint: '图片将悬浮于底板背景上，支持自由拖拽、缩放与多图层操作',
+                    colorLabel: '底板颜色:',
+                    greenPreset: '纯绿',
+                    grayPreset: 'Flat Gray',
+                    pickerTooltip: '选择自定义颜色',
                     confirmBtn: '确认合成',
                     downloadBtn: '下载结果',
                     copyBtn: '复制图片',
@@ -5283,7 +5492,11 @@
                 outpainting: {
                     sizeLabel: 'Base Size (Based on Calculator):',
                     placeholderText: 'Click to upload, paste, or drag image',
-                    placeholderHint: 'Floating on green background; supports dragging, scaling & multiple layers',
+                    placeholderHint: 'Floating on canvas background; supports dragging, scaling & multiple layers',
+                    colorLabel: 'Canvas Color:',
+                    greenPreset: 'Pure Green',
+                    grayPreset: 'Flat Gray',
+                    pickerTooltip: 'Select custom color',
                     confirmBtn: 'Confirm Composition',
                     downloadBtn: 'Download Result',
                     copyBtn: 'Copy Image',
@@ -8116,6 +8329,7 @@
         let outpaintingInitialRotation = 0;
         let outpaintingCenterX = 0;
         let outpaintingCenterY = 0;
+        let outpaintingBgColor = '#00FF00'; // 扩图底板背景颜色，默认纯绿
 
         // 初始化 Tab 切换
         toolTabs.forEach(tab => {
@@ -8230,14 +8444,127 @@
             });
         });
 
+        // 标准化十六进制颜色字符串
+        function normalizeHexColor(input) {
+            if (!input) return null;
+            let hex = input.trim();
+            if (hex.startsWith('#')) hex = hex.substring(1);
+            if (hex.length === 3) {
+                hex = hex.split('').map(c => c + c).join('');
+            }
+            if (hex.length === 6 && /^[0-9A-Fa-f]{6}$/.test(hex)) {
+                return '#' + hex.toUpperCase();
+            }
+            return null;
+        }
+
+        // 设置底板背景颜色
+        function setOutpaintingBgColor(newColor, source) {
+            const validHex = normalizeHexColor(newColor);
+            if (!validHex) return false;
+
+            outpaintingBgColor = validHex;
+
+            // 1. 同步 Color Picker 与预览圆圈
+            const colorPicker = document.getElementById('outpaintingColorPicker');
+            const colorPreview = document.getElementById('outpaintingColorPreview');
+            const hexInput = document.getElementById('outpaintingHexInput');
+
+            if (colorPicker && colorPicker.value.toUpperCase() !== validHex) {
+                colorPicker.value = validHex;
+            }
+            if (colorPreview) {
+                colorPreview.style.backgroundColor = validHex;
+            }
+            if (hexInput && source !== 'hexInput') {
+                hexInput.value = validHex.substring(1);
+            }
+
+            // 2. 更新预设按钮的高亮状态
+            const presetBtns = document.querySelectorAll('.op-preset-btn');
+            presetBtns.forEach(btn => {
+                const btnColor = (btn.dataset.color || '').toUpperCase();
+                if (btnColor === validHex) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // 3. 更新 Wrapper 背景色
+            const wrapper = document.getElementById('outpaintingWrapper');
+            if (wrapper) {
+                wrapper.style.backgroundColor = validHex;
+            }
+
+            // 4. 更新 Canvas 内容
+            if (outpaintingCanvas && outpaintingCtx) {
+                if (cancelOutpaintingBtn && cancelOutpaintingBtn.style.display !== 'none') {
+                    // 处于已合成状态，重新渲染合成
+                    renderMergedOutpainting();
+                } else {
+                    // 未合成状态，重新填充底色
+                    outpaintingCtx.fillStyle = validHex;
+                    outpaintingCtx.fillRect(0, 0, outpaintingCanvas.width, outpaintingCanvas.height);
+                }
+            }
+
+            return true;
+        }
+
+        // 初始化底板颜色控件事件监听
+        function initOutpaintingColorControls() {
+            // 预设按钮点击
+            document.querySelectorAll('.op-preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const color = btn.dataset.color;
+                    if (color) setOutpaintingBgColor(color, 'preset');
+                });
+            });
+
+            // Color Picker 调色板实时选择
+            const colorPicker = document.getElementById('outpaintingColorPicker');
+            if (colorPicker) {
+                colorPicker.addEventListener('input', (e) => {
+                    setOutpaintingBgColor(e.target.value, 'colorPicker');
+                });
+            }
+
+            // HEX 输入框实时输入与失去焦点规范化
+            const hexInput = document.getElementById('outpaintingHexInput');
+            if (hexInput) {
+                hexInput.addEventListener('input', (e) => {
+                    let val = e.target.value.trim();
+                    if (val.startsWith('#')) val = val.substring(1);
+                    if (val.length === 6 && /^[0-9A-Fa-f]{6}$/.test(val)) {
+                        setOutpaintingBgColor('#' + val, 'hexInput');
+                    }
+                });
+                hexInput.addEventListener('blur', () => {
+                    const validHex = normalizeHexColor(hexInput.value);
+                    if (validHex) {
+                        setOutpaintingBgColor(validHex, 'hexBlur');
+                    } else {
+                        hexInput.value = outpaintingBgColor.substring(1);
+                    }
+                });
+                hexInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        hexInput.blur();
+                    }
+                });
+            }
+        }
+        initOutpaintingColorControls();
+
         // 提取渲染合成图像的逻辑，以便在切换标签时复用
         function renderMergedOutpainting() {
             if (!outpaintingCanvas || !outpaintingCtx) return;
 
-            // 1. 重新绘制纯绿色背景 (确保底色干净)
+            // 1. 重新绘制底板背景 (使用用户选择的背景色，默认 #00FF00)
             const w = outpaintingCanvas.width;
             const h = outpaintingCanvas.height;
-            outpaintingCtx.fillStyle = '#00FF00';
+            outpaintingCtx.fillStyle = outpaintingBgColor || '#00FF00';
             outpaintingCtx.fillRect(0, 0, w, h);
 
             // 2. 绘制所有悬浮层中的图片到画布
@@ -8315,8 +8642,8 @@
             outpaintingCanvas.width = w;
             outpaintingCanvas.height = h;
 
-            // 填充纯绿色背景 (必须是绝对纯绿 #00FF00，严禁色差，以便后期色键抠图)
-            outpaintingCtx.fillStyle = '#00FF00';
+            // 填充底板背景 (支持纯绿 #00FF00、Flat Gray #808080 及自定义背景色)
+            outpaintingCtx.fillStyle = outpaintingBgColor || '#00FF00';
             outpaintingCtx.fillRect(0, 0, w, h);
 
             // 调整 Wrapper 尺寸以适应屏幕，保持比例
@@ -8333,6 +8660,7 @@
 
             wrapper.style.width = `${w * scale}px`;
             wrapper.style.height = `${h * scale}px`;
+            wrapper.style.backgroundColor = outpaintingBgColor || '#00FF00';
 
             // 重新绘制背景以便它是干净的 (CSS缩放不会模糊Canvas内容，但会影响点击坐标)
         }
