@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="专业的比例计算器和图像裁切工具，支持常用照片比例、屏幕比例等，自定义比例计算更方便，在线裁切图片">
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1973258969126506"
+        crossorigin="anonymous"></script>
     <title>比例计算器与图像裁切拼接工具 - 智能尺寸计算与图片裁切拼接</title>
     <!-- SVG Favicon -->
     <link rel="icon" type="image/svg+xml"
@@ -1432,6 +1435,31 @@
 
         .image-crop-section {
             grid-column: span 2;
+        }
+
+        .tool-ad-slot {
+            grid-column: 1 / -1;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .tool-ad-slot-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 12px;
+            line-height: 1.4;
+            text-align: right;
+        }
+
+        .tool-ad-slot ins.adsbygoogle {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .upload-area {
@@ -4692,6 +4720,15 @@
 
             <!-- 图像裁切专用的比例配置区域 -->
             <div id="cropRatioGroup" style="display: contents;">
+                <div class="tool-ad-slot" id="cropRatioAd" aria-label="Advertisement">
+                    <span class="tool-ad-slot-label">Advertisement / 广告</span>
+                    <ins class="adsbygoogle"
+                        style="display:block"
+                        data-ad-client="ca-pub-1973258969126506"
+                        data-ad-slot="6653678802"
+                        data-ad-format="auto"
+                        data-full-width-responsive="true"></ins>
+                </div>
                 <!-- 选择比例 -->
                 <div class="card" id="ratioSelectCard">
                     <h2 class="card-title" data-i18n="ratioSelect.title">选择比例</h2>
@@ -4836,6 +4873,15 @@
 
             <!-- 扩图专用比例配置区域 (保持物理隔离且布局紧凑) -->
             <div id="opRatioGroup" style="display: none;">
+                <div class="tool-ad-slot" id="outpaintingRatioAd" aria-label="Advertisement">
+                    <span class="tool-ad-slot-label">Advertisement / 广告</span>
+                    <ins class="adsbygoogle"
+                        style="display:block"
+                        data-ad-client="ca-pub-1973258969126506"
+                        data-ad-slot="6653678802"
+                        data-ad-format="auto"
+                        data-full-width-responsive="true"></ins>
+                </div>
                 <!-- 选择比例 (扩图) -->
                 <div class="card" id="opRatioSelectCard">
                     <h2 class="card-title" data-i18n="ratioSelect.title">选择比例</h2>
@@ -8303,6 +8349,20 @@
         // ========== 扩图底板与 Tab 切换逻辑 (新增) ==========
         const toolTabs = document.querySelectorAll('.tool-icon-btn');
 
+        function requestToolAdFill(slotId) {
+            const adIns = document.querySelector(`#${slotId} ins.adsbygoogle`);
+            if (!adIns || adIns.dataset.adsenseRequested === 'true') return;
+
+            adIns.dataset.adsenseRequested = 'true';
+            requestAnimationFrame(() => {
+                try {
+                    (window.adsbygoogle = window.adsbygoogle || []).push({});
+                } catch (error) {
+                    console.warn('AdSense request failed:', error);
+                }
+            });
+        }
+
         const outpaintingContainer = document.getElementById('outpaintingContainer');
         const outpaintingCanvas = document.getElementById('outpaintingCanvas');
         const outpaintingCtx = outpaintingCanvas.getContext('2d');
@@ -8362,6 +8422,7 @@
                 if (tool === 'image-tool') {
                     if (cropRatioGroup) cropRatioGroup.style.display = 'contents';
                     if (opRatioGroup) opRatioGroup.style.display = 'none';
+                    requestToolAdFill('cropRatioAd');
 
                     // 核心状态标志位
                     const hasStitchImages = stitchImages.length > 0;
@@ -8404,6 +8465,7 @@
                 } else if (tool === 'outpainting') {
                     if (cropRatioGroup) cropRatioGroup.style.display = 'none';
                     if (opRatioGroup) opRatioGroup.style.display = 'contents';
+                    requestToolAdFill('outpaintingRatioAd');
 
                     // 同步比例：共用比例裁剪器的比例
                     if (typeof currentRatio !== 'undefined' && typeof opCurrentRatio !== 'undefined') {
@@ -8443,6 +8505,7 @@
                 }
             });
         });
+
 
         // 标准化十六进制颜色字符串
         function normalizeHexColor(input) {
@@ -8556,6 +8619,10 @@
             }
         }
         initOutpaintingColorControls();
+
+        // 默认打开裁切页，只请求当前可见面板的广告；扩图广告在切换过去时再请求。
+        requestToolAdFill('cropRatioAd');
+
 
         // 提取渲染合成图像的逻辑，以便在切换标签时复用
         function renderMergedOutpainting() {
