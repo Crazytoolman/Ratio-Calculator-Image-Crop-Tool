@@ -4720,7 +4720,7 @@
 
             <!-- 图像裁切专用的比例配置区域 -->
             <div id="cropRatioGroup" style="display: contents;">
-                <div class="tool-ad-slot" id="cropRatioAd" aria-label="Advertisement">
+                <div class="tool-ad-slot" id="cropRatioAd" aria-label="Advertisement" style="display: none;">
                     <span class="tool-ad-slot-label">Advertisement / 广告</span>
                     <ins class="adsbygoogle"
                         style="display:block"
@@ -4873,7 +4873,7 @@
 
             <!-- 扩图专用比例配置区域 (保持物理隔离且布局紧凑) -->
             <div id="opRatioGroup" style="display: none;">
-                <div class="tool-ad-slot" id="outpaintingRatioAd" aria-label="Advertisement">
+                <div class="tool-ad-slot" id="outpaintingRatioAd" aria-label="Advertisement" style="display: none;">
                     <span class="tool-ad-slot-label">Advertisement / 广告</span>
                     <ins class="adsbygoogle"
                         style="display:block"
@@ -5122,13 +5122,93 @@
 
         <footer
             style="text-align: center; padding: 40px 20px 20px; color: var(--text-secondary); font-size: 14px; font-weight: 500; opacity: 0.8;">
-            © 2026 <a href="https://toolbuddy.art/" target="_blank" rel="noopener noreferrer"
+            © 2026 <a href="https://toolbuddy.art/" target="_blank" rel="noopener noreferrer" id="adminAdTrigger"
                 style="color: inherit; text-decoration: none;">ToolBuddy</a>. All Rights Reserved.
         </footer>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/utif@3.1.0/UTIF.js"></script>
     <script>
+        // =========================================================================
+        // 谷歌广告位 (Google AdSense) 管理员开关配置 (完全隐蔽模式)
+        // -------------------------------------------------------------------------
+        // false: 完全关闭并隐藏广告位，不加载广告（默认对所有普通用户隐藏）
+        // true:  开启广告位展示
+        // -------------------------------------------------------------------------
+        // 专属管理员隐蔽开启方式（普通用户完全无感知）：
+        // 1. 【连击彩蛋】：连续点击左侧作者头像 或 底部 ToolBuddy 版权 5 次，即可切换并弹出提示
+        // 2. 【极客快捷键】：键盘按下 Alt + Shift + A（或 Mac 上的 Option + Shift + A）立即切换
+        // 3. 【授权专属链接】：访问带 ?ads=1 开启并记住，?ads=0 关闭并记住
+        // 4. 【代码默认常量】：修改下方的 DEFAULT_ENABLE_GOOGLE_ADS
+        // 5. 【控制台命令】：浏览器控制台运行 window.toggleGoogleAds()
+        // =========================================================================
+        const DEFAULT_ENABLE_GOOGLE_ADS = false;
+
+        function isGoogleAdsEnabled() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.has('ads')) {
+                    const val = (urlParams.get('ads') || '').toLowerCase();
+                    const enabled = (val === '1' || val === 'true' || val === 'on');
+                    localStorage.setItem('google_ads_enabled', enabled ? 'true' : 'false');
+                    return enabled;
+                }
+                const saved = localStorage.getItem('google_ads_enabled');
+                if (saved !== null) {
+                    return saved === 'true';
+                }
+            } catch (e) {
+                console.warn('读取广告配置异常:', e);
+            }
+            return DEFAULT_ENABLE_GOOGLE_ADS;
+        }
+
+        function applyGoogleAdsState(enabled, saveToStorage = true) {
+            if (saveToStorage) {
+                try {
+                    localStorage.setItem('google_ads_enabled', enabled ? 'true' : 'false');
+                } catch (e) {}
+            }
+
+            const cropRatioAd = document.getElementById('cropRatioAd');
+            const outpaintingRatioAd = document.getElementById('outpaintingRatioAd');
+            const activeToolBtn = document.querySelector('.tool-icon-btn.active');
+            const activeTool = activeToolBtn ? activeToolBtn.dataset.tool : 'image-tool';
+
+            if (enabled) {
+                if (cropRatioAd) cropRatioAd.style.display = (activeTool === 'image-tool') ? 'block' : 'none';
+                if (outpaintingRatioAd) outpaintingRatioAd.style.display = (activeTool === 'outpainting') ? 'block' : 'none';
+                if (activeTool === 'image-tool' && typeof requestToolAdFill === 'function') {
+                    requestToolAdFill('cropRatioAd');
+                } else if (activeTool === 'outpainting' && typeof requestToolAdFill === 'function') {
+                    requestToolAdFill('outpaintingRatioAd');
+                }
+            } else {
+                if (cropRatioAd) cropRatioAd.style.display = 'none';
+                if (outpaintingRatioAd) outpaintingRatioAd.style.display = 'none';
+            }
+        }
+
+        function toggleGoogleAds(showToastFeedback = false) {
+            const newState = !isGoogleAdsEnabled();
+            applyGoogleAdsState(newState, true);
+            if (showToastFeedback && typeof showToast === 'function') {
+                showToast(newState ? '🛠️ 管理员模式：谷歌广告位已开启' : '🛠️ 管理员模式：谷歌广告位已隐藏');
+            }
+            return newState;
+        }
+
+        window.setGoogleAds = function (enable, showToastFeedback = true) {
+            applyGoogleAdsState(!!enable, true);
+            if (showToastFeedback && typeof showToast === 'function') {
+                showToast(enable ? '🛠️ 管理员模式：谷歌广告位已开启' : '🛠️ 管理员模式：谷歌广告位已隐藏');
+            }
+        };
+        window.toggleGoogleAds = function () {
+            return toggleGoogleAds(true);
+        };
+        window.isGoogleAdsEnabled = isGoogleAdsEnabled;
+
         // ========== TIFF 格式支持 ==========
         // 检测文件是否为 TIFF 格式
         function isTiffFile(file) {
@@ -5289,6 +5369,7 @@
                     title: '配置管理',
                     saveLabel: '保存配置',
                     restoreLabel: '还原配置',
+                    adLabel: '谷歌广告位',
                     clearLabel: '清除所有',
                     saveBtn: '保存',
                     restoreBtn: '还原',
@@ -5296,6 +5377,10 @@
                     clearBtn: '清除所有配置并重置',
                     namePlaceholder: '输入配置名称（如：人像裁剪）',
                     selectPlaceholder: '— 选择已保存的配置 —',
+                    adDisabled: '已关闭（默认隐藏）',
+                    adEnabled: '已开启（正常展示）',
+                    adEnableBtn: '开启广告',
+                    adDisableBtn: '关闭广告',
                     saveSuccess: '配置「{name}」已保存！',
                     saveUpdate: '配置「{name}」已更新',
                     saveNameEmpty: '请输入配置名称',
@@ -5463,6 +5548,7 @@
                     title: 'Config Manager',
                     saveLabel: 'Save Config',
                     restoreLabel: 'Restore Config',
+                    adLabel: 'Google Ads',
                     clearLabel: 'Clear All',
                     saveBtn: 'Save',
                     restoreBtn: 'Restore',
@@ -5470,6 +5556,10 @@
                     clearBtn: 'Clear All & Reset',
                     namePlaceholder: 'Enter config name (e.g. Portrait Crop)',
                     selectPlaceholder: '— Select a saved config —',
+                    adDisabled: 'Disabled (Hidden)',
+                    adEnabled: 'Enabled (Visible)',
+                    adEnableBtn: 'Enable Ads',
+                    adDisableBtn: 'Disable Ads',
                     saveSuccess: 'Config "{name}" saved!',
                     saveUpdate: 'Config "{name}" updated',
                     saveNameEmpty: 'Please enter a config name',
@@ -7639,6 +7729,7 @@
             await clearDB();
             localStorage.removeItem('theme');
             localStorage.removeItem('language');
+            localStorage.removeItem('google_ads_enabled');
             location.reload();
         }
 
@@ -7655,8 +7746,43 @@
         if (restoreConfigBtn) restoreConfigBtn.addEventListener('click', restoreConfig);
         if (deleteConfigBtn) deleteConfigBtn.addEventListener('click', deleteConfig);
 
+        // ---- 谷歌广告位 管理员专属隐蔽触发逻辑 ----
+        let adminClickCount = 0;
+        let adminClickTimer = null;
+
+        function triggerAdminSecretAdToggle(e) {
+            adminClickCount++;
+            clearTimeout(adminClickTimer);
+            adminClickTimer = setTimeout(() => {
+                adminClickCount = 0;
+            }, 1800); // 1.8 秒内连续点击 5 次有效
+
+            if (adminClickCount >= 5) {
+                if (e && e.preventDefault) e.preventDefault();
+                adminClickCount = 0;
+                toggleGoogleAds(true);
+            }
+        }
+
+        const devAvatarEl = document.getElementById('devAvatar');
+        if (devAvatarEl) devAvatarEl.addEventListener('click', triggerAdminSecretAdToggle);
+
+        const adminAdTriggerEl = document.getElementById('adminAdTrigger');
+        if (adminAdTriggerEl) adminAdTriggerEl.addEventListener('click', triggerAdminSecretAdToggle);
+
+        // 键盘快捷键: Alt + Shift + A (Mac: Option + Shift + A)
+        window.addEventListener('keydown', (e) => {
+            if (e.altKey && e.shiftKey && (e.key === 'a' || e.key === 'A')) {
+                e.preventDefault();
+                toggleGoogleAds(true);
+            }
+        });
+
         window.addEventListener('load', async () => {
             await refreshConfigDropdown();
+            if (typeof applyGoogleAdsState === 'function') {
+                applyGoogleAdsState(isGoogleAdsEnabled(), false);
+            }
         });
         // ========== 原有图片加载功能 ==========
         function loadImage(file) {
@@ -8350,6 +8476,14 @@
         const toolTabs = document.querySelectorAll('.tool-icon-btn');
 
         function requestToolAdFill(slotId) {
+            if (!isGoogleAdsEnabled()) {
+                const slot = document.getElementById(slotId);
+                if (slot) slot.style.display = 'none';
+                return;
+            }
+            const slot = document.getElementById(slotId);
+            if (slot) slot.style.display = 'block';
+
             const adIns = document.querySelector(`#${slotId} ins.adsbygoogle`);
             if (!adIns || adIns.dataset.adsenseRequested === 'true') return;
 
@@ -8422,7 +8556,12 @@
                 if (tool === 'image-tool') {
                     if (cropRatioGroup) cropRatioGroup.style.display = 'contents';
                     if (opRatioGroup) opRatioGroup.style.display = 'none';
-                    requestToolAdFill('cropRatioAd');
+                    if (isGoogleAdsEnabled()) {
+                        requestToolAdFill('cropRatioAd');
+                    } else {
+                        const ad = document.getElementById('cropRatioAd');
+                        if (ad) ad.style.display = 'none';
+                    }
 
                     // 核心状态标志位
                     const hasStitchImages = stitchImages.length > 0;
@@ -8465,7 +8604,12 @@
                 } else if (tool === 'outpainting') {
                     if (cropRatioGroup) cropRatioGroup.style.display = 'none';
                     if (opRatioGroup) opRatioGroup.style.display = 'contents';
-                    requestToolAdFill('outpaintingRatioAd');
+                    if (isGoogleAdsEnabled()) {
+                        requestToolAdFill('outpaintingRatioAd');
+                    } else {
+                        const ad = document.getElementById('outpaintingRatioAd');
+                        if (ad) ad.style.display = 'none';
+                    }
 
                     // 同步比例：共用比例裁剪器的比例
                     if (typeof currentRatio !== 'undefined' && typeof opCurrentRatio !== 'undefined') {
@@ -8620,8 +8764,10 @@
         }
         initOutpaintingColorControls();
 
-        // 默认打开裁切页，只请求当前可见面板的广告；扩图广告在切换过去时再请求。
-        requestToolAdFill('cropRatioAd');
+        // 默认打开裁切页，只有开启广告时才请求可见面板的广告
+        if (isGoogleAdsEnabled()) {
+            requestToolAdFill('cropRatioAd');
+        }
 
 
         // 提取渲染合成图像的逻辑，以便在切换标签时复用
